@@ -111,6 +111,23 @@ fa_context = FastapiContext(
 )
 ```
 
+### Custom RSA Key Filenames
+
+You can specify custom names for your RSA key files:
+
+```python
+from fastapiutils import FastapiContext
+
+# Create auth manager with custom key filenames
+fa_context = FastapiContext(
+    rsa_keys_path="/path/to/keys",
+    private_key_filename="my_private.pem",    # Custom private key name
+    public_key_filename="my_public.pem",      # Custom public key name
+    db_host="localhost",
+    # ... other parameters
+)
+```
+
 ### Environment Helper Functions
 
 For convenience, you can also use the helper functions to get configuration from environment variables:
@@ -205,7 +222,9 @@ fa_context = FastapiContext(
 
 ### FastapiContext Parameters
 
-- `rsa_keys_path`: Path to directory containing `private_key.pem` and `public_key.pem`
+- `rsa_keys_path`: Path to directory containing RSA key files
+- `private_key_filename`: Name of private key file (default: "private_key.pem")
+- `public_key_filename`: Name of public key file (default: "public_key.pem")
 - `db_host`: Database host (default: "localhost")
 - `db_port`: Database port (default: 3306)
 - `db_user`: Database user (default: "root")

@@ -10,7 +10,7 @@ from fastapi.security import OAuth2PasswordBearer
 from jwt.exceptions import InvalidTokenError
 
 from .database import DatabaseManager
-from .models import User, UserInDB, CreateUser, Token, TokenData
+from .models import  UserInDB, CreateUser, TokenData
 from .i18n import I18n
 
 
@@ -29,14 +29,16 @@ class FastapiContext:
                  token_url: str = "token",
                  locales_dir: Optional[str] = None,
                  default_locale: str = "en",
+                 private_key_filename: str = "private_key.pem",
+                 public_key_filename: str = "public_key.pem",
                  i18n: Optional[I18n] = None):
         # Validate RSA keys path
         if not os.path.exists(rsa_keys_path):
             raise ValueError(f"RSA keys path does not exist: {rsa_keys_path}")
         
         self.algorithm = "RS256"
-        private_key_path = os.path.join(rsa_keys_path, "private_key.pem")
-        public_key_path = os.path.join(rsa_keys_path, "public_key.pem")
+        private_key_path = os.path.join(rsa_keys_path, private_key_filename)
+        public_key_path = os.path.join(rsa_keys_path, public_key_filename)
         
         if not os.path.exists(private_key_path):
             raise ValueError(f"Private key not found: {private_key_path}")
@@ -45,6 +47,8 @@ class FastapiContext:
         
         # Store configuration values
         self.rsa_keys_path = rsa_keys_path
+        self.private_key_filename = private_key_filename
+        self.public_key_filename = public_key_filename
         self.access_token_expire_minutes = access_token_expire_minutes
         self.refresh_token_expire_days = refresh_token_expire_days
         self.token_url = token_url
@@ -71,8 +75,8 @@ class FastapiContext:
     
     def _load_rsa_keys(self):
         """Load RSA public and private keys"""
-        private_key_path = self.rsa_keys_path + "/private_key.pem"
-        public_key_path = self.rsa_keys_path + "/public_key.pem"
+        private_key_path = os.path.join(self.rsa_keys_path, self.private_key_filename)
+        public_key_path = os.path.join(self.rsa_keys_path, self.public_key_filename)
         
         with open(private_key_path, 'rb') as f:
             self.private_key = serialization.load_pem_private_key(f.read(), password=None)
