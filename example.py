@@ -26,6 +26,7 @@ auth_config = AuthConfig(
     rsa_keys_path="/path/to/your/keys",  # Update this path
     access_token_expire_minutes=30,
     refresh_token_expire_days=30,
+    token_url="token",
     algorithm="RS256",
     default_locale="en"
 )
@@ -34,8 +35,8 @@ auth_config = AuthConfig(
 auth_manager = AuthManager(auth_config, db_config)
 
 # Include routers
-app.include_router(create_auth_router(auth_manager), prefix="/auth", tags=["auth"])
-app.include_router(create_user_router(auth_manager), prefix="/api", tags=["users"])
+app.include_router(create_auth_router(auth_manager))
+app.include_router(create_user_router(auth_manager))
 
 @app.get("/")
 async def root():

@@ -9,14 +9,14 @@ from .models import Token, CreateUser, User, RefreshTokenRequest, TokenData
 from .i18n import extract_locale_from_header
 
 
-def create_auth_router(auth_manager: AuthManager, prefix: str = "", tokenPath: str = "token") -> APIRouter:
+def create_auth_router(auth_manager: AuthManager) -> APIRouter:
     """Create authentication router"""
-    router = APIRouter(prefix=prefix)
+    router = APIRouter()
     
     # Get dependency functions
     get_current_user_dep, get_current_active_user_dep = auth_manager.create_dependency_functions()
     
-    @router.post(f"/{tokenPath}")
+    @router.post(f"/{auth_manager.auth_config.token_url}")
     async def login_for_access_token(
         form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
         request: Request,
@@ -39,7 +39,7 @@ def create_auth_router(auth_manager: AuthManager, prefix: str = "", tokenPath: s
         
         return Token(access_token=access_token)
     
-    @router.post(f"/{tokenPath}/refresh")
+    @router.post(f"/{auth_manager.auth_config.token_url}/refresh")
     async def refresh_access_token(
         current_user: Annotated[User, Depends(get_current_active_user_dep)],
         refresh_request: RefreshTokenRequest,
@@ -75,9 +75,9 @@ def create_auth_router(auth_manager: AuthManager, prefix: str = "", tokenPath: s
     return router
 
 
-def create_user_router(auth_manager: AuthManager, prefix: str = "") -> APIRouter:
+def create_user_router(auth_manager: AuthManager) -> APIRouter:
     """Create user management router"""
-    router = APIRouter(prefix=prefix)
+    router = APIRouter()
     
     # Get dependency functions
     get_current_user_dep, get_current_active_user_dep = auth_manager.create_dependency_functions()
