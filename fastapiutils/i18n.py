@@ -2,14 +2,24 @@ import json
 import os
 from typing import Dict, Any, Optional
 
+
 class I18n:
-    def __init__(self, locales_dir: str = "locales", default_locale: str = "en"):
-        self.locales_dir = locales_dir
+    """Internationalization helper class"""
+    
+    def __init__(self, locales_dir: Optional[str] = None, default_locale: str = "en"):
         self.default_locale = default_locale
         self._translations: Dict[str, Dict[str, Any]] = {}
+        
+        if locales_dir is None:
+            # Use package's default locales directory
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            locales_dir = os.path.join(current_dir, 'locales')
+        
+        self.locales_dir = locales_dir
         self._load_translations()
     
     def _load_translations(self):
+        """Load translation files from the locales directory"""
         if not os.path.exists(self.locales_dir):
             return
         
@@ -24,6 +34,7 @@ class I18n:
                     print(f"Error loading translation file {filename}: {e}")
     
     def get_translation(self, key: str, locale: Optional[str] = None) -> str:
+        """Get translation for a given key and locale"""
         if locale is None:
             locale = self.default_locale
         
@@ -50,21 +61,12 @@ class I18n:
             return key
     
     def t(self, key: str, locale: Optional[str] = None) -> str:
+        """Shorthand for get_translation"""
         return self.get_translation(key, locale)
 
-# Global instance
-_i18n_instance = None
-
-def get_i18n() -> I18n:
-    global _i18n_instance
-    if _i18n_instance is None:
-        # Get the directory where this file is located
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        locales_dir = os.path.join(current_dir, '..', 'locales')
-        _i18n_instance = I18n(locales_dir=locales_dir)
-    return _i18n_instance
 
 def extract_locale_from_header(accept_language: Optional[str]) -> str:
+    """Extract locale from Accept-Language header"""
     if not accept_language:
         return "en"
     
