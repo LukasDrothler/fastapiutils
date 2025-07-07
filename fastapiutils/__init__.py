@@ -1,5 +1,5 @@
 from .config import AuthConfig, DatabaseConfig
-from .auth_manager import AuthManager
+from .fastapi_context import FastapiContext
 from .routers import create_auth_router, create_user_router
 from .models import User, UserInDB, CreateUser, Token, TokenData, RefreshTokenRequest
 from .database import DatabaseManager
@@ -10,7 +10,7 @@ __version__ = "0.1.0"
 __all__ = [
     "AuthConfig",
     "DatabaseConfig", 
-    "AuthManager",
+    "FastapiContext",
     "create_auth_router",
     "create_user_router",
     "User",

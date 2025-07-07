@@ -5,7 +5,7 @@ This example shows the clean configuration approach using AuthConfig and Databas
 """
 from fastapi import FastAPI
 from fastapiutils import (
-    AuthConfig, DatabaseConfig, AuthManager, 
+    AuthConfig, DatabaseConfig, FastapiContext, 
     create_auth_router, create_user_router
 )
 
@@ -32,11 +32,11 @@ auth_config = AuthConfig(
 )
 
 # Create auth manager with the configurations
-auth_manager = AuthManager(auth_config, db_config)
+fa_context = FastapiContext(auth_config, db_config)
 
 # Include routers
-app.include_router(create_auth_router(auth_manager))
-app.include_router(create_user_router(auth_manager))
+app.include_router(create_auth_router(fa_context))
+app.include_router(create_user_router(fa_context))
 
 @app.get("/")
 async def root():

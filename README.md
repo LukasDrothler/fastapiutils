@@ -21,7 +21,7 @@ pip install git+https://github.com/LukasDrothler/fastapiutils
 
 ```python
 from fastapi import FastAPI
-from fastapiutils import AuthConfig, DatabaseConfig, AuthManager, create_auth_router, create_user_router
+from fastapiutils import AuthConfig, DatabaseConfig, FastapiContext, create_auth_router, create_user_router
 
 app = FastAPI()
 
@@ -44,11 +44,11 @@ auth_config = AuthConfig(
 )
 
 # Create auth manager
-auth_manager = AuthManager(auth_config, db_config)
+fa_context = FastapiContext(auth_config, db_config)
 
 # Include routers
-app.include_router(create_auth_router(auth_manager), prefix="/auth")
-app.include_router(create_user_router(auth_manager), prefix="/api")
+app.include_router(create_auth_router(fa_context), prefix="/auth")
+app.include_router(create_user_router(fa_context), prefix="/api")
 ```
 
 ## Configuration

@@ -14,7 +14,7 @@ from .models import User, UserInDB, CreateUser, Token, TokenData
 from .i18n import I18n
 
 
-class AuthManager:
+class FastapiContext:
     """Main authentication manager class"""
     
     def __init__(self, auth_config: AuthConfig, db_config: DatabaseConfig, i18n: Optional[I18n] = None):

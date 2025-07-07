@@ -46,7 +46,7 @@ openssl rsa -pubout -in private_key.pem -out public_key.pem
 
 ```python
 from fastapi import FastAPI
-from fastapiutils import AuthConfig, DatabaseConfig, AuthManager, create_auth_router, create_user_router
+from fastapiutils import AuthConfig, DatabaseConfig, FastapiContext, create_auth_router, create_user_router
 
 app = FastAPI()
 
@@ -69,11 +69,11 @@ auth_config = AuthConfig(
 )
 
 # Create auth manager
-auth_manager = AuthManager(auth_config, db_config)
+fa_context = FastapiContext(auth_config, db_config)
 
 # Include routers
-app.include_router(create_auth_router(auth_manager), prefix="/auth")
-app.include_router(create_user_router(auth_manager), prefix="/api")
+app.include_router(create_auth_router(fa_context), prefix="/auth")
+app.include_router(create_user_router(fa_context), prefix="/api")
 ```
 
 ### Using Environment Variables
@@ -85,20 +85,20 @@ You can also use environment variables with the `from_env()` class methods:
 # DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME
 # RSA_KEYS_PATH
 
-from fastapiutils import AuthConfig, DatabaseConfig, AuthManager
+from fastapiutils import AuthConfig, DatabaseConfig, FastapiContext
 
 # Create configurations from environment
 db_config = DatabaseConfig.from_env()
 auth_config = AuthConfig.from_env()
 
 # Create auth manager
-auth_manager = AuthManager(auth_config, db_config)
+fa_context = FastapiContext(auth_config, db_config)
 ```
 
 ### Custom Configuration
 
 ```python
-from fastapiutils import AuthConfig, DatabaseConfig, AuthManager
+from fastapiutils import AuthConfig, DatabaseConfig, FastapiContext
 
 # Custom database configuration
 db_config = DatabaseConfig(
@@ -119,7 +119,7 @@ auth_config = AuthConfig(
     default_locale="de"                  # German as default
 )
 
-auth_manager = AuthManager(auth_config, db_config)
+fa_context = FastapiContext(auth_config, db_config)
 ```
 
 ## API Endpoints
@@ -158,10 +158,10 @@ class UserInDB(BaseUserInDB):
 
 ```python
 from fastapi import Depends
-from fastapiutils import AuthManager
+from fastapiutils import FastapiContext
 
 # Get dependency functions
-get_current_user, get_current_active_user = auth_manager.create_dependency_functions()
+get_current_user, get_current_active_user = fa_context.create_dependency_functions()
 
 @app.get("/protected")
 async def protected_route(current_user = Depends(get_current_active_user)):
@@ -184,7 +184,7 @@ auth_config = AuthConfig(
 
 # Or create I18n instance directly
 i18n = I18n(locales_dir="./my_locales", default_locale="fr")
-auth_manager = AuthManager(auth_config, db_config, i18n=i18n)
+fa_context = FastapiContext(auth_config, db_config, i18n=i18n)
 ```
 
 ## Configuration Reference
