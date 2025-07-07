@@ -46,30 +46,22 @@ openssl rsa -pubout -in private_key.pem -out public_key.pem
 
 ```python
 from fastapi import FastAPI
-from fastapiutils import AuthConfig, DatabaseConfig, FastapiContext, create_auth_router, create_user_router
+from fastapiutils import FastapiContext, create_auth_router, create_user_router
 
 app = FastAPI()
 
-# Configure database connection
-db_config = DatabaseConfig(
-    host="localhost",
-    port=3306,
-    user="root",
-    password="your_password",
-    database="your_database"
-)
-
-# Configure authentication settings
-auth_config = AuthConfig(
+# Create auth manager with direct parameters
+fa_context = FastapiContext(
     rsa_keys_path="/path/to/your/keys",
+    db_host="localhost",
+    db_port=3306,
+    db_user="root",
+    db_password="your_password",
+    db_name="your_database",
     access_token_expire_minutes=30,
     refresh_token_expire_days=30,
-    algorithm="RS256",
     default_locale="en"
 )
-
-# Create auth manager
-fa_context = FastapiContext(auth_config, db_config)
 
 # Include routers
 app.include_router(create_auth_router(fa_context), prefix="/auth")
@@ -78,48 +70,64 @@ app.include_router(create_user_router(fa_context), prefix="/api")
 
 ### Using Environment Variables
 
-You can also use environment variables with the `from_env()` class methods:
+If you want to use environment variables, you can use `os.getenv()` directly in your parameters:
 
 ```python
-# Set environment variables:
-# DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME
-# RSA_KEYS_PATH
+import os
+from fastapiutils import FastapiContext
 
-from fastapiutils import AuthConfig, DatabaseConfig, FastapiContext
-
-# Create configurations from environment
-db_config = DatabaseConfig.from_env()
-auth_config = AuthConfig.from_env()
-
-# Create auth manager
-fa_context = FastapiContext(auth_config, db_config)
+# Create configuration using environment variables
+fa_context = FastapiContext(
+    rsa_keys_path=os.getenv("RSA_KEYS_PATH", "/path/to/keys"),
+    db_host=os.getenv("DB_HOST", "localhost"),
+    db_port=int(os.getenv("DB_PORT", "3306")),
+    db_user=os.getenv("DB_USER", "root"),
+    db_password=os.getenv("DB_PASSWORD", ""),
+    db_name=os.getenv("DB_NAME", ""),
+    access_token_expire_minutes=int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30")),
+    refresh_token_expire_days=int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "30")),
+    token_url=os.getenv("TOKEN_URL", "token"),
+    default_locale=os.getenv("DEFAULT_LOCALE", "en")
+)
 ```
 
 ### Custom Configuration
 
 ```python
-from fastapiutils import AuthConfig, DatabaseConfig, FastapiContext
+from fastapiutils import FastapiContext
 
-# Custom database configuration
-db_config = DatabaseConfig(
-    host="myserver.com",
-    port=3306,
-    user="api_user",
-    password="secure_password",
-    database="production_db"
-)
-
-# Custom authentication configuration
-auth_config = AuthConfig(
+# Create auth manager with custom parameters
+fa_context = FastapiContext(
     rsa_keys_path="/etc/ssl/jwt-keys",
+    db_host="myserver.com",
+    db_port=3306,
+    db_user="api_user",
+    db_password="secure_password",
+    db_name="production_db",
     access_token_expire_minutes=60,      # 1 hour tokens
     refresh_token_expire_days=7,         # 1 week refresh
-    algorithm="RS256",
     token_url="auth/token",              # Custom token endpoint
     default_locale="de"                  # German as default
 )
+```
 
-fa_context = FastapiContext(auth_config, db_config)
+### Environment Helper Functions
+
+For convenience, you can also use the helper functions to get configuration from environment variables:
+
+```python
+from fastapiutils import get_db_config_from_env, get_auth_config_from_env
+
+# Get configurations as dictionaries
+db_config = get_db_config_from_env()
+auth_config = get_auth_config_from_env()
+
+# Use them to create FastapiContext
+fa_context = FastapiContext(
+    rsa_keys_path=auth_config["rsa_keys_path"],
+    **db_config,  # Unpack database config
+    **{k: v for k, v in auth_config.items() if k != "rsa_keys_path"}  # Unpack auth config except rsa_keys_path
+)
 ```
 
 ## API Endpoints
@@ -173,39 +181,42 @@ async def protected_route(current_user = Depends(get_current_active_user)):
 The package supports i18n with English and German built-in. You can add custom translations:
 
 ```python
-from fastapiutils import I18n, AuthConfig
+import os
+from fastapiutils import I18n, FastapiContext
 
-# Custom translations directory
-auth_config = AuthConfig(
-    rsa_keys_path="/path/to/keys",
+# Create auth manager with custom locale directory
+fa_context = FastapiContext(
+    rsa_keys_path=os.getenv("RSA_KEYS_PATH", "/path/to/keys"),
     locales_dir="./my_locales",  # Custom locale directory
-    default_locale="fr"          # French as default
+    default_locale="fr",         # French as default
+    # ... other parameters
 )
 
 # Or create I18n instance directly
 i18n = I18n(locales_dir="./my_locales", default_locale="fr")
-fa_context = FastapiContext(auth_config, db_config, i18n=i18n)
+fa_context = FastapiContext(
+    rsa_keys_path=os.getenv("RSA_KEYS_PATH", "/path/to/keys"),
+    i18n=i18n,
+    # ... other parameters
+)
 ```
 
 ## Configuration Reference
 
-### AuthConfig
+### FastapiContext Parameters
 
 - `rsa_keys_path`: Path to directory containing `private_key.pem` and `public_key.pem`
+- `db_host`: Database host (default: "localhost")
+- `db_port`: Database port (default: 3306)
+- `db_user`: Database user (default: "root")
+- `db_password`: Database password (default: "")
+- `db_name`: Database name (default: "")
 - `access_token_expire_minutes`: Access token expiration (default: 30)
 - `refresh_token_expire_days`: Refresh token expiration (default: 30)
-- `algorithm`: JWT algorithm (default: "RS256")
 - `token_url`: Token endpoint URL (default: "token")
 - `locales_dir`: Custom locales directory (optional)
 - `default_locale`: Default language (default: "en")
-
-### DatabaseConfig
-
-- `host`: Database host (default: "localhost")
-- `port`: Database port (default: 3306)
-- `user`: Database user (default: "root")
-- `password`: Database password
-- `database`: Database name
+- `i18n`: Custom I18n instance (optional)
 
 ## Error Handling
 

@@ -1,38 +1,30 @@
 """
 Example usage of the fastapiutils package
 
-This example shows the clean configuration approach using AuthConfig and DatabaseConfig classes.
+This example shows the configuration approach using direct parameters.
 """
 from fastapi import FastAPI
 from fastapiutils import (
-    AuthConfig, DatabaseConfig, FastapiContext, 
+    FastapiContext, 
     create_auth_router, create_user_router
 )
 
 # Create FastAPI app
 app = FastAPI(title="FastAPI Utils Example")
 
-# Configure database connection
-db_config = DatabaseConfig(
-    host="localhost",
-    port=3306,
-    user="root",
-    password="your_password",
-    database="your_database"
-)
-
-# Configure authentication settings
-auth_config = AuthConfig(
+# Create auth manager with direct parameters
+fa_context = FastapiContext(
     rsa_keys_path="/path/to/your/keys",  # Update this path
+    db_host="localhost",
+    db_port=3306,
+    db_user="root",
+    db_password="your_password",
+    db_name="your_database",
     access_token_expire_minutes=30,
     refresh_token_expire_days=30,
     token_url="token",
-    algorithm="RS256",
     default_locale="en"
 )
-
-# Create auth manager with the configurations
-fa_context = FastapiContext(auth_config, db_config)
 
 # Include routers
 app.include_router(create_auth_router(fa_context))

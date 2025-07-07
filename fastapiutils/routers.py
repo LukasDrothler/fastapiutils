@@ -16,7 +16,7 @@ def create_auth_router(fa_context: FastapiContext) -> APIRouter:
     # Get dependency functions
     get_current_user_dep, get_current_active_user_dep = fa_context.create_dependency_functions()
     
-    @router.post(f"/{fa_context.auth_config.token_url}")
+    @router.post(f"/{fa_context.token_url}")
     async def login_for_access_token(
         form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
         request: Request,
@@ -39,7 +39,7 @@ def create_auth_router(fa_context: FastapiContext) -> APIRouter:
         
         return Token(access_token=access_token)
     
-    @router.post(f"/{fa_context.auth_config.token_url}/refresh")
+    @router.post(f"/{fa_context.token_url}/refresh")
     async def refresh_access_token(
         current_user: Annotated[User, Depends(get_current_active_user_dep)],
         refresh_request: RefreshTokenRequest,
@@ -54,7 +54,7 @@ def create_auth_router(fa_context: FastapiContext) -> APIRouter:
         )
         
         try:
-            payload = jwt.decode(refresh_request.refresh_token, fa_context.public_key, algorithms=[fa_context.auth_config.algorithm])
+            payload = jwt.decode(refresh_request.refresh_token, fa_context.public_key, algorithms=[fa_context.algorithm])
             username = payload.get("sub")
             if username is None:
                 raise credentials_exception

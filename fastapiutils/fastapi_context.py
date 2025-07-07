@@ -1,5 +1,6 @@
 import jwt
 import re
+import os
 from datetime import datetime, timedelta, timezone
 from typing import Optional, Annotated
 from passlib.context import CryptContext
@@ -8,7 +9,6 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jwt.exceptions import InvalidTokenError
 
-from .config import AuthConfig, DatabaseConfig
 from .database import DatabaseManager
 from .models import User, UserInDB, CreateUser, Token, TokenData
 from .i18n import I18n
@@ -17,16 +17,52 @@ from .i18n import I18n
 class FastapiContext:
     """Main authentication manager class"""
     
-    def __init__(self, auth_config: AuthConfig, db_config: DatabaseConfig, i18n: Optional[I18n] = None):
-        self.auth_config = auth_config
-        self.db_config = db_config
-        self.db_manager = DatabaseManager(db_config)
+    def __init__(self, 
+                 rsa_keys_path: str,
+                 db_host: str,
+                 db_port: int,
+                 db_user: str,
+                 db_password: str,
+                 db_name: str,
+                 access_token_expire_minutes: int = 30,
+                 refresh_token_expire_days: int = 30,
+                 token_url: str = "token",
+                 locales_dir: Optional[str] = None,
+                 default_locale: str = "en",
+                 i18n: Optional[I18n] = None):
+        # Validate RSA keys path
+        if not os.path.exists(rsa_keys_path):
+            raise ValueError(f"RSA keys path does not exist: {rsa_keys_path}")
+        
+        self.algorithm = "RS256"
+        private_key_path = os.path.join(rsa_keys_path, "private_key.pem")
+        public_key_path = os.path.join(rsa_keys_path, "public_key.pem")
+        
+        if not os.path.exists(private_key_path):
+            raise ValueError(f"Private key not found: {private_key_path}")
+        if not os.path.exists(public_key_path):
+            raise ValueError(f"Public key not found: {public_key_path}")
+        
+        # Store configuration values
+        self.rsa_keys_path = rsa_keys_path
+        self.access_token_expire_minutes = access_token_expire_minutes
+        self.refresh_token_expire_days = refresh_token_expire_days
+        self.token_url = token_url
+        self.default_locale = default_locale
+        
+        self.db_manager = DatabaseManager(
+            host=db_host,
+            port=db_port,
+            user=db_user,
+            password=db_password,
+            database=db_name
+        )
         self.pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-        self.oauth2_scheme = OAuth2PasswordBearer(tokenUrl=auth_config.token_url)
+        self.oauth2_scheme = OAuth2PasswordBearer(tokenUrl=token_url)
         
         # Initialize i18n
         if i18n is None:
-            self.i18n = I18n(locales_dir=auth_config.locales_dir, default_locale=auth_config.default_locale)
+            self.i18n = I18n(locales_dir=locales_dir, default_locale=default_locale)
         else:
             self.i18n = i18n
         
@@ -35,8 +71,8 @@ class FastapiContext:
     
     def _load_rsa_keys(self):
         """Load RSA public and private keys"""
-        private_key_path = self.auth_config.rsa_keys_path + "/private_key.pem"
-        public_key_path = self.auth_config.rsa_keys_path + "/public_key.pem"
+        private_key_path = self.rsa_keys_path + "/private_key.pem"
+        public_key_path = self.rsa_keys_path + "/public_key.pem"
         
         with open(private_key_path, 'rb') as f:
             self.private_key = serialization.load_pem_private_key(f.read(), password=None)
@@ -56,13 +92,13 @@ class FastapiContext:
         """Create a JWT token"""
         to_encode = data.copy()
         if is_refresh:
-            expires_delta = timedelta(days=self.auth_config.refresh_token_expire_days)
+            expires_delta = timedelta(days=self.refresh_token_expire_days)
         else:
-            expires_delta = timedelta(minutes=self.auth_config.access_token_expire_minutes)
+            expires_delta = timedelta(minutes=self.access_token_expire_minutes)
         
         expire = datetime.now(timezone.utc) + expires_delta
         to_encode.update({"exp": expire})
-        encoded_jwt = jwt.encode(to_encode, self.private_key, algorithm=self.auth_config.algorithm)
+        encoded_jwt = jwt.encode(to_encode, self.private_key, algorithm=self.algorithm)
         return encoded_jwt
     
     def get_user(self, username: Optional[str] = None, email: Optional[str] = None) -> Optional[UserInDB]:
@@ -162,7 +198,7 @@ class FastapiContext:
         )
         
         try:
-            payload = jwt.decode(token, self.public_key, algorithms=[self.auth_config.algorithm])
+            payload = jwt.decode(token, self.public_key, algorithms=[self.algorithm])
             username = payload.get("sub")
             if username is None:
                 raise credentials_exception
