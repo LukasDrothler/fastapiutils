@@ -39,8 +39,8 @@ fa_context = FastapiContext(
 )
 
 # Include routers
-app.include_router(create_auth_router(fa_context), prefix="/auth")
-app.include_router(create_user_router(fa_context), prefix="/api")
+app.include_router(create_auth_router(fa_context))
+app.include_router(create_user_router(fa_context))
 ```
 
 ## Configuration

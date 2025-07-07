@@ -64,8 +64,8 @@ fa_context = FastapiContext(
 )
 
 # Include routers
-app.include_router(create_auth_router(fa_context), prefix="/auth")
-app.include_router(create_user_router(fa_context), prefix="/api")
+app.include_router(create_auth_router(fa_context))
+app.include_router(create_user_router(fa_context))
 ```
 
 ### Using Environment Variables
@@ -132,13 +132,13 @@ fa_context = FastapiContext(
 
 ### Authentication Endpoints
 
-- `POST /auth/token` - Login with username/password
-- `POST /auth/token/refresh` - Refresh access token
+- `POST /token` - Login with username/password
+- `POST /token/refresh` - Refresh access token
 
 ### User Endpoints
 
-- `POST /api/users/register` - Register new user
-- `GET /api/users/me` - Get current user info
+- `POST /users/register` - Register new user
+- `GET /users/me` - Get current user info
 
 ## Extending Models
 
