@@ -1,0 +1,43 @@
+{
+  "auth": {
+    "incorrect_credentials": "Incorrect username or password",
+    "could_not_validate_credentials": "Could not validate credentials",
+    "inactive_user": "Inactive user",
+    "username_invalid": "Username must contain only letters, numbers, and underscores and be at least 3 characters long",
+    "email_invalid": "Invalid email format",
+    "password_weak": "Password must be at least 8 characters long and contain at least one uppercase letter and one number",
+    "username_taken": "Username already in use",
+    "email_taken": "Email already in use",
+    "user_created": "User created successfully",
+    "user_creation_failed": "User creation failed"
+  },
+  "pet": {
+    "name_required": "Pet name is required",
+    "name_invalid": "Pet name must be between 1 and 50 characters",
+    "name_too_long": "Pet name must be {max_length} characters or less (current: {current_length})",
+    "breed_too_long": "Pet breed must be {max_length} characters or less (current: {current_length})",
+    "species_too_long": "Pet species must be {max_length} characters or less (current: {current_length})",
+    "species_invalid": "Pet species must be one of: {valid_species} (current: {current_species})",
+    "color_too_long": "Pet color must be {max_length} characters or less (current: {current_length})",
+    "microchip_too_long": "Pet microchip ID must be {max_length} characters or less (current: {current_length})",
+    "microchip_invalid_format": "Pet microchip ID must be 9-15 digits only (current: {current_microchip})",
+    "photo_url_too_long": "Pet photo URL must be {max_length} characters or less (current: {current_length})",
+    "photo_url_invalid_format": "Pet photo URL must start with http:// or https:// (current: {current_url})",
+    "notes_too_long": "Pet notes must be {max_length} characters or less (current: {current_length})",
+    "weight_too_low": "Pet weight must be at least {min_weight} kg (current: {current_weight})",
+    "weight_too_high": "Pet weight must be {max_weight} kg or less (current: {current_weight})",
+    "birth_date_future": "Pet birth date cannot be in the future (current: {current_date})",
+    "birth_date_too_old": "Pet birth date seems too old (current: {current_date}, maximum age: {max_age} years)",
+    "pet_not_found": "Pet not found or access denied",
+    "pet_created": "Pet created successfully",
+    "pet_updated": "Pet updated successfully",
+    "pet_deleted": "Pet deleted successfully",
+    "pet_creation_failed": "Pet creation failed",
+    "weight_invalid": "Weight must be a positive number",
+    "species_invalid_old": "Species must be between 1 and 30 characters",
+    "breed_invalid": "Breed must be between 1 and 50 characters",
+    "color_invalid": "Color must be between 1 and 30 characters",
+    "microchip_invalid": "Microchip ID must be between 1 and 50 characters",
+    "notes_invalid": "Notes must be less than 500 characters"
+  }
+}
