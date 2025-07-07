@@ -219,19 +219,22 @@ This will override the built-in "incorrect_credentials" message and add new tran
 
 ### FastapiContext Parameters
 
+**Required Parameters:**
 - `rsa_keys_path`: Path to directory containing RSA key files
-- `private_key_filename`: Name of private key file (default: "private_key.pem")
-- `public_key_filename`: Name of public key file (default: "public_key.pem")
-- `db_host`: Database host (default: "localhost")
-- `db_port`: Database port (default: 3306)
-- `db_user`: Database user (default: "root")
-- `db_password`: Database password (default: "")
-- `db_name`: Database name (default: "")
+- `db_host`: Database host 
+- `db_port`: Database port
+- `db_user`: Database user
+- `db_password`: Database password
+- `db_name`: Database name
+
+**Optional Parameters (with defaults):**
 - `access_token_expire_minutes`: Access token expiration (default: 30)
 - `refresh_token_expire_days`: Refresh token expiration (default: 30)
 - `token_url`: Token endpoint URL (default: "token")
-- `custom_locales_dir`: Custom locales directory for additional/override translations (optional)
+- `custom_locales_dir`: Custom locales directory for additional/override translations (default: None)
 - `default_locale`: Default language (default: "en")
+- `private_key_filename`: Name of private key file (default: "private_key.pem")
+- `public_key_filename`: Name of public key file (default: "public_key.pem")
 
 ## Error Handling
 
