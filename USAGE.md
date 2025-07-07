@@ -195,28 +195,44 @@ async def protected_route(current_user = Depends(get_current_active_user)):
 
 ## Internationalization
 
-The package supports i18n with English and German built-in. You can add custom translations:
+The package includes built-in English and German translations that are always loaded. You can add custom translations or override existing ones by providing a custom locales directory:
 
 ```python
 import os
 from fastapiutils import I18n, FastapiContext
 
-# Create auth manager with custom locale directory
+# Built-in translations (en, de) are automatically loaded
+# Custom translations can override or extend them
 fa_context = FastapiContext(
     rsa_keys_path=os.getenv("RSA_KEYS_PATH", "/path/to/keys"),
-    locales_dir="./my_locales",  # Custom locale directory
-    default_locale="fr",         # French as default
-    # ... other parameters
-)
-
-# Or create I18n instance directly
-i18n = I18n(locales_dir="./my_locales", default_locale="fr")
-fa_context = FastapiContext(
-    rsa_keys_path=os.getenv("RSA_KEYS_PATH", "/path/to/keys"),
-    i18n=i18n,
+    custom_locales_dir="./my_locales",  # Additional/override translations
+    default_locale="fr",                # French as default
     # ... other parameters
 )
 ```
+
+### How Translation Override Works
+
+1. **Built-in locales** (en.json, de.json) are always loaded first
+2. **Custom locales** from `custom_locales_dir` are loaded second and can:
+   - Override existing keys in built-in locales
+   - Add new keys to existing locales  
+   - Add completely new locales
+
+**Example custom locale file** (`./my_locales/en.json`):
+```json
+{
+  "auth": {
+    "incorrect_credentials": "Wrong username or password!",
+    "custom_message": "This is a custom message"
+  },
+  "app": {
+    "welcome": "Welcome to our app!"
+  }
+}
+```
+
+This will override the built-in "incorrect_credentials" message and add new translations.
 
 ## Configuration Reference
 
@@ -233,9 +249,8 @@ fa_context = FastapiContext(
 - `access_token_expire_minutes`: Access token expiration (default: 30)
 - `refresh_token_expire_days`: Refresh token expiration (default: 30)
 - `token_url`: Token endpoint URL (default: "token")
-- `locales_dir`: Custom locales directory (optional)
+- `custom_locales_dir`: Custom locales directory for additional/override translations (optional)
 - `default_locale`: Default language (default: "en")
-- `i18n`: Custom I18n instance (optional)
 
 ## Error Handling
 

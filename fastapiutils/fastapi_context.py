@@ -27,11 +27,10 @@ class FastapiContext:
                  access_token_expire_minutes: int = 30,
                  refresh_token_expire_days: int = 30,
                  token_url: str = "token",
-                 locales_dir: Optional[str] = None,
+                 custom_locales_dir: Optional[str] = None,
                  default_locale: str = "en",
                  private_key_filename: str = "private_key.pem",
-                 public_key_filename: str = "public_key.pem",
-                 i18n: Optional[I18n] = None):
+                 public_key_filename: str = "public_key.pem"):
         # Validate RSA keys path
         if not os.path.exists(rsa_keys_path):
             raise ValueError(f"RSA keys path does not exist: {rsa_keys_path}")
@@ -64,11 +63,8 @@ class FastapiContext:
         self.pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
         self.oauth2_scheme = OAuth2PasswordBearer(tokenUrl=token_url)
         
-        # Initialize i18n
-        if i18n is None:
-            self.i18n = I18n(locales_dir=locales_dir, default_locale=default_locale)
-        else:
-            self.i18n = i18n
+        # Initialize i18n (built-in locales are always loaded, custom can override/extend)
+        self.i18n = I18n(custom_locales_dir=custom_locales_dir, default_locale=default_locale)
         
         # Load RSA keys
         self._load_rsa_keys()

@@ -24,6 +24,7 @@ fa_context = FastapiContext(
     refresh_token_expire_days=30,
     token_url="token",
     default_locale="en"
+    # custom_locales_dir="./my_locales",  # Optional: add custom/override translations
 )
 
 # Include routers
