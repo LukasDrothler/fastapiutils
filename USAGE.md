@@ -128,25 +128,6 @@ fa_context = FastapiContext(
 )
 ```
 
-### Environment Helper Functions
-
-For convenience, you can also use the helper functions to get configuration from environment variables:
-
-```python
-from fastapiutils import get_db_config_from_env, get_auth_config_from_env
-
-# Get configurations as dictionaries
-db_config = get_db_config_from_env()
-auth_config = get_auth_config_from_env()
-
-# Use them to create FastapiContext
-fa_context = FastapiContext(
-    rsa_keys_path=auth_config["rsa_keys_path"],
-    **db_config,  # Unpack database config
-    **{k: v for k, v in auth_config.items() if k != "rsa_keys_path"}  # Unpack auth config except rsa_keys_path
-)
-```
-
 ## API Endpoints
 
 ### Authentication Endpoints
