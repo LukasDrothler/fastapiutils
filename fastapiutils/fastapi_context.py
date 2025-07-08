@@ -34,13 +34,7 @@ class FastapiContext:
         self.private_key = auth_config.private_key
         self.public_key = auth_config.public_key
         
-        self.db_manager = DatabaseManager(
-            host=database_config.host,
-            port=database_config.port,
-            user=database_config.user,
-            password=database_config.password,
-            database=database_config.database
-        )
+        self.db_manager = DatabaseManager(db_config=database_config)
 
         if mail_config:
             self.mail_manager = MailManager(mail_config)
