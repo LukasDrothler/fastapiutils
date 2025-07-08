@@ -1,15 +1,14 @@
 import jwt
 import re
-import os
 from datetime import datetime, timedelta, timezone
 from typing import Optional, Annotated
 from passlib.context import CryptContext
-from cryptography.hazmat.primitives import serialization
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jwt.exceptions import InvalidTokenError
 
 from .database import DatabaseManager
+from .config import AuthConfig, DatabaseConfig
 from .models import  UserInDB, CreateUser, TokenData
 from .i18n import I18n
 
@@ -17,68 +16,35 @@ from .i18n import I18n
 class FastapiContext:
     """Main authentication manager class"""
     
-    def __init__(self, 
-                 rsa_keys_path: str,
-                 db_host: str,
-                 db_port: int,
-                 db_user: str,
-                 db_password: str,
-                 db_name: str,
-                 access_token_expire_minutes: int = 30,
-                 refresh_token_expire_days: int = 30,
-                 token_url: str = "token",
+    def __init__(self,
+                 auth_config: AuthConfig,
+                 database_config: DatabaseConfig,
                  custom_locales_dir: Optional[str] = None,
                  default_locale: str = "en",
-                 private_key_filename: str = "private_key.pem",
-                 public_key_filename: str = "public_key.pem"):
-        # Validate RSA keys path
-        if not os.path.exists(rsa_keys_path):
-            raise ValueError(f"RSA keys path does not exist: {rsa_keys_path}")
-        
-        self.algorithm = "RS256"
-        private_key_path = os.path.join(rsa_keys_path, private_key_filename)
-        public_key_path = os.path.join(rsa_keys_path, public_key_filename)
-        
-        if not os.path.exists(private_key_path):
-            raise ValueError(f"Private key not found: {private_key_path}")
-        if not os.path.exists(public_key_path):
-            raise ValueError(f"Public key not found: {public_key_path}")
+                 ):
         
         # Store configuration values
-        self.rsa_keys_path = rsa_keys_path
-        self.private_key_filename = private_key_filename
-        self.public_key_filename = public_key_filename
-        self.access_token_expire_minutes = access_token_expire_minutes
-        self.refresh_token_expire_days = refresh_token_expire_days
-        self.token_url = token_url
+        self.access_token_expire_minutes = auth_config.access_token_expire_minutes
+        self.refresh_token_expire_days = auth_config.refresh_token_expire_days
+        self.token_url = auth_config.token_url
         self.default_locale = default_locale
+        self.algorithm = auth_config.algorithm
+        self.private_key = auth_config.private_key
+        self.public_key = auth_config.public_key
         
         self.db_manager = DatabaseManager(
-            host=db_host,
-            port=db_port,
-            user=db_user,
-            password=db_password,
-            database=db_name
+            host=database_config.host,
+            port=database_config.port,
+            user=database_config.user,
+            password=database_config.password,
+            database=database_config.name
         )
         self.pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-        self.oauth2_scheme = OAuth2PasswordBearer(tokenUrl=token_url)
+        self.oauth2_scheme = OAuth2PasswordBearer(tokenUrl=self.token_url)
         
         # Initialize i18n (built-in locales are always loaded, custom can override/extend)
         self.i18n = I18n(custom_locales_dir=custom_locales_dir, default_locale=default_locale)
-        
-        # Load RSA keys
-        self._load_rsa_keys()
-    
-    def _load_rsa_keys(self):
-        """Load RSA public and private keys"""
-        private_key_path = os.path.join(self.rsa_keys_path, self.private_key_filename)
-        public_key_path = os.path.join(self.rsa_keys_path, self.public_key_filename)
-        
-        with open(private_key_path, 'rb') as f:
-            self.private_key = serialization.load_pem_private_key(f.read(), password=None)
-        
-        with open(public_key_path, 'rb') as f:
-            self.public_key = serialization.load_pem_public_key(f.read())
+
     
     def verify_password(self, plain_password: str, hashed_password: str) -> bool:
         """Verify a password against its hash"""

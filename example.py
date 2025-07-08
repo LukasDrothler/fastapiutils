@@ -1,28 +1,37 @@
 """
 Example usage of the fastapiutils package
 
-This example shows the configuration approach using direct parameters.
+This example shows the configuration approach using AuthConfig and DatabaseConfig objects.
 """
 from fastapi import FastAPI
 from fastapiutils import (
-    FastapiContext, 
+    FastapiContext, AuthConfig, DatabaseConfig,
     create_auth_router, create_user_router
 )
 
 # Create FastAPI app
 app = FastAPI(title="FastAPI Utils Example")
 
-# Create auth manager with direct parameters
-fa_context = FastapiContext(
+# Create configuration objects
+auth_config = AuthConfig(
     rsa_keys_path="/path/to/your/keys",  # Update this path
-    db_host="localhost",
-    db_port=3306,
-    db_user="root",
-    db_password="your_password",
-    db_name="your_database",
     access_token_expire_minutes=30,
     refresh_token_expire_days=30,
-    token_url="token",
+    token_url="token"
+)
+
+database_config = DatabaseConfig(
+    host="localhost",
+    port=3306,
+    user="root",
+    password="your_password",
+    name="your_database"
+)
+
+# Create FastAPI context with configuration objects
+fa_context = FastapiContext(
+    auth_config=auth_config,
+    database_config=database_config,
     default_locale="en"
     # custom_locales_dir="./my_locales",  # Optional: add custom/override translations
 )
@@ -35,7 +44,7 @@ app.include_router(create_user_router(fa_context))
 
 @app.get("/")
 async def root():
-    return {"message": "FastAPI Utils Example", "version": "0.1.0"}
+    return {"message": "FastAPI Utils Example", "version": "0.2.0"}
 
 @app.get("/health")
 async def health():

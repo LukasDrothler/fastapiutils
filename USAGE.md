@@ -48,20 +48,30 @@ openssl rsa -pubout -in private_key.pem -out public_key.pem
 
 ```python
 from fastapi import FastAPI
-from fastapiutils import FastapiContext, create_auth_router, create_user_router
+from fastapiutils import FastapiContext, AuthConfig, DatabaseConfig, create_auth_router, create_user_router
 
 app = FastAPI()
 
-# Create auth manager with direct parameters
-fa_context = FastapiContext(
+# Create configuration objects
+auth_config = AuthConfig(
     rsa_keys_path="/path/to/your/keys",
-    db_host="localhost",
-    db_port=3306,
-    db_user="root",
-    db_password="your_password",
-    db_name="your_database",
     access_token_expire_minutes=30,
     refresh_token_expire_days=30,
+    token_url="token"
+)
+
+database_config = DatabaseConfig(
+    host="localhost",
+    port=3306,
+    user="root",
+    password="your_password",
+    name="your_database"
+)
+
+# Create FastAPI context with configuration objects
+fa_context = FastapiContext(
+    auth_config=auth_config,
+    database_config=database_config,
     default_locale="en"
 )
 
@@ -72,23 +82,31 @@ app.include_router(create_user_router(fa_context))
 
 ### Using Environment Variables
 
-If you want to use environment variables, you can use `os.getenv()` directly in your parameters:
+If you want to use environment variables, you can use `os.getenv()` directly in your configuration objects:
 
 ```python
 import os
-from fastapiutils import FastapiContext
+from fastapiutils import FastapiContext, AuthConfig, DatabaseConfig
 
-# Create configuration using environment variables
-fa_context = FastapiContext(
+# Create configuration objects using environment variables
+auth_config = AuthConfig(
     rsa_keys_path=os.getenv("RSA_KEYS_PATH", "/path/to/keys"),
-    db_host=os.getenv("DB_HOST", "localhost"),
-    db_port=int(os.getenv("DB_PORT", "3306")),
-    db_user=os.getenv("DB_USER", "root"),
-    db_password=os.getenv("DB_PASSWORD", ""),
-    db_name=os.getenv("DB_NAME", ""),
     access_token_expire_minutes=int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30")),
     refresh_token_expire_days=int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "30")),
-    token_url=os.getenv("TOKEN_URL", "token"),
+    token_url=os.getenv("TOKEN_URL", "token")
+)
+
+database_config = DatabaseConfig(
+    host=os.getenv("DB_HOST", "localhost"),
+    port=int(os.getenv("DB_PORT", "3306")),
+    user=os.getenv("DB_USER", "root"),
+    password=os.getenv("DB_PASSWORD", ""),
+    name=os.getenv("DB_NAME", "")
+)
+
+fa_context = FastapiContext(
+    auth_config=auth_config,
+    database_config=database_config,
     default_locale=os.getenv("DEFAULT_LOCALE", "en")
 )
 ```
@@ -96,19 +114,28 @@ fa_context = FastapiContext(
 ### Custom Configuration
 
 ```python
-from fastapiutils import FastapiContext
+from fastapiutils import FastapiContext, AuthConfig, DatabaseConfig
 
-# Create auth manager with custom parameters
-fa_context = FastapiContext(
+# Create configuration objects with custom settings
+auth_config = AuthConfig(
     rsa_keys_path="/etc/ssl/jwt-keys",
-    db_host="myserver.com",
-    db_port=3306,
-    db_user="api_user",
-    db_password="secure_password",
-    db_name="production_db",
     access_token_expire_minutes=60,      # 1 hour tokens
     refresh_token_expire_days=7,         # 1 week refresh
-    token_url="auth/token",              # Custom token endpoint
+    token_url="auth/token"               # Custom token endpoint
+)
+
+database_config = DatabaseConfig(
+    host="myserver.com",
+    port=3306,
+    user="api_user",
+    password="secure_password",
+    name="production_db"
+)
+
+# Create FastAPI context with custom configuration
+fa_context = FastapiContext(
+    auth_config=auth_config,
+    database_config=database_config,
     default_locale="de"                  # German as default
 )
 ```
@@ -118,19 +145,31 @@ fa_context = FastapiContext(
 You can specify custom names for your RSA key files:
 
 ```python
-from fastapiutils import FastapiContext
+from fastapiutils import FastapiContext, AuthConfig, DatabaseConfig
 
-# Create auth manager with custom key filenames
-fa_context = FastapiContext(
+# Create auth configuration with custom key filenames
+auth_config = AuthConfig(
     rsa_keys_path="/path/to/keys",
     private_key_filename="my_private.pem",    # Custom private key name
     public_key_filename="my_public.pem",      # Custom public key name
-    db_host="localhost",
-    db_port=3306,
-    db_user="root",
-    db_password="your_password",
-    db_name="your_database",
-    # ... other optional parameters
+    access_token_expire_minutes=30,
+    refresh_token_expire_days=30,
+    token_url="token"
+)
+
+database_config = DatabaseConfig(
+    host="localhost",
+    port=3306,
+    user="root",
+    password="your_password",
+    name="your_database"
+)
+
+# Create FastAPI context
+fa_context = FastapiContext(
+    auth_config=auth_config,
+    database_config=database_config,
+    default_locale="en"
 )
 ```
 
@@ -186,15 +225,25 @@ The package includes built-in English and German translations that are always lo
 
 ```python
 import os
-from fastapiutils import I18n, FastapiContext
+from fastapiutils import I18n, FastapiContext, AuthConfig, DatabaseConfig
+
+# Create configuration objects
+auth_config = AuthConfig(rsa_keys_path=os.getenv("RSA_KEYS_PATH", "/path/to/keys"))
+database_config = DatabaseConfig(
+    host=os.getenv("DB_HOST", "localhost"),
+    port=int(os.getenv("DB_PORT", "3306")),
+    user=os.getenv("DB_USER", "root"),
+    password=os.getenv("DB_PASSWORD", ""),
+    name=os.getenv("DB_NAME", "")
+)
 
 # Built-in translations (en, de) are automatically loaded
 # Custom translations can override or extend them
 fa_context = FastapiContext(
-    rsa_keys_path=os.getenv("RSA_KEYS_PATH", "/path/to/keys"),
+    auth_config=auth_config,
+    database_config=database_config,
     custom_locales_dir="./my_locales",  # Additional/override translations
-    default_locale="fr",                # French as default
-    # ... other parameters
+    default_locale="fr"                # French as default
 )
 ```
 
@@ -226,21 +275,33 @@ This will override the built-in "incorrect_credentials" message and add new tran
 ### FastapiContext Parameters
 
 **Required Parameters:**
+- `auth_config`: AuthConfig object containing authentication settings
+- `database_config`: DatabaseConfig object containing database connection settings
+
+**Optional Parameters (with defaults):**
+- `custom_locales_dir`: Custom locales directory for additional/override translations (default: None)
+- `default_locale`: Default language (default: "en")
+
+### AuthConfig Parameters
+
+**Required Parameters:**
 - `rsa_keys_path`: Path to directory containing RSA key files
-- `db_host`: Database host 
-- `db_port`: Database port
-- `db_user`: Database user
-- `db_password`: Database password
-- `db_name`: Database name
 
 **Optional Parameters (with defaults):**
 - `access_token_expire_minutes`: Access token expiration (default: 30)
 - `refresh_token_expire_days`: Refresh token expiration (default: 30)
 - `token_url`: Token endpoint URL (default: "token")
-- `custom_locales_dir`: Custom locales directory for additional/override translations (default: None)
-- `default_locale`: Default language (default: "en")
 - `private_key_filename`: Name of private key file (default: "private_key.pem")
 - `public_key_filename`: Name of public key file (default: "public_key.pem")
+
+### DatabaseConfig Parameters
+
+**Required Parameters:**
+- `host`: Database host 
+- `port`: Database port
+- `user`: Database user
+- `password`: Database password
+- `name`: Database name
 
 ## Error Handling
 

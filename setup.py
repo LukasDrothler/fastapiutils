@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="fastapiutils",
-    version="0.1.0",
+    version="0.2.0",
     author="Lukas Drothler",
     author_email="",
     description="FastAPI utilities for authentication, user management, and more",

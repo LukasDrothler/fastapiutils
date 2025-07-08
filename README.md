@@ -2,6 +2,17 @@
 
 A reusable FastAPI utilities package for authentication, user management, and database operations.
 
+## ⚠️ Breaking Change Notice
+
+**Version 0.2.0+**: The `FastapiContext` constructor now uses configuration objects (`AuthConfig` and `DatabaseConfig`) instead of direct parameters. This provides better organization, type safety, and easier configuration management.
+
+**Benefits of the new approach:**
+- Better separation of concerns (auth vs database configuration)
+- Type safety with dedicated configuration classes
+- Easier testing with configuration objects
+- More maintainable code structure
+- Clearer parameter organization
+
 ## Features
 
 - JWT-based authentication with RSA256 encryption
@@ -60,21 +71,31 @@ openssl rsa -pubout -in private_key.pem -out public_key.pem
 
 ```python
 from fastapi import FastAPI
-from fastapiutils import FastapiContext, create_auth_router, create_user_router
+from fastapiutils import FastapiContext, AuthConfig, DatabaseConfig, create_auth_router, create_user_router
 from routers import pet
 
 app = FastAPI()
 
-# Create auth manager with direct parameters
-fa_context = FastapiContext(
+# Create configuration objects
+auth_config = AuthConfig(
     rsa_keys_path="/path/to/your/keys",
-    db_host="localhost",
-    db_port=3306,
-    db_user="root",
-    db_password="your_password",
-    db_name="your_database",
     access_token_expire_minutes=30,
     refresh_token_expire_days=30,
+    token_url="token"
+)
+
+database_config = DatabaseConfig(
+    host="localhost",
+    port=3306,
+    user="root",
+    password="your_password",
+    name="your_database"
+)
+
+# Create FastAPI context with configuration objects
+fa_context = FastapiContext(
+    auth_config=auth_config,
+    database_config=database_config,
     default_locale="en"
 )
 
@@ -87,24 +108,29 @@ app.include_router(pet.create_router(fa_context))
 
 ## Configuration
 
-### Required Parameters
+### FastapiContext Parameters
 
-- `rsa_keys_path`: Path to directory containing RSA key files
-- `db_host`: Database host
-- `db_port`: Database port
-- `db_user`: Database username
-- `db_password`: Database password
-- `db_name`: Database name
+- `auth_config`: AuthConfig object containing authentication settings
+- `database_config`: DatabaseConfig object containing database connection settings
+- `custom_locales_dir`: Custom locales directory (optional)
+- `default_locale`: Default language (default: "en")
 
-### Optional Parameters
+### AuthConfig Parameters
 
+- `rsa_keys_path`: Path to directory containing RSA key files (required)
 - `access_token_expire_minutes`: Access token expiration (default: 30)
 - `refresh_token_expire_days`: Refresh token expiration (default: 30)
 - `token_url`: Token endpoint URL (default: "token")
-- `default_locale`: Default language (default: "en")
-- `custom_locales_dir`: Custom locales directory (default: None)
 - `private_key_filename`: Private key filename (default: "private_key.pem")
 - `public_key_filename`: Public key filename (default: "public_key.pem")
+
+### DatabaseConfig Parameters
+
+- `host`: Database host (required)
+- `port`: Database port (required)
+- `user`: Database username (required)
+- `password`: Database password (required)
+- `name`: Database name (required)
 
 ## API Endpoints
 
@@ -122,15 +148,28 @@ app.include_router(pet.create_router(fa_context))
 
 ```python
 import os
-from fastapiutils import FastapiContext
+from fastapiutils import FastapiContext, AuthConfig, DatabaseConfig
+
+# Create configuration objects using environment variables
+auth_config = AuthConfig(
+    rsa_keys_path=os.getenv("RSA_KEYS_PATH", "/path/to/keys"),
+    access_token_expire_minutes=int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30")),
+    refresh_token_expire_days=int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "30")),
+    token_url=os.getenv("TOKEN_URL", "token")
+)
+
+database_config = DatabaseConfig(
+    host=os.getenv("DB_HOST", "localhost"),
+    port=int(os.getenv("DB_PORT", "3306")),
+    user=os.getenv("DB_USER", "root"),
+    password=os.getenv("DB_PASSWORD", ""),
+    name=os.getenv("DB_NAME", "")
+)
 
 fa_context = FastapiContext(
-    rsa_keys_path=os.getenv("RSA_KEYS_PATH", "/path/to/keys"),
-    db_host=os.getenv("DB_HOST", "localhost"),
-    db_port=int(os.getenv("DB_PORT", "3306")),
-    db_user=os.getenv("DB_USER", "root"),
-    db_password=os.getenv("DB_PASSWORD", ""),
-    db_name=os.getenv("DB_NAME", ""),
+    auth_config=auth_config,
+    database_config=database_config,
+    default_locale=os.getenv("DEFAULT_LOCALE", "en")
 )
 ```
 
@@ -175,7 +214,7 @@ def create_router(fa_context: FastapiContext) -> APIRouter:
         
         """Retrieve a specific pet by ID for the current user by using the database utility"""
         sql = "SELECT * FROM pet WHERE id = %s AND user_id = %s"
-        result = fa_context.execute_single_query(sql, (pet_id, current_user.id))
+        result = fa_context.db_manager.execute_single_query(sql, (pet_id, current_user.id))
         if not result:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
