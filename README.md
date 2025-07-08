@@ -161,8 +161,18 @@ def create_router(fa_context: FastapiContext) -> APIRouter:
         pet_id: str = Path(description="The ID of the pet to retrieve"),
         request: Request = None,
     ):
-        """Usage of the internationalization utility"""
+        """Usage of the internationalization utility with parameter interpolation"""
         locale = extract_locale_from_header(request.headers.get("accept-language"))
+        
+        # Validate pet_id length (example with parameter interpolation)
+        if len(pet_id) > 36:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=fa_context.i18n.t("pet.id_too_long", locale, 
+                                       max_length=36, 
+                                       current_length=len(pet_id)),
+            )
+        
         """Retrieve a specific pet by ID for the current user by using the database utility"""
         sql = "SELECT * FROM pet WHERE id = %s AND user_id = %s"
         result = fa_context.execute_single_query(sql, (pet_id, current_user.id))
@@ -175,3 +185,82 @@ def create_router(fa_context: FastapiContext) -> APIRouter:
 
     return router
 ```
+
+## Internationalization (i18n) with Parameter Interpolation
+
+The library now supports parameter interpolation in translation strings, allowing you to pass dynamic values into your translations.
+
+### Basic Usage
+
+```python
+from fastapiutils.i18n import extract_locale_from_header
+
+# Extract locale from request headers
+locale = extract_locale_from_header(request.headers.get("accept-language"))
+
+# Use parameter interpolation in translations
+fa_context.i18n.t("pet.name_too_long", locale, max_length=50, current_length=75)
+# Returns: "Pet name must be 50 characters or less (current: 75)"
+```
+
+### Translation File Format
+
+Translation files support Python string formatting with named parameters:
+
+```json
+{
+  "pet": {
+    "name_too_long": "Pet name must be {max_length} characters or less (current: {current_length})",
+    "species_invalid": "Pet species must be one of: {valid_species} (current: {current_species})",
+    "weight_too_high": "Pet weight must be {max_weight} kg or less (current: {current_weight})"
+  }
+}
+```
+
+### Validation Example
+
+```python
+def validate_name(fa_context: FastapiContext, name: str, locale: str = "en") -> str:
+    """Validate pet name field with internationalized error messages"""
+    if not name or not name.strip():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=fa_context.i18n.t("pet.name_required", locale),
+        )
+    
+    cleaned_name = name.strip()
+    if len(cleaned_name) > MAX_NAME_LENGTH:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=fa_context.i18n.t("pet.name_too_long", locale, 
+                                   max_length=MAX_NAME_LENGTH, 
+                                   current_length=len(cleaned_name)),
+        )
+    
+    return cleaned_name
+```
+
+### Error Handling
+
+The i18n system gracefully handles missing parameters and formatting errors:
+
+- If a parameter is missing, the translation will still work but the placeholder will remain
+- If formatting fails, the original unformatted string is returned
+- If a translation key is missing, it falls back to the default locale
+- If the key is still missing, the key itself is returned
+
+### Custom Locales
+
+You can override or extend the built-in translations by providing a custom locales directory:
+
+```python
+fa_context = FastapiContext(
+    # ... other parameters ...
+    custom_locales_dir="/path/to/your/custom/locales"
+)
+```
+
+Custom locale files will be merged with built-in translations, allowing you to:
+- Override existing translations
+- Add new translation keys
+- Support additional languages

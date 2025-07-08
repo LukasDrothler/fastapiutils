@@ -73,8 +73,8 @@ class I18n:
                 except Exception as e:
                     print(f"Error loading custom translation file {filename}: {e}")
     
-    def get_translation(self, key: str, locale: Optional[str] = None) -> str:
-        """Get translation for a given key and locale"""
+    def get_translation(self, key: str, locale: Optional[str] = None, **kwargs) -> str:
+        """Get translation for a given key and locale with parameter interpolation"""
         if locale is None:
             locale = self.default_locale
         
@@ -93,16 +93,30 @@ class I18n:
         try:
             for k in keys:
                 translation = translation[k]
+            
+            # Apply parameter interpolation if kwargs are provided
+            if kwargs:
+                return translation.format(**kwargs)
             return translation
+            
         except (KeyError, TypeError):
             # If key not found, try fallback to default locale
             if locale != self.default_locale:
-                return self.get_translation(key, self.default_locale)
+                return self.get_translation(key, self.default_locale, **kwargs)
             return key
+        except (ValueError, KeyError) as e:
+            # If string formatting fails, return the unformatted string
+            print(f"Warning: Failed to format translation '{key}' with params {kwargs}: {e}")
+            try:
+                for k in keys:
+                    translation = translation[k]
+                return translation
+            except (KeyError, TypeError):
+                return key
     
-    def t(self, key: str, locale: Optional[str] = None) -> str:
-        """Shorthand for get_translation"""
-        return self.get_translation(key, locale)
+    def t(self, key: str, locale: Optional[str] = None, **kwargs) -> str:
+        """Shorthand for get_translation with parameter interpolation support"""
+        return self.get_translation(key, locale, **kwargs)
 
 
 def extract_locale_from_header(accept_language: Optional[str]) -> str:
