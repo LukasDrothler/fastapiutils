@@ -2,17 +2,6 @@
 
 A reusable FastAPI utilities package for authentication, user management, and database operations.
 
-## ⚠️ Breaking Change Notice
-
-**Version 0.2.0+**: The `FastapiContext` constructor now uses configuration objects (`AuthConfig` and `DatabaseConfig`) instead of direct parameters. This provides better organization, type safety, and easier configuration management.
-
-**Benefits of the new approach:**
-- Better separation of concerns (auth vs database configuration)
-- Type safety with dedicated configuration classes
-- Easier testing with configuration objects
-- More maintainable code structure
-- Clearer parameter organization
-
 ## Features
 
 - JWT-based authentication with RSA256 encryption
