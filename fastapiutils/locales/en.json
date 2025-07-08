@@ -9,6 +9,9 @@
     "username_taken": "Username already in use",
     "email_taken": "Email already in use",
     "user_created": "User created successfully",
-    "user_creation_failed": "User creation failed"
+    "user_creation_failed": "User creation failed",
+    "welcome_email_subject": "Welcome to our platform!",
+    "welcome_email_content": "Hello {username},\n\nWelcome to our platform! Your account has been successfully created.\n\nYou can now log in and start using our services.\n\nBest regards,\nThe Team",
+    "email_sending_failed": "Failed to send welcome email: {error}"
   }
 }

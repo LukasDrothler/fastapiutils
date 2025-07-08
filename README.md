@@ -78,7 +78,7 @@ database_config = DatabaseConfig(
     port=3306,
     user="root",
     password="your_password",
-    name="your_database"
+    database="your_database"
 )
 
 # Create FastAPI context with configuration objects
@@ -119,7 +119,7 @@ app.include_router(pet.create_router(fa_context))
 - `port`: Database port (required)
 - `user`: Database username (required)
 - `password`: Database password (required)
-- `name`: Database name (required)
+- `database`: Database name (required)
 
 ## API Endpoints
 
@@ -152,7 +152,7 @@ database_config = DatabaseConfig(
     port=int(os.getenv("DB_PORT", "3306")),
     user=os.getenv("DB_USER", "root"),
     password=os.getenv("DB_PASSWORD", ""),
-    name=os.getenv("DB_NAME", "")
+    database=os.getenv("DB_NAME", "")
 )
 
 fa_context = FastapiContext(

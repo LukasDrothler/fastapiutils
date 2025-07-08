@@ -2,6 +2,7 @@ import mysql.connector
 import uuid
 import logging
 from typing import Optional, Dict, Any, List, Tuple
+from config import DatabaseConfig
 
 logger = logging.getLogger('uvicorn.error')
 
@@ -9,12 +10,12 @@ logger = logging.getLogger('uvicorn.error')
 class DatabaseManager:
     """Database manager for MySQL operations"""
     
-    def __init__(self, host: str, port: int, user: str, password: str, database: str):
-        self.host = host
-        self.port = port
-        self.user = user
-        self.password = password
-        self.database = database
+    def __init__(self, db_config: DatabaseConfig):
+        self.host = db_config.host
+        self.port = db_config.port
+        self.user = db_config.user
+        self.password = db_config.password
+        self.database = db_config.database
     
     def create_connection(self):
         """Creates and returns a connection to the database"""

@@ -7,8 +7,9 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jwt.exceptions import InvalidTokenError
 
+from .mail import MailManager
 from .database import DatabaseManager
-from .config import AuthConfig, DatabaseConfig
+from .config import AuthConfig, DatabaseConfig, MailConfig
 from .models import  UserInDB, CreateUser, TokenData
 from .i18n import I18n
 
@@ -19,6 +20,7 @@ class FastapiContext:
     def __init__(self,
                  auth_config: AuthConfig,
                  database_config: DatabaseConfig,
+                 mail_config: Optional[MailConfig] = None,
                  custom_locales_dir: Optional[str] = None,
                  default_locale: str = "en",
                  ):
@@ -37,8 +39,12 @@ class FastapiContext:
             port=database_config.port,
             user=database_config.user,
             password=database_config.password,
-            database=database_config.name
+            database=database_config.database
         )
+
+        if mail_config:
+            self.mail_manager = MailManager(mail_config)
+
         self.pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
         self.oauth2_scheme = OAuth2PasswordBearer(tokenUrl=self.token_url)
         
@@ -154,6 +160,19 @@ class FastapiContext:
             (uid, user.username, user.email, hashed_password)
         )
         
+        if self.mail_manager:
+            try:
+                self.mail_manager.send_email_plain_text(
+                    content=self.i18n.t("auth.welcome_email_content", locale, username=user.username),
+                    subject=self.i18n.t("auth.welcome_email_subject", locale),
+                    recipient=user.email
+                )
+            except Exception as e:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=self.i18n.t("auth.email_sending_failed", locale, error=str(e))
+                )
+
         return {"msg": self.i18n.t("auth.user_created", locale)}
     
     def get_current_user(self, token: Annotated[str, Depends]) -> UserInDB:

@@ -65,7 +65,7 @@ database_config = DatabaseConfig(
     port=3306,
     user="root",
     password="your_password",
-    name="your_database"
+    database="your_database"
 )
 
 # Create FastAPI context with configuration objects
@@ -101,7 +101,7 @@ database_config = DatabaseConfig(
     port=int(os.getenv("DB_PORT", "3306")),
     user=os.getenv("DB_USER", "root"),
     password=os.getenv("DB_PASSWORD", ""),
-    name=os.getenv("DB_NAME", "")
+    database=os.getenv("DB_NAME", "")
 )
 
 fa_context = FastapiContext(
@@ -129,7 +129,7 @@ database_config = DatabaseConfig(
     port=3306,
     user="api_user",
     password="secure_password",
-    name="production_db"
+    database="production_db"
 )
 
 # Create FastAPI context with custom configuration
@@ -162,7 +162,7 @@ database_config = DatabaseConfig(
     port=3306,
     user="root",
     password="your_password",
-    name="your_database"
+    database="your_database"
 )
 
 # Create FastAPI context
@@ -234,7 +234,7 @@ database_config = DatabaseConfig(
     port=int(os.getenv("DB_PORT", "3306")),
     user=os.getenv("DB_USER", "root"),
     password=os.getenv("DB_PASSWORD", ""),
-    name=os.getenv("DB_NAME", "")
+    database=os.getenv("DB_NAME", "")
 )
 
 # Built-in translations (en, de) are automatically loaded
@@ -301,7 +301,7 @@ This will override the built-in "incorrect_credentials" message and add new tran
 - `port`: Database port
 - `user`: Database user
 - `password`: Database password
-- `name`: Database name
+- `database`: Database name
 
 ## Error Handling
 

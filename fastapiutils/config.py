@@ -42,10 +42,24 @@ class DatabaseConfig:
                  port: int,
                  user: str,
                  password: str,
-                 name: str):
+                 database: str):
         """Initialize the database configuration"""
         self.host = host
         self.port = port
         self.user = user
         self.password = password
-        self.name = name
+        self.database = database
+
+class MailConfig:
+    """Configuration for email settings"""
+    
+    def __init__(self, 
+                 smtp_server: str,
+                 smtp_port: int,
+                 smtp_user: str,
+                 smtp_password: str):
+        """Initialize the email configuration"""
+        self.smtp_server = smtp_server
+        self.smtp_port = smtp_port
+        self.smtp_user = smtp_user
+        self.smtp_password = smtp_password

@@ -9,6 +9,9 @@
     "username_taken": "Benutzername bereits vergeben",
     "email_taken": "E-Mail bereits vergeben",
     "user_created": "Benutzer erfolgreich erstellt",
-    "user_creation_failed": "Benutzererstellung fehlgeschlagen"
+    "user_creation_failed": "Benutzererstellung fehlgeschlagen",
+    "welcome_email_subject": "Willkommen auf unserer Plattform!",
+    "welcome_email_content": "Hallo {username},\n\nWillkommen auf unserer Plattform! Ihr Konto wurde erfolgreich erstellt.\n\nSie können sich jetzt anmelden und unsere Dienste nutzen.\n\nMit freundlichen Grüßen,\nIhr Team",
+    "email_sending_failed": "Fehler beim Senden der Willkommens-E-Mail: {error}"
   }
 }

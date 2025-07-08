@@ -25,7 +25,7 @@ database_config = DatabaseConfig(
     port=3306,
     user="root",
     password="your_password",
-    name="your_database"
+    database="your_database"
 )
 
 # Create FastAPI context with configuration objects
