@@ -18,13 +18,14 @@ class MailManager:
             msg['To'] = recipient
         except Exception as e:
             logger.error(f"Failed to create email message: {e}")
-            return
+            raise
 
         try:
-            s = smtplib.SMTP(host=self.mail_config.smtp_server, port=self.mail_config.smtp_port)
-            s.starttls()  # Start TLS encryption
-            s.login(self.mail_config.smtp_user, self.mail_config.smtp_password)
-            s.sendmail(self.mail_config.smtp_user, [recipient], msg.as_string())
-            s.quit()
+            with smtplib.SMTP(host=self.mail_config.smtp_server, port=self.mail_config.smtp_port) as server:
+                server.starttls()  # Start TLS encryption
+                server.login(self.mail_config.smtp_user, self.mail_config.smtp_password)
+                server.sendmail(self.mail_config.smtp_user, [recipient], msg.as_string())
+                server.quit()
         except Exception as e:
-            logger.error(f"Failed to send email: {e}")
+            logger.error(f"Failed to send email to {recipient}: {e}")
+            raise
