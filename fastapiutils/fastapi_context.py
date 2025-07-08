@@ -36,6 +36,7 @@ class FastapiContext:
         
         self.db_manager = DatabaseManager(db_config=database_config)
 
+        self.mail_manager = None
         if mail_config:
             self.mail_manager = MailManager(mail_config)
 
@@ -154,7 +155,7 @@ class FastapiContext:
             (uid, user.username, user.email, hashed_password)
         )
         
-        if self.mail_manager:
+        if self.mail_manager is not None:
             try:
                 self.mail_manager.send_email_plain_text(
                     content=self.i18n.t("auth.welcome_email_content", locale, username=user.username),
