@@ -27,9 +27,11 @@ fa_context = FastapiContext(
     # custom_locales_dir="./my_locales",  # Optional: add custom/override translations
 )
 
-# Include routers
-app.include_router(create_auth_router(fa_context), prefix="/auth", tags=["authentication"])
-app.include_router(create_user_router(fa_context), prefix="/users", tags=["users"])
+# Include default routers
+app.include_router(create_auth_router(fa_context))
+app.include_router(create_user_router(fa_context))
+# Include custom routers
+# app.include_router(custom.create_router(fa_context))
 
 @app.get("/")
 async def root():
