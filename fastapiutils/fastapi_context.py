@@ -88,8 +88,9 @@ class FastapiContext:
         """Hash a password"""
         return self.pwd_context.hash(password)
     
-    def create_bearer_token(self, data: dict, is_refresh: bool = False) -> str:
+    def create_bearer_token(self, username: str, is_refresh: bool = False) -> str:
         """Create a JWT token"""
+        data = {"sub": username}
         to_encode = data.copy()
         if is_refresh:
             expires_delta = timedelta(days=self.refresh_token_expire_days)

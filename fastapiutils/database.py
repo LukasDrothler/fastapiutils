@@ -112,16 +112,20 @@ class DatabaseManager:
             if standalone_connection:
                 connection.close()
     
-    def generate_uuid(self, table_name: str, max_tries: int = 1000, connection=None) -> Optional[str]:
+    def generate_uuid(self, table_name: str, max_tries: int = 1000) -> Optional[str]:
         """Generate a unique UUID for a table using secure parameterized queries"""
-        uid = str(uuid.uuid4())
-        response = self.execute_query("SELECT id FROM " + table_name + " WHERE id = %s", (uid,), connection=connection)
-        tries = 0
-        while (response and len(response) > 0 and tries < max_tries):
+        connection = self.create_connection()
+        try:
             uid = str(uuid.uuid4())
             response = self.execute_query("SELECT id FROM " + table_name + " WHERE id = %s", (uid,), connection=connection)
-            tries += 1
-
-        if tries == max_tries: 
-            return None
-        return uid
+            tries = 0
+            while (response and len(response) > 0 and tries < max_tries):
+                uid = str(uuid.uuid4())
+                response = self.execute_query("SELECT id FROM " + table_name + " WHERE id = %s", (uid,), connection=connection)
+                tries += 1
+            
+            if tries == max_tries: 
+                return None
+            return uid
+        finally:
+            connection.close()

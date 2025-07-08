@@ -32,9 +32,9 @@ def create_auth_router(fa_context: FastapiContext) -> APIRouter:
                 headers={"WWW-Authenticate": "Bearer"},
             )
         
-        access_token = fa_context.create_bearer_token(data={"sub": user.username})
+        access_token = fa_context.create_bearer_token(username=user.username)
         if stay_logged_in:
-            refresh_token = fa_context.create_bearer_token(data={"sub": user.username}, is_refresh=True)
+            refresh_token = fa_context.create_bearer_token(username=user.username, is_refresh=True)
             return Token(access_token=access_token, refresh_token=refresh_token)
         
         return Token(access_token=access_token)
@@ -69,7 +69,7 @@ def create_auth_router(fa_context: FastapiContext) -> APIRouter:
         if user is None:
             raise credentials_exception
         
-        access_token = fa_context.create_bearer_token(data={"sub": user.username})
+        access_token = fa_context.create_bearer_token(username=user.username)
         return Token(access_token=access_token, token_type="bearer")
     
     return router
