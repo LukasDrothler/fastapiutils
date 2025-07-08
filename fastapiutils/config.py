@@ -55,11 +55,19 @@ class MailConfig:
     
     def __init__(self, 
                  smtp_server: str,
-                 smtp_port: int,
                  smtp_user: str,
-                 smtp_password: str):
+                 smtp_password: str,
+                 smtp_port: int = 587
+                 ):
         """Initialize the email configuration"""
-        self.smtp_server = smtp_server
         self.smtp_port = smtp_port
+        self.smtp_server = smtp_server
         self.smtp_user = smtp_user
         self.smtp_password = smtp_password
+        
+        if not self.smtp_server:
+            raise ValueError("SMTP server is required and cannot be empty")
+        if not self.smtp_user:
+            raise ValueError("SMTP user is required and cannot be empty")
+        if not self.smtp_password:
+            raise ValueError("SMTP password is required and cannot be empty")

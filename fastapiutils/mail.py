@@ -13,6 +13,16 @@ class MailManager:
         self.user = mail_config.smtp_user
         self.password = mail_config.smtp_password
 
+        try:
+            server = smtplib.SMTP(host=self.host, port=self.port)
+            server.login(self.user, self.password)
+            server.quit()
+        except Exception as e:
+            logger.error(f"Failed to connect to SMTP server: {e}")
+            raise ValueError("Invalid SMTP configuration. Please check your settings.") from e
+
+            
+
     def send_email_plain_text(self, content, subject, recipient):
         try:
             msg = MIMEText(content)
