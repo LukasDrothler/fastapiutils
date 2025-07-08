@@ -14,8 +14,11 @@ class MailManager:
         self.password = mail_config.smtp_password
 
         try:
+            logger.info(f"Connecting to SMTP server {self.host}:{self.port} as {self.user}")
             server = smtplib.SMTP(host=self.host, port=self.port)
+            logger.info(f"SMTP connection established, checking login for {self.user}")
             server.login(self.user, self.password)
+            logger.info("SMTP connection established successfully.")
             server.quit()
         except Exception as e:
             logger.error(f"Failed to connect to SMTP server: {e}")
