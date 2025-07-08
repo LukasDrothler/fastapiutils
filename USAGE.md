@@ -24,7 +24,9 @@ CREATE TABLE `user` (
   `last_seen` timestamp NULL DEFAULT NULL,
   `disabled` tinyint(1) NOT NULL DEFAULT '0',
   `hashed_password` varchar(255) NOT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `username` (`username`),
+  UNIQUE KEY `email` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 ```
 
@@ -124,7 +126,11 @@ fa_context = FastapiContext(
     private_key_filename="my_private.pem",    # Custom private key name
     public_key_filename="my_public.pem",      # Custom public key name
     db_host="localhost",
-    # ... other parameters
+    db_port=3306,
+    db_user="root",
+    db_password="your_password",
+    db_name="your_database",
+    # ... other optional parameters
 )
 ```
 

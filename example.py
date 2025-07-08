@@ -28,8 +28,8 @@ fa_context = FastapiContext(
 )
 
 # Include routers
-app.include_router(create_auth_router(fa_context))
-app.include_router(create_user_router(fa_context))
+app.include_router(create_auth_router(fa_context), prefix="/auth", tags=["authentication"])
+app.include_router(create_user_router(fa_context), prefix="/users", tags=["users"])
 
 @app.get("/")
 async def root():
@@ -38,7 +38,3 @@ async def root():
 @app.get("/health")
 async def health():
     return {"status": "healthy"}
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
