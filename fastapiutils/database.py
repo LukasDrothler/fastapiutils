@@ -2,7 +2,7 @@ import mysql.connector
 import uuid
 import logging
 from typing import Optional, Dict, Any, List, Tuple
-from config import DatabaseConfig
+from .config import DatabaseConfig
 
 logger = logging.getLogger('uvicorn.error')
 
