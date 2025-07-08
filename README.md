@@ -143,6 +143,7 @@ In this example we define a create_router function in routers/pet.py
 
 ```python
 from fastapiutils import FastapiContext, User
+from fastapiutils.i18n import extract_locale_from_header
 from core.basemodels import Pet
 from core.db_pet import get_pet_by_id
 from fastapi import APIRouter, Depends, Request, Path, HTTPException, status
@@ -161,7 +162,7 @@ def create_router(fa_context: FastapiContext) -> APIRouter:
         request: Request = None,
     ):
         """Usage of the internationalization utility"""
-        locale = fa_context.i18n.extract_locale_from_header(request.headers.get("accept-language"))
+        locale = extract_locale_from_header(request.headers.get("accept-language"))
         """Retrieve a specific pet by ID for the current user by using the database utility"""
         sql = "SELECT * FROM pet WHERE id = %s AND user_id = %s"
         result = fa_context.execute_single_query(sql, (pet_id, current_user.id))
