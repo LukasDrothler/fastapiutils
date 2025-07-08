@@ -7,6 +7,7 @@ A reusable FastAPI utilities package for authentication, user management, and da
 - JWT-based authentication with RSA256 encryption
 - User registration and management
 - Database utilities for MySQL
+- Email notifications (welcome emails on registration)
 - Internationalization support (English and German built-in)
 - Simple configuration approach
 - Refresh token support
@@ -60,7 +61,7 @@ openssl rsa -pubout -in private_key.pem -out public_key.pem
 
 ```python
 from fastapi import FastAPI
-from fastapiutils import FastapiContext, AuthConfig, DatabaseConfig, create_auth_router, create_user_router
+from fastapiutils import FastapiContext, AuthConfig, DatabaseConfig, MailConfig, create_auth_router, create_user_router
 from routers import pet
 
 app = FastAPI()
@@ -81,10 +82,19 @@ database_config = DatabaseConfig(
     database="your_database"
 )
 
+# Optional: Create mail configuration for welcome emails
+mail_config = MailConfig(
+    smtp_server="smtp.gmail.com",
+    smtp_port=587,
+    smtp_user="your_email@gmail.com",
+    smtp_password="your_app_password"
+)
+
 # Create FastAPI context with configuration objects
 fa_context = FastapiContext(
     auth_config=auth_config,
     database_config=database_config,
+    mail_config=mail_config,  # Optional: Enable welcome emails
     default_locale="en"
 )
 
@@ -101,6 +111,7 @@ app.include_router(pet.create_router(fa_context))
 
 - `auth_config`: AuthConfig object containing authentication settings
 - `database_config`: DatabaseConfig object containing database connection settings
+- `mail_config`: MailConfig object containing email settings (optional)
 - `custom_locales_dir`: Custom locales directory (optional)
 - `default_locale`: Default language (default: "en")
 
@@ -121,6 +132,15 @@ app.include_router(pet.create_router(fa_context))
 - `password`: Database password (required)
 - `database`: Database name (required)
 
+### MailConfig Parameters (Optional)
+
+- `smtp_server`: SMTP server address (required if mail_config is provided)
+- `smtp_port`: SMTP server port (required if mail_config is provided)
+- `smtp_user`: SMTP username/email (required if mail_config is provided)
+- `smtp_password`: SMTP password/app password (required if mail_config is provided)
+
+**Note**: When `mail_config` is provided, users will receive welcome emails upon registration with localized content.
+
 ## API Endpoints
 
 ### Authentication Router
@@ -137,7 +157,7 @@ app.include_router(pet.create_router(fa_context))
 
 ```python
 import os
-from fastapiutils import FastapiContext, AuthConfig, DatabaseConfig
+from fastapiutils import FastapiContext, AuthConfig, DatabaseConfig, MailConfig
 
 # Create configuration objects using environment variables
 auth_config = AuthConfig(
@@ -155,12 +175,74 @@ database_config = DatabaseConfig(
     database=os.getenv("DB_NAME", "")
 )
 
+# Optional: Create mail configuration
+mail_config = None
+if os.getenv("SMTP_SERVER"):
+    mail_config = MailConfig(
+        smtp_server=os.getenv("SMTP_SERVER"),
+        smtp_port=int(os.getenv("SMTP_PORT", "587")),
+        smtp_user=os.getenv("SMTP_USER"),
+        smtp_password=os.getenv("SMTP_PASSWORD")
+    )
+
 fa_context = FastapiContext(
     auth_config=auth_config,
     database_config=database_config,
+    mail_config=mail_config,
     default_locale=os.getenv("DEFAULT_LOCALE", "en")
 )
 ```
+
+## Email Configuration
+
+The library supports sending welcome emails to users upon registration. This is optional and can be configured using the `MailConfig` object.
+
+### Email Features
+
+- **Welcome Emails**: Automatically sent when users register
+- **Localized Content**: Email content is localized based on user's preferred language
+- **Error Handling**: Graceful handling of email sending failures
+- **SMTP Support**: Works with any SMTP server (Gmail, Outlook, custom servers)
+
+### Common SMTP Configurations
+
+**Gmail:**
+```python
+mail_config = MailConfig(
+    smtp_server="smtp.gmail.com",
+    smtp_port=587,
+    smtp_user="your_email@gmail.com",
+    smtp_password="your_app_password"  # Use App Password, not regular password
+)
+```
+
+**Outlook:**
+```python
+mail_config = MailConfig(
+    smtp_server="smtp-mail.outlook.com",
+    smtp_port=587,
+    smtp_user="your_email@outlook.com",
+    smtp_password="your_password"
+)
+```
+
+**Custom SMTP Server:**
+```python
+mail_config = MailConfig(
+    smtp_server="mail.yourcompany.com",
+    smtp_port=587,
+    smtp_user="noreply@yourcompany.com",
+    smtp_password="your_smtp_password"
+)
+```
+
+### Email Content Translation
+
+The welcome email content is automatically translated based on the user's locale. The following translation keys are used:
+
+- `auth.welcome_email_subject`: Email subject line
+- `auth.welcome_email_content`: Email body content (supports `{username}` parameter)
+- `auth.email_sending_failed`: Error message when email sending fails
 
 ## Custom routers
 

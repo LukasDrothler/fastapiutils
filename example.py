@@ -1,11 +1,11 @@
 """
 Example usage of the fastapiutils package
 
-This example shows the configuration approach using AuthConfig and DatabaseConfig objects.
+This example shows the configuration approach using AuthConfig, DatabaseConfig, and MailConfig objects.
 """
 from fastapi import FastAPI
 from fastapiutils import (
-    FastapiContext, AuthConfig, DatabaseConfig,
+    FastapiContext, AuthConfig, DatabaseConfig, MailConfig,
     create_auth_router, create_user_router
 )
 
@@ -28,10 +28,19 @@ database_config = DatabaseConfig(
     database="your_database"
 )
 
+# Optional: Create mail configuration for welcome emails
+mail_config = MailConfig(
+    smtp_server="smtp.gmail.com",        # Update with your SMTP server
+    smtp_port=587,
+    smtp_user="your_email@gmail.com",    # Update with your email
+    smtp_password="your_app_password"    # Update with your app password
+)
+
 # Create FastAPI context with configuration objects
 fa_context = FastapiContext(
     auth_config=auth_config,
     database_config=database_config,
+    mail_config=mail_config,             # Optional: Enable welcome emails
     default_locale="en"
     # custom_locales_dir="./my_locales",  # Optional: add custom/override translations
 )

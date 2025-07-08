@@ -48,7 +48,7 @@ openssl rsa -pubout -in private_key.pem -out public_key.pem
 
 ```python
 from fastapi import FastAPI
-from fastapiutils import FastapiContext, AuthConfig, DatabaseConfig, create_auth_router, create_user_router
+from fastapiutils import FastapiContext, AuthConfig, DatabaseConfig, MailConfig, create_auth_router, create_user_router
 
 app = FastAPI()
 
@@ -68,10 +68,19 @@ database_config = DatabaseConfig(
     database="your_database"
 )
 
+# Optional: Create mail configuration for welcome emails
+mail_config = MailConfig(
+    smtp_server="smtp.gmail.com",
+    smtp_port=587,
+    smtp_user="your_email@gmail.com",
+    smtp_password="your_app_password"
+)
+
 # Create FastAPI context with configuration objects
 fa_context = FastapiContext(
     auth_config=auth_config,
     database_config=database_config,
+    mail_config=mail_config,  # Optional: Enable welcome emails
     default_locale="en"
 )
 
@@ -86,7 +95,7 @@ If you want to use environment variables, you can use `os.getenv()` directly in 
 
 ```python
 import os
-from fastapiutils import FastapiContext, AuthConfig, DatabaseConfig
+from fastapiutils import FastapiContext, AuthConfig, DatabaseConfig, MailConfig
 
 # Create configuration objects using environment variables
 auth_config = AuthConfig(
@@ -104,9 +113,20 @@ database_config = DatabaseConfig(
     database=os.getenv("DB_NAME", "")
 )
 
+# Optional: Create mail configuration
+mail_config = None
+if os.getenv("SMTP_SERVER"):
+    mail_config = MailConfig(
+        smtp_server=os.getenv("SMTP_SERVER"),
+        smtp_port=int(os.getenv("SMTP_PORT", "587")),
+        smtp_user=os.getenv("SMTP_USER"),
+        smtp_password=os.getenv("SMTP_PASSWORD")
+    )
+
 fa_context = FastapiContext(
     auth_config=auth_config,
     database_config=database_config,
+    mail_config=mail_config,
     default_locale=os.getenv("DEFAULT_LOCALE", "en")
 )
 ```
@@ -114,7 +134,7 @@ fa_context = FastapiContext(
 ### Custom Configuration
 
 ```python
-from fastapiutils import FastapiContext, AuthConfig, DatabaseConfig
+from fastapiutils import FastapiContext, AuthConfig, DatabaseConfig, MailConfig
 
 # Create configuration objects with custom settings
 auth_config = AuthConfig(
@@ -132,10 +152,19 @@ database_config = DatabaseConfig(
     database="production_db"
 )
 
+# Optional: Create mail configuration
+mail_config = MailConfig(
+    smtp_server="smtp.company.com",
+    smtp_port=587,
+    smtp_user="noreply@company.com",
+    smtp_password="secure_mail_password"
+)
+
 # Create FastAPI context with custom configuration
 fa_context = FastapiContext(
     auth_config=auth_config,
     database_config=database_config,
+    mail_config=mail_config,             # Optional: Enable welcome emails
     default_locale="de"                  # German as default
 )
 ```
@@ -145,7 +174,7 @@ fa_context = FastapiContext(
 You can specify custom names for your RSA key files:
 
 ```python
-from fastapiutils import FastapiContext, AuthConfig, DatabaseConfig
+from fastapiutils import FastapiContext, AuthConfig, DatabaseConfig, MailConfig
 
 # Create auth configuration with custom key filenames
 auth_config = AuthConfig(
@@ -158,6 +187,29 @@ auth_config = AuthConfig(
 )
 
 database_config = DatabaseConfig(
+    host="localhost",
+    port=3306,
+    user="root",
+    password="your_password",
+    database="your_database"
+)
+
+# Optional: Create mail configuration
+mail_config = MailConfig(
+    smtp_server="smtp.gmail.com",
+    smtp_port=587,
+    smtp_user="your_email@gmail.com",
+    smtp_password="your_app_password"
+)
+
+# Create FastAPI context
+fa_context = FastapiContext(
+    auth_config=auth_config,
+    database_config=database_config,
+    mail_config=mail_config,  # Optional: Enable welcome emails
+    default_locale="en"
+)
+```
     host="localhost",
     port=3306,
     user="root",
@@ -182,8 +234,10 @@ fa_context = FastapiContext(
 
 ### User Endpoints
 
-- `POST /users/register` - Register new user
+- `POST /users/register` - Register new user (sends welcome email if mail_config is configured)
 - `GET /users/me` - Get current user info
+
+**Note**: When `mail_config` is provided to `FastapiContext`, the `/users/register` endpoint will automatically send a localized welcome email to new users.
 
 ## Extending Models
 
@@ -225,7 +279,7 @@ The package includes built-in English and German translations that are always lo
 
 ```python
 import os
-from fastapiutils import I18n, FastapiContext, AuthConfig, DatabaseConfig
+from fastapiutils import I18n, FastapiContext, AuthConfig, DatabaseConfig, MailConfig
 
 # Create configuration objects
 auth_config = AuthConfig(rsa_keys_path=os.getenv("RSA_KEYS_PATH", "/path/to/keys"))
@@ -237,11 +291,22 @@ database_config = DatabaseConfig(
     database=os.getenv("DB_NAME", "")
 )
 
+# Optional: Create mail configuration
+mail_config = None
+if os.getenv("SMTP_SERVER"):
+    mail_config = MailConfig(
+        smtp_server=os.getenv("SMTP_SERVER"),
+        smtp_port=int(os.getenv("SMTP_PORT", "587")),
+        smtp_user=os.getenv("SMTP_USER"),
+        smtp_password=os.getenv("SMTP_PASSWORD")
+    )
+
 # Built-in translations (en, de) are automatically loaded
 # Custom translations can override or extend them
 fa_context = FastapiContext(
     auth_config=auth_config,
     database_config=database_config,
+    mail_config=mail_config,            # Optional: Enable welcome emails
     custom_locales_dir="./my_locales",  # Additional/override translations
     default_locale="fr"                # French as default
 )
@@ -279,6 +344,7 @@ This will override the built-in "incorrect_credentials" message and add new tran
 - `database_config`: DatabaseConfig object containing database connection settings
 
 **Optional Parameters (with defaults):**
+- `mail_config`: MailConfig object containing email settings (default: None)
 - `custom_locales_dir`: Custom locales directory for additional/override translations (default: None)
 - `default_locale`: Default language (default: "en")
 
@@ -301,6 +367,17 @@ This will override the built-in "incorrect_credentials" message and add new tran
 - `port`: Database port
 - `user`: Database user
 - `password`: Database password
+- `database`: Database name
+
+### MailConfig Parameters
+
+**Required Parameters (if mail_config is provided):**
+- `smtp_server`: SMTP server address
+- `smtp_port`: SMTP server port
+- `smtp_user`: SMTP username/email
+- `smtp_password`: SMTP password/app password
+
+**Note**: When `mail_config` is provided, users will receive welcome emails upon registration with localized content.
 - `database`: Database name
 
 ## Error Handling

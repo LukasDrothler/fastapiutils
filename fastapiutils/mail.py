@@ -1,7 +1,7 @@
 from email.mime.text import MIMEText
 import logging
 import smtplib
-from config import MailConfig
+from .config import MailConfig
 
 logger = logging.getLogger('uvicorn.error')
 
