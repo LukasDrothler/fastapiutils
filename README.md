@@ -113,14 +113,15 @@ def create_router(fa_context: FastapiContext) -> APIRouter:
     ):
         """Usage of the internationalization utility"""
         locale = fa_context.i18n.extract_locale_from_header(request.headers.get("accept-language"))
-        """Retrieve a specific pet by ID for the current user."""
-        pet = get_pet_by_id(pet_id, current_user.id)
-        if not pet:
+        """Retrieve a specific pet by ID for the current user by using the database utility"""
+        sql = "SELECT * FROM pet WHERE id = %s AND user_id = %s"
+        result = fa_context.execute_single_query(sql, (pet_id, current_user.id))
+        if not result:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=fa_context.i18n.t("pet.pet_not_found", locale),
             )
-        return pet
+        return Pet(**result)
 
     return router
 ```
