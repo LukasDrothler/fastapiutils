@@ -279,7 +279,7 @@ The package includes built-in English and German translations that are always lo
 
 ```python
 import os
-from fastapiutils import I18n, FastapiContext, AuthConfig, DatabaseConfig, MailConfig
+from fastapiutils import I18nService, FastapiContext, AuthConfig, DatabaseConfig, MailConfig
 
 # Create configuration objects
 auth_config = AuthConfig(rsa_keys_path=os.getenv("RSA_KEYS_PATH", "/path/to/keys"))

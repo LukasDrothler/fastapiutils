@@ -6,7 +6,7 @@ import jwt
 
 from .fastapi_context import FastapiContext
 from .models import Token, CreateUser, User, RefreshTokenRequest, TokenData
-from .i18n import extract_locale_from_header
+from .i18n_service import extract_locale_from_header
 
 
 def create_auth_router(fa_context: FastapiContext) -> APIRouter:

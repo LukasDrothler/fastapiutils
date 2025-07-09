@@ -11,7 +11,7 @@ from .mail_service import MailService
 from .database_service import DatabaseService
 from .config import AuthConfig
 from .models import  UserInDB, CreateUser, TokenData
-from .i18n import I18n
+from .i18n_service import I18nService
 
 
 class FastapiContext:
@@ -44,7 +44,7 @@ class FastapiContext:
         self.oauth2_scheme = OAuth2PasswordBearer(tokenUrl=self.token_url)
         
         # Initialize i18n (built-in locales are always loaded, custom can override/extend)
-        self.i18n = I18n(custom_locales_dir=custom_locales_dir, default_locale=default_locale)
+        self.i18n = I18nService(custom_locales_dir=custom_locales_dir, default_locale=default_locale)
 
     
     def verify_password(self, plain_password: str, hashed_password: str) -> bool:

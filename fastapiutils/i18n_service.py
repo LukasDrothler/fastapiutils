@@ -14,7 +14,7 @@ def _deep_merge_dicts(base: Dict[str, Any], override: Dict[str, Any]) -> Dict[st
     return result
 
 
-class I18n:
+class I18nService:
     """Internationalization helper class"""
     
     def __init__(self, custom_locales_dir: Optional[str] = None, default_locale: str = "en"):
