@@ -14,10 +14,10 @@ app = FastAPI(title="FastAPI Utils Example")
 
 # Setup dependency injection container
 setup_dependencies(
-    custom_locales_dir=None,  # Optional: path to custom locales
+    custom_locales_dir=None,
     default_locale="en",
-    access_token_expire_minutes=int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30")),
-    refresh_token_expire_days=int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "30")),
+    access_token_expire_minutes=30,
+    refresh_token_expire_days=30,
     token_url="token",
     private_key_filename="private_key.pem",
     public_key_filename="public_key.pem"

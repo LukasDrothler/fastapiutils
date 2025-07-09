@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, Request
+from fastapiutils import AuthService
 
 from ..models import CreateUser, User
 from ..i18n_service import extract_locale_from_header
@@ -12,7 +13,7 @@ router = APIRouter()
 async def create_user(
     user: CreateUser,
     request: Request,
-    auth_service = Depends(get_auth_service),
+    auth_service: AuthService = Depends(get_auth_service),
 ):
     locale = extract_locale_from_header(request.headers.get("accept-language"))
     return auth_service.create_user(user, locale)
