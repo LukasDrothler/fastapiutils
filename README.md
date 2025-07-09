@@ -231,44 +231,42 @@ from fastapiutils import User, CurrentActiveUser, extract_locale_from_header
 from fastapiutils.dependencies import get_database_service, get_i18n_service
 from .models import Pet  # Your custom models
 
-def create_router() -> APIRouter:
-    """Create the router for pet-related endpoints"""
-    router = APIRouter()
+"""Create the router for pet-related endpoints"""
+router = APIRouter()
 
-    @router.get("/pet/{pet_id}", response_model=Pet, tags=["pets"])
-    async def get_pet(
-        current_user: CurrentActiveUser,
-        pet_id: str = Path(description="The ID of the pet to retrieve"),
-        request: Request = None,
-        db_service: DatabaseService = Depends(get_database_service),
-        i18n_service: I18nService = Depends(get_i18n_service),
-    ):
-        """Usage of the dependency injection pattern"""
-        locale = extract_locale_from_header(request.headers.get("accept-language"))
-        
-        # Validate pet_id length (example with parameter interpolation)
-        if len(pet_id) > 36:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=i18n.t("pet.id_too_long", locale, 
-                            max_length=36, 
-                            current_length=len(pet_id)),
-            )
-        
-        """Retrieve a specific pet by ID for the current user"""
-        sql = "SELECT * FROM pet WHERE id = %s AND user_id = %s"
-        result = db_service.execute_single_query(sql, (pet_id, current_user.id))
-        if not result:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=i18n.t("pet.pet_not_found", locale),
-            )
-        return Pet(**result)
-
-    return router
+@router.get("/pet/{pet_id}", response_model=Pet, tags=["pets"])
+async def get_pet(
+    current_user: CurrentActiveUser,
+    pet_id: str = Path(description="The ID of the pet to retrieve"),
+    request: Request = None,
+    db_service: DatabaseService = Depends(get_database_service),
+    i18n_service: I18nService = Depends(get_i18n_service),
+):
+    """Usage of the dependency injection pattern"""
+    locale = extract_locale_from_header(request.headers.get("accept-language"))
+    
+    # Validate pet_id length (example with parameter interpolation)
+    if len(pet_id) > 36:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=i18n.t("pet.id_too_long", locale, 
+                        max_length=36, 
+                        current_length=len(pet_id)),
+        )
+    
+    """Retrieve a specific pet by ID for the current user"""
+    sql = "SELECT * FROM pet WHERE id = %s AND user_id = %s"
+    result = db_service.execute_single_query(sql, (pet_id, current_user.id))
+    if not result:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=i18n.t("pet.pet_not_found", locale),
+        )
+    return Pet(**result)
 
 # In your main app
-app.include_router(create_router())
+from routers import pet
+app.include_router(pet.router)
 ```
 
 ## Internationalization (i18n) with Parameter Interpolation
