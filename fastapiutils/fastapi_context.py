@@ -1,15 +1,16 @@
 import jwt
 import re
+import os
 from datetime import datetime, timedelta, timezone
 from typing import Optional, Annotated
 from passlib.context import CryptContext
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jwt.exceptions import InvalidTokenError
+from cryptography.hazmat.primitives import serialization
 
 from .mail_service import MailService
 from .database_service import DatabaseService
-from .config import AuthConfig
 from .models import  UserInDB, CreateUser, TokenData
 from .i18n_service import I18nService
 
@@ -18,19 +19,39 @@ class FastapiContext:
     """Main authentication manager class"""
     
     def __init__(self,
-                 auth_config: AuthConfig,
+                 access_token_expire_minutes=30,
+                 refresh_token_expire_days=30,
+                 token_url="token",
+                 private_key_filename: str = "private_key.pem",
+                 public_key_filename: str = "public_key.pem",
                  custom_locales_dir: Optional[str] = None,
                  default_locale: str = "en",
                  ):
         
+        """Initialize the authentication configuration"""
+        rsa_keys_path=os.getenv("RSA_KEYS_PATH", "./keys")
+        if not os.path.exists(rsa_keys_path):
+            raise ValueError(f"RSA keys path does not exist: {rsa_keys_path}")
+        
+        self.algorithm = "RS256"
+        private_key_path = os.path.join(rsa_keys_path, private_key_filename)
+        public_key_path = os.path.join(rsa_keys_path, public_key_filename)
+        
+        if not os.path.exists(private_key_path):
+            raise ValueError(f"Private key not found: {private_key_path}")
+        if not os.path.exists(public_key_path):
+            raise ValueError(f"Public key not found: {public_key_path}")
+        
+        with open(private_key_path, 'rb') as f:
+            self.private_key = serialization.load_pem_private_key(f.read(), password=None)
+        with open(public_key_path, 'rb') as f:
+            self.public_key = serialization.load_pem_public_key(f.read())
+        
         # Store configuration values
-        self.access_token_expire_minutes = auth_config.access_token_expire_minutes
-        self.refresh_token_expire_days = auth_config.refresh_token_expire_days
-        self.token_url = auth_config.token_url
+        self.access_token_expire_minutes = access_token_expire_minutes
+        self.refresh_token_expire_days = refresh_token_expire_days
+        self.token_url = token_url
         self.default_locale = default_locale
-        self.algorithm = auth_config.algorithm
-        self.private_key = auth_config.private_key
-        self.public_key = auth_config.public_key
 
         self.db_service = DatabaseService()
         

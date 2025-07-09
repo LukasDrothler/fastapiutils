@@ -4,29 +4,16 @@ Example usage of the fastapiutils package
 from fastapi import FastAPI
 import os
 from dotenv import load_dotenv
-from fastapiutils import (
-    FastapiContext, AuthConfig,
-    create_auth_router, create_user_router
-)
+from fastapiutils import (FastapiContext, create_auth_router, create_user_router)
 
 load_dotenv()
 
 # Create FastAPI app
 app = FastAPI(title="FastAPI Utils Example")
 
-# Create configuration objects
-auth_config = AuthConfig(
-    rsa_keys_path=os.getenv("RSA_KEYS_PATH", "./keys"),
-    access_token_expire_minutes=30,
-    refresh_token_expire_days=30,
-    token_url="token",
-)
-
 
 # Create FastAPI context with configuration objects
-fa_context = FastapiContext(
-    auth_config=auth_config,
-)
+fa_context = FastapiContext()
 
 # Include default routers
 app.include_router(create_auth_router(fa_context))
