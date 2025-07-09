@@ -34,21 +34,6 @@ class AuthConfig:
         self.refresh_token_expire_days = refresh_token_expire_days
         self.token_url = token_url
 
-class DatabaseConfig:
-    """Configuration for database connection"""
-
-    def __init__(self, 
-                 host: str,
-                 port: int,
-                 user: str,
-                 password: str,
-                 database: str):
-        """Initialize the database configuration"""
-        self.host = host
-        self.port = port
-        self.user = user
-        self.password = password
-        self.database = database
 
 class MailConfig:
     """Configuration for email settings"""

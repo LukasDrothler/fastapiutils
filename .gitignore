@@ -119,3 +119,5 @@ dmypy.json
 *.swp
 *.swo
 fastapiutils/__pycache__/__init__.cpython-312.pyc
+keys/private_key.pem
+keys/public_key.pem

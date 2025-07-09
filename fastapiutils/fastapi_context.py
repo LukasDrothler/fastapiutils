@@ -8,8 +8,8 @@ from fastapi.security import OAuth2PasswordBearer
 from jwt.exceptions import InvalidTokenError
 
 from .mail import MailManager
-from .database import DatabaseManager
-from .config import AuthConfig, DatabaseConfig, MailConfig
+from .database_service import DatabaseService
+from .config import AuthConfig, MailConfig
 from .models import  UserInDB, CreateUser, TokenData
 from .i18n import I18n
 
@@ -19,7 +19,6 @@ class FastapiContext:
     
     def __init__(self,
                  auth_config: AuthConfig,
-                 database_config: DatabaseConfig,
                  mail_config: Optional[MailConfig] = None,
                  custom_locales_dir: Optional[str] = None,
                  default_locale: str = "en",
@@ -33,9 +32,9 @@ class FastapiContext:
         self.algorithm = auth_config.algorithm
         self.private_key = auth_config.private_key
         self.public_key = auth_config.public_key
-        
-        self.db_manager = DatabaseManager(db_config=database_config)
 
+        self.db_service = DatabaseService()
+        
         self.mail_manager = None
         if mail_config:
             self.mail_manager = MailManager(mail_config)
@@ -73,17 +72,17 @@ class FastapiContext:
         """Get user from database"""
         result = None
         if username and email:
-            result = self.db_manager.execute_single_query(
+            result = self.db_service.execute_single_query(
                 "SELECT * FROM user WHERE LOWER(username) = LOWER(%s) AND LOWER(email) = LOWER(%s)", 
                 (username, email)
             )
         elif email:
-            result = self.db_manager.execute_single_query(
+            result = self.db_service.execute_single_query(
                 "SELECT * FROM user WHERE LOWER(email) = LOWER(%s)", 
                 (email,)
             )
         elif username:
-            result = self.db_manager.execute_single_query(
+            result = self.db_service.execute_single_query(
                 "SELECT * FROM user WHERE LOWER(username) = LOWER(%s)", 
                 (username,)
             )
@@ -102,7 +101,7 @@ class FastapiContext:
         
         # Update last_seen
         current_time = datetime.now(timezone.utc)
-        self.db_manager.execute_modification_query(
+        self.db_service.execute_modification_query(
             "UPDATE user SET last_seen = %s WHERE id = %s", 
             (current_time, user.id)
         )
@@ -141,7 +140,7 @@ class FastapiContext:
         """Create a new user"""
         self.validate_new_user(user, locale)
         
-        uid = self.db_manager.generate_uuid("user")
+        uid = self.db_service.generate_uuid("user")
         if uid is None:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -150,7 +149,7 @@ class FastapiContext:
         
         hashed_password = self.get_password_hash(user.password)
         
-        self.db_manager.execute_modification_query(
+        self.db_service.execute_modification_query(
             "INSERT INTO user (id, username, email, hashed_password) VALUES (%s, %s, %s, %s)",
             (uid, user.username, user.email, hashed_password)
         )
