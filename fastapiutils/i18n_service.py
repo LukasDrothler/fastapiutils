@@ -119,7 +119,7 @@ class I18nService:
         return self.get_translation(key, locale, **kwargs)
 
 
-    def extract_locale_from_header(accept_language: Optional[str]) -> str:
+    def extract_locale_from_header(self, accept_language: Optional[str]) -> str:
         """Extract locale from Accept-Language header"""
         if not accept_language:
             return "en"
