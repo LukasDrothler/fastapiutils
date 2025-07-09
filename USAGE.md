@@ -42,130 +42,74 @@ openssl genpkey -algorithm RSA -out private_key.pem -pkcs8
 openssl rsa -pubout -in private_key.pem -out public_key.pem
 ```
 
+### Environment Variables
+
+Create a `.env` file or set environment variables:
+
+**Required Environment Variables:**
+```bash
+# Database configuration
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=your_password
+DB_NAME=your_database
+
+# RSA Keys path
+RSA_KEYS_PATH=./keys
+```
+
+**Optional Environment Variables (for email functionality):**
+```bash
+# Email configuration
+SMTP_SERVER=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your_email@gmail.com
+SMTP_PASSWORD=your_app_password
+```
+
 ## Basic Usage
 
 ### Simple Setup
 
 ```python
 from fastapi import FastAPI
-from fastapiutils import FastapiContext, AuthConfig, DatabaseConfig, MailConfig, create_auth_router, create_user_router
+from fastapiutils import setup_dependencies
+from fastapiutils.routers import auth, user
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 app = FastAPI()
 
-# Create configuration objects
-auth_config = AuthConfig(
-    rsa_keys_path="/path/to/your/keys",
-    access_token_expire_minutes=30,
-    refresh_token_expire_days=30,
-    token_url="token"
+# Setup dependency injection container
+setup_dependencies(
+    default_locale="en",            # Default language
+    access_token_expire_minutes=30, # Token expiration
+    refresh_token_expire_days=30,   # Refresh token expiration
+    token_url="token"               # Token endpoint URL
 )
 
-database_config = DatabaseConfig(
-    host="localhost",
-    port=3306,
-    user="root",
-    password="your_password",
-    database="your_database"
-)
-
-# Optional: Create mail configuration for welcome emails
-mail_config = MailConfig(
-    smtp_server="smtp.gmail.com",
-    smtp_port=587,
-    smtp_user="your_email@gmail.com",
-    smtp_password="your_app_password"
-)
-
-# Create FastAPI context with configuration objects
-auth_service = FastapiContext(
-    auth_config=auth_config,
-    database_config=database_config,
-    mail_config=mail_config,  # Optional: Enable welcome emails
-    default_locale="en"
-)
-
-# Include routers
-app.include_router(create_auth_router(auth_service))
-app.include_router(create_user_router(auth_service))
+# Include built-in routers
+app.include_router(auth.router)
+app.include_router(user.router)
 ```
 
-### Using Environment Variables
-
-If you want to use environment variables, you can use `os.getenv()` directly in your configuration objects:
+### Advanced Configuration
 
 ```python
-import os
-from fastapiutils import FastapiContext, AuthConfig, DatabaseConfig, MailConfig
+from fastapiutils import setup_dependencies
 
-# Create configuration objects using environment variables
-auth_config = AuthConfig(
-    rsa_keys_path=os.getenv("RSA_KEYS_PATH", "/path/to/keys"),
-    access_token_expire_minutes=int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30")),
-    refresh_token_expire_days=int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "30")),
-    token_url=os.getenv("TOKEN_URL", "token")
-)
-
-database_config = DatabaseConfig(
-    host=os.getenv("DB_HOST", "localhost"),
-    port=int(os.getenv("DB_PORT", "3306")),
-    user=os.getenv("DB_USER", "root"),
-    password=os.getenv("DB_PASSWORD", ""),
-    database=os.getenv("DB_NAME", "")
-)
-
-# Optional: Create mail configuration
-mail_config = None
-if os.getenv("SMTP_SERVER"):
-    mail_config = MailConfig(
-        smtp_server=os.getenv("SMTP_SERVER"),
-        smtp_port=int(os.getenv("SMTP_PORT", "587")),
-        smtp_user=os.getenv("SMTP_USER"),
-        smtp_password=os.getenv("SMTP_PASSWORD")
-    )
-
-auth_service = FastapiContext(
-    auth_config=auth_config,
-    database_config=database_config,
-    mail_config=mail_config,
-    default_locale=os.getenv("DEFAULT_LOCALE", "en")
-)
-```
-
-### Custom Configuration
-
-```python
-from fastapiutils import FastapiContext, AuthConfig, DatabaseConfig, MailConfig
-
-# Create configuration objects with custom settings
-auth_config = AuthConfig(
-    rsa_keys_path="/etc/ssl/jwt-keys",
-    access_token_expire_minutes=60,      # 1 hour tokens
-    refresh_token_expire_days=7,         # 1 week refresh
-    token_url="auth/token"               # Custom token endpoint
-)
-
-database_config = DatabaseConfig(
-    host="myserver.com",
-    port=3306,
-    user="api_user",
-    password="secure_password",
-    database="production_db"
-)
-
-# Optional: Create mail configuration
-mail_config = MailConfig(
-    smtp_server="smtp.company.com",
-    smtp_port=587,
-    smtp_user="noreply@company.com",
-    smtp_password="secure_mail_password"
-)
-
-# Create FastAPI context with custom configuration
-auth_service = FastapiContext(
-    auth_config=auth_config,
-    database_config=database_config,
-    mail_config=mail_config,             # Optional: Enable welcome emails
-    default_locale="de"                  # German as default
+# Advanced configuration with custom settings
+setup_dependencies(
+    custom_locales_dir="./my_locales",    # Custom translation files
+    default_locale="de",                  # German as default
+    access_token_expire_minutes=60,       # 1 hour access tokens
+    refresh_token_expire_days=7,          # 1 week refresh tokens
+    token_url="auth/token",               # Custom token endpoint
+    private_key_filename="my_private.pem", # Custom key filenames
+    public_key_filename="my_public.pem"
 )
 ```
 
@@ -174,54 +118,13 @@ auth_service = FastapiContext(
 You can specify custom names for your RSA key files:
 
 ```python
-from fastapiutils import FastapiContext, AuthConfig, DatabaseConfig, MailConfig
+from fastapiutils import setup_dependencies
 
-# Create auth configuration with custom key filenames
-auth_config = AuthConfig(
-    rsa_keys_path="/path/to/keys",
-    private_key_filename="my_private.pem",    # Custom private key name
-    public_key_filename="my_public.pem",      # Custom public key name
-    access_token_expire_minutes=30,
-    refresh_token_expire_days=30,
-    token_url="token"
-)
-
-database_config = DatabaseConfig(
-    host="localhost",
-    port=3306,
-    user="root",
-    password="your_password",
-    database="your_database"
-)
-
-# Optional: Create mail configuration
-mail_config = MailConfig(
-    smtp_server="smtp.gmail.com",
-    smtp_port=587,
-    smtp_user="your_email@gmail.com",
-    smtp_password="your_app_password"
-)
-
-# Create FastAPI context
-auth_service = FastapiContext(
-    auth_config=auth_config,
-    database_config=database_config,
-    mail_config=mail_config,  # Optional: Enable welcome emails
-    default_locale="en"
-)
-```
-    host="localhost",
-    port=3306,
-    user="root",
-    password="your_password",
-    database="your_database"
-)
-
-# Create FastAPI context
-auth_service = FastapiContext(
-    auth_config=auth_config,
-    database_config=database_config,
-    default_locale="en"
+# Setup with custom key filenames
+setup_dependencies(
+    private_key_filename="custom_private.pem",
+    public_key_filename="custom_public.pem",
+    # ... other parameters ...
 )
 ```
 
@@ -234,10 +137,10 @@ auth_service = FastapiContext(
 
 ### User Endpoints
 
-- `POST /users/register` - Register new user (sends welcome email if mail_config is configured)
+- `POST /users/register` - Register new user (sends welcome email if SMTP is configured)
 - `GET /users/me` - Get current user info
 
-**Note**: When `mail_config` is provided to `FastapiContext`, the `/users/register` endpoint will automatically send a localized welcome email to new users.
+**Note**: When SMTP environment variables are configured, the `/users/register` endpoint will automatically send a localized welcome email to new users.
 
 ## Extending Models
 
@@ -259,18 +162,21 @@ class UserInDB(BaseUserInDB):
     company: Optional[str] = None
 ```
 
-## Custom Authentication Dependencies
+## Using Dependencies in Custom Routes
 
 ```python
-from fastapi import Depends
-from fastapiutils import FastapiContext
+from fastapi import Depends, APIRouter
+from fastapiutils import CurrentActiveUser
+from fastapiutils.dependencies import get_database_service
 
-# Get dependency functions
-get_current_user, get_current_active_user = auth_service.create_dependency_functions()
+router = APIRouter()
 
-@app.get("/protected")
-async def protected_route(current_user = Depends(get_current_active_user)):
-    return {"user": current_user.username}
+@router.get("/protected")
+async def protected_route(
+    current_user: CurrentActiveUser,
+    db_service = Depends(get_database_service)
+):
+    return {"user": current_user.username, "user_id": current_user.id}
 ```
 
 ## Internationalization
@@ -278,37 +184,14 @@ async def protected_route(current_user = Depends(get_current_active_user)):
 The package includes built-in English and German translations that are always loaded. You can add custom translations or override existing ones by providing a custom locales directory:
 
 ```python
-import os
-from fastapiutils import I18nService, FastapiContext, AuthConfig, DatabaseConfig, MailConfig
-
-# Create configuration objects
-auth_config = AuthConfig(rsa_keys_path=os.getenv("RSA_KEYS_PATH", "/path/to/keys"))
-database_config = DatabaseConfig(
-    host=os.getenv("DB_HOST", "localhost"),
-    port=int(os.getenv("DB_PORT", "3306")),
-    user=os.getenv("DB_USER", "root"),
-    password=os.getenv("DB_PASSWORD", ""),
-    database=os.getenv("DB_NAME", "")
-)
-
-# Optional: Create mail configuration
-mail_config = None
-if os.getenv("SMTP_SERVER"):
-    mail_config = MailConfig(
-        smtp_server=os.getenv("SMTP_SERVER"),
-        smtp_port=int(os.getenv("SMTP_PORT", "587")),
-        smtp_user=os.getenv("SMTP_USER"),
-        smtp_password=os.getenv("SMTP_PASSWORD")
-    )
+from fastapiutils import setup_dependencies
 
 # Built-in translations (en, de) are automatically loaded
 # Custom translations can override or extend them
-auth_service = FastapiContext(
-    auth_config=auth_config,
-    database_config=database_config,
-    mail_config=mail_config,            # Optional: Enable welcome emails
+setup_dependencies(
     custom_locales_dir="./my_locales",  # Additional/override translations
-    default_locale="fr"                # French as default
+    default_locale="fr",                # French as default
+    # ... other parameters ...
 )
 ```
 
@@ -337,48 +220,34 @@ This will override the built-in "incorrect_credentials" message and add new tran
 
 ## Configuration Reference
 
-### FastapiContext Parameters
+### setup_dependencies() Parameters
 
-**Required Parameters:**
-- `auth_config`: AuthConfig object containing authentication settings
-- `database_config`: DatabaseConfig object containing database connection settings
-
-**Optional Parameters (with defaults):**
-- `mail_config`: MailConfig object containing email settings (default: None)
+**All Parameters (with defaults):**
 - `custom_locales_dir`: Custom locales directory for additional/override translations (default: None)
 - `default_locale`: Default language (default: "en")
-
-### AuthConfig Parameters
-
-**Required Parameters:**
-- `rsa_keys_path`: Path to directory containing RSA key files
-
-**Optional Parameters (with defaults):**
 - `access_token_expire_minutes`: Access token expiration (default: 30)
 - `refresh_token_expire_days`: Refresh token expiration (default: 30)
 - `token_url`: Token endpoint URL (default: "token")
 - `private_key_filename`: Name of private key file (default: "private_key.pem")
 - `public_key_filename`: Name of public key file (default: "public_key.pem")
 
-### DatabaseConfig Parameters
+### Environment Variables
 
-**Required Parameters:**
-- `host`: Database host 
-- `port`: Database port
-- `user`: Database user
-- `password`: Database password
-- `database`: Database name
+**Required Environment Variables:**
+- `DB_HOST`: Database host 
+- `DB_PORT`: Database port
+- `DB_USER`: Database user
+- `DB_PASSWORD`: Database password
+- `DB_NAME`: Database name
+- `RSA_KEYS_PATH`: Path to directory containing RSA key files
 
-### MailConfig Parameters
+**Optional Environment Variables (for email functionality):**
+- `SMTP_SERVER`: SMTP server address
+- `SMTP_PORT`: SMTP server port
+- `SMTP_USER`: SMTP username/email
+- `SMTP_PASSWORD`: SMTP password/app password
 
-**Required Parameters (if mail_config is provided):**
-- `smtp_server`: SMTP server address
-- `smtp_port`: SMTP server port
-- `smtp_user`: SMTP username/email
-- `smtp_password`: SMTP password/app password
-
-**Note**: When `mail_config` is provided, users will receive welcome emails upon registration with localized content.
-- `database`: Database name
+**Note**: When SMTP environment variables are provided, users will receive welcome emails upon registration with localized content.
 
 ## Error Handling
 
@@ -388,3 +257,75 @@ The package raises appropriate HTTP exceptions with localized messages:
 - 401 Unauthorized - Invalid credentials
 - 409 Conflict - Username/email already exists
 - 500 Internal Server Error - Database errors
+
+## Production Deployment
+
+For production deployment, consider the following:
+
+### Environment Configuration
+
+```bash
+# Production .env file
+DB_HOST=your-production-db-host
+DB_PORT=3306
+DB_USER=your-production-user
+DB_PASSWORD=your-secure-password
+DB_NAME=your-production-db
+
+RSA_KEYS_PATH=/etc/ssl/jwt-keys
+
+# Optional: Email configuration
+SMTP_SERVER=smtp.your-domain.com
+SMTP_PORT=587
+SMTP_USER=noreply@your-domain.com
+SMTP_PASSWORD=your-secure-smtp-password
+```
+
+### Production App Structure
+
+```python
+# main.py
+from fastapi import FastAPI
+from fastapiutils import setup_dependencies
+from fastapiutils.routers import auth, user
+from dotenv import load_dotenv
+import os
+
+# Load environment variables
+load_dotenv()
+
+# Create FastAPI app with production settings
+app = FastAPI(
+    title="Your Production API",
+    description="Your API description",
+    version="1.0.0",
+    docs_url="/docs" if os.getenv("ENVIRONMENT") == "development" else None,  # Disable docs in production
+    redoc_url="/redoc" if os.getenv("ENVIRONMENT") == "development" else None
+)
+
+# Setup dependencies with production settings
+setup_dependencies(
+    default_locale="en",
+    access_token_expire_minutes=15,  # Shorter tokens for production
+    refresh_token_expire_days=7,     # Shorter refresh for production
+    token_url="auth/token"
+)
+
+# Include routers
+app.include_router(auth.router, prefix="/auth", tags=["authentication"])
+app.include_router(user.router, prefix="/users", tags=["users"])
+
+# Health check endpoint
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy"}
+```
+
+### Security Considerations
+
+1. **Use HTTPS in production** - Never send JWT tokens over HTTP
+2. **Secure your RSA keys** - Store them securely and with proper file permissions
+3. **Use strong database passwords** - Consider using connection pooling
+4. **Configure CORS properly** - Only allow necessary origins
+5. **Monitor your logs** - The package logs important security events
+6. **Regular key rotation** - Consider implementing RSA key rotation

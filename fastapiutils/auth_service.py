@@ -180,3 +180,33 @@ class AuthService:
                 )
 
         return {"msg": self.i18n.t("auth.user_created", locale)}
+    
+    def get_current_user(self, token: str) -> UserInDB:
+        """Get current user from JWT token"""
+        credentials_exception = HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=self.i18n.t("auth.could_not_validate_credentials", "en"),
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+        
+        try:
+            payload = jwt.decode(token, self.public_key, algorithms=[self.algorithm])
+            username = payload.get("sub")
+            if username is None:
+                raise credentials_exception
+        except jwt.InvalidTokenError:
+            raise credentials_exception
+            
+        user = self.get_user(username=username)
+        if user is None:
+            raise credentials_exception
+        return user
+    
+    def get_current_active_user(self, current_user: UserInDB) -> UserInDB:
+        """Get current active user (not disabled)"""
+        if current_user.disabled:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=self.i18n.t("auth.inactive_user", "en")
+            )
+        return current_user

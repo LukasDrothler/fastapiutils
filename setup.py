@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="fastapiutils",
-    version="0.2.0",
+    version="0.3.0",
     author="Lukas Drothler",
     author_email="",
     description="FastAPI utilities for authentication, user management, and more",
@@ -23,6 +23,7 @@ setup(
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
     ],
     python_requires=">=3.8",
     install_requires=[
@@ -34,6 +35,7 @@ setup(
         "pydantic>=1.8.0",
         "cryptography>=3.4.0",
         "PyJWT>=2.0.0",
+        "python-dotenv>=0.19.0",
     ],
     extras_require={
         "dev": [
@@ -44,6 +46,6 @@ setup(
     },
     include_package_data=True,
     package_data={
-        "fastapiutils": ["locales/*.json"],
+        "fastapiutils": ["locales/*.json", "*.sql"],
     },
 )

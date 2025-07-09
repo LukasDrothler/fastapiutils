@@ -1,5 +1,7 @@
 include README.md
 include LICENSE
 include USAGE.md
+include .env.example
+include example.py
 recursive-include fastapiutils/locales *.json
 include fastapiutils/user.sql

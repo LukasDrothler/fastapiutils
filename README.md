@@ -9,7 +9,8 @@ A reusable FastAPI utilities package for authentication, user management, and da
 - Database utilities for MySQL
 - Email notifications (welcome emails on registration)
 - Internationalization support (English and German built-in)
-- Simple configuration approach
+- Environment variable-based configuration
+- Dependency injection architecture
 - Refresh token support
 - Premium user levels
 
@@ -57,81 +58,89 @@ openssl genpkey -algorithm RSA -out private_key.pem -pkcs8
 openssl rsa -pubout -in private_key.pem -out public_key.pem
 ```
 
+### Environment Variables
+
+Set up the following environment variables:
+
+**Required Environment Variables:**
+```bash
+# Database configuration
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=your_password
+DB_NAME=your_database
+
+# RSA Keys path
+RSA_KEYS_PATH=./keys
+```
+
+**Optional Environment Variables:**
+```bash
+# Email configuration (optional - for welcome emails)
+SMTP_SERVER=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your_email@gmail.com
+SMTP_PASSWORD=your_app_password
+```
+
 ## Quick Start
 
 ```python
 from fastapi import FastAPI
-from fastapiutils import FastapiContext, AuthConfig, DatabaseConfig, create_auth_router, create_user_router
-from routers import pet
+from fastapiutils import setup_dependencies
+from fastapiutils.routers import auth, user
 
 app = FastAPI()
 
-# Create configuration objects
-auth_config = AuthConfig(
-    rsa_keys_path="/path/to/your/keys",
-    access_token_expire_minutes=30,
-    refresh_token_expire_days=30,
-    token_url="token"
+# Setup dependency injection container
+setup_dependencies(
+    custom_locales_dir=None,        # Optional: path to custom translations
+    default_locale="en",            # Default language
+    access_token_expire_minutes=30, # Token expiration
+    refresh_token_expire_days=30,   # Refresh token expiration
+    token_url="token",              # Token endpoint URL
+    private_key_filename="private_key.pem",  # RSA private key filename
+    public_key_filename="public_key.pem"     # RSA public key filename
 )
 
-database_config = DatabaseConfig(
-    host="localhost",
-    port=3306,
-    user="root",
-    password="your_password",
-    database="your_database"
-)
-
-# Create FastAPI context with configuration objects
-auth_service = FastapiContext(
-    auth_config=auth_config,
-    database_config=database_config,
-    mail_config=mail_config,  # Optional: Enable welcome emails
-    default_locale="en"
-)
-
-# Include routers
-app.include_router(create_auth_router(auth_service))
-app.include_router(create_user_router(auth_service))
-# Include custom routers (see later paragraph for explanation)
-app.include_router(pet.create_router(auth_service))
+# Include built-in routers
+app.include_router(auth.router)
+app.include_router(user.router)
 ```
 
 ## Configuration
 
-### FastapiContext Parameters
+### setup_dependencies() Parameters
 
-- `auth_config`: AuthConfig object containing authentication settings
-- `database_config`: DatabaseConfig object containing database connection settings
-- `mail_config`: MailConfig object containing email settings (optional)
-- `custom_locales_dir`: Custom locales directory (optional)
+Configure the dependency injection container with the following parameters:
+
+**Optional Parameters (with defaults):**
+- `custom_locales_dir`: Custom locales directory for additional/override translations (default: None)
 - `default_locale`: Default language (default: "en")
-
-### AuthConfig Parameters
-
-- `rsa_keys_path`: Path to directory containing RSA key files (required)
-- `access_token_expire_minutes`: Access token expiration (default: 30)
-- `refresh_token_expire_days`: Refresh token expiration (default: 30)
+- `access_token_expire_minutes`: Access token expiration in minutes (default: 30)
+- `refresh_token_expire_days`: Refresh token expiration in days (default: 30)
 - `token_url`: Token endpoint URL (default: "token")
 - `private_key_filename`: Private key filename (default: "private_key.pem")
 - `public_key_filename`: Public key filename (default: "public_key.pem")
 
-### DatabaseConfig Parameters
+### Environment Variables
 
-- `host`: Database host (required)
-- `port`: Database port (required)
-- `user`: Database username (required)
-- `password`: Database password (required)
-- `database`: Database name (required)
+**Required Environment Variables:**
+- `DB_HOST`: Database host
+- `DB_PORT`: Database port
+- `DB_USER`: Database username
+- `DB_PASSWORD`: Database password
+- `DB_NAME`: Database name
+- `RSA_KEYS_PATH`: Path to directory containing RSA key files
 
-### MailConfig Parameters (Optional)
+**Optional Environment Variables (for email functionality):**
+- `SMTP_SERVER`: SMTP server address
+- `SMTP_PORT`: SMTP server port
+- `SMTP_USER`: SMTP username/email
+- `SMTP_PASSWORD`: SMTP password/app password
 
-- `smtp_server`: SMTP server address (required if mail_config is provided)
-- `smtp_port`: SMTP server port (required if mail_config is provided)
-- `smtp_user`: SMTP username/email (required if mail_config is provided)
-- `smtp_password`: SMTP password/app password (required if mail_config is provided)
-
-**Note**: When `mail_config` is provided, users will receive welcome emails upon registration with localized content.
+**Note**: When email environment variables are provided, users will receive welcome emails upon registration with localized content.
 
 ## API Endpoints
 
@@ -140,54 +149,33 @@ app.include_router(pet.create_router(auth_service))
 - `POST /token` - Login with username/password
 - `POST /token/refresh` - Refresh access token
 
-### User Router (`/users`)
+### User Router
 
 - `POST /users/register` - Register new user
 - `GET /users/me` - Get current user profile
 
-## Usage with Environment Variables
+## Advanced Configuration
+
+You can customize the setup with additional parameters:
 
 ```python
-import os
-from fastapiutils import FastapiContext, AuthConfig, DatabaseConfig, MailConfig
+from fastapiutils import setup_dependencies
 
-# Create configuration objects using environment variables
-auth_config = AuthConfig(
-    rsa_keys_path=os.getenv("RSA_KEYS_PATH", "/path/to/keys"),
-    access_token_expire_minutes=int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30")),
-    refresh_token_expire_days=int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "30")),
-    token_url=os.getenv("TOKEN_URL", "token")
-)
-
-database_config = DatabaseConfig(
-    host=os.getenv("DB_HOST", "localhost"),
-    port=int(os.getenv("DB_PORT", "3306")),
-    user=os.getenv("DB_USER", "root"),
-    password=os.getenv("DB_PASSWORD", ""),
-    database=os.getenv("DB_NAME", "")
-)
-
-# Optional: Create mail configuration
-mail_config = None
-if os.getenv("SMTP_SERVER"):
-    mail_config = MailConfig(
-        smtp_server=os.getenv("SMTP_SERVER"),
-        smtp_port=int(os.getenv("SMTP_PORT", "587")),
-        smtp_user=os.getenv("SMTP_USER"),
-        smtp_password=os.getenv("SMTP_PASSWORD")
-    )
-
-auth_service = FastapiContext(
-    auth_config=auth_config,
-    database_config=database_config,
-    mail_config=mail_config,
-    default_locale=os.getenv("DEFAULT_LOCALE", "en")
+# Advanced configuration
+setup_dependencies(
+    custom_locales_dir="./my_locales",    # Custom translation files
+    default_locale="de",                  # German as default
+    access_token_expire_minutes=60,       # 1 hour access tokens
+    refresh_token_expire_days=7,          # 1 week refresh tokens
+    token_url="auth/token",               # Custom token endpoint
+    private_key_filename="my_private.pem", # Custom key filenames
+    public_key_filename="my_public.pem"
 )
 ```
 
 ## Email Configuration
 
-The library supports sending welcome emails to users upon registration. This is optional and can be configured using the `MailConfig` object.
+The library supports sending welcome emails to users upon registration. This is optional and requires setting up SMTP environment variables.
 
 ### Email Features
 
@@ -198,34 +186,28 @@ The library supports sending welcome emails to users upon registration. This is 
 
 ### Common SMTP Configurations
 
-**Gmail:**
-```python
-mail_config = MailConfig(
-    smtp_server="smtp.gmail.com",
-    smtp_port=587,
-    smtp_user="your_email@gmail.com",
-    smtp_password="your_app_password"  # Use App Password, not regular password
-)
+**Gmail (.env file):**
+```bash
+SMTP_SERVER=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your_email@gmail.com
+SMTP_PASSWORD=your_app_password  # Use App Password, not regular password
 ```
 
-**Outlook:**
-```python
-mail_config = MailConfig(
-    smtp_server="smtp-mail.outlook.com",
-    smtp_port=587,
-    smtp_user="your_email@outlook.com",
-    smtp_password="your_password"
-)
+**Outlook (.env file):**
+```bash
+SMTP_SERVER=smtp-mail.outlook.com
+SMTP_PORT=587
+SMTP_USER=your_email@outlook.com
+SMTP_PASSWORD=your_password
 ```
 
-**Custom SMTP Server:**
-```python
-mail_config = MailConfig(
-    smtp_server="mail.yourcompany.com",
-    smtp_port=587,
-    smtp_user="noreply@yourcompany.com",
-    smtp_password="your_smtp_password"
-)
+**Custom SMTP Server (.env file):**
+```bash
+SMTP_SERVER=mail.yourcompany.com
+SMTP_PORT=587
+SMTP_USER=noreply@yourcompany.com
+SMTP_PASSWORD=your_smtp_password
 ```
 
 ### Email Content Translation
@@ -236,73 +218,81 @@ The welcome email content is automatically translated based on the user's locale
 - `auth.welcome_email_content`: Email body content (supports `{username}` parameter)
 - `auth.email_sending_failed`: Error message when email sending fails
 
-## Custom routers
+## Custom Routers
 
-Create a custom router by defining a function that returns an APIRouter.
-Make sure to give the FastapiContext as a parameter.
+Create custom routers using dependency injection. The services are automatically injected through FastAPI's dependency system.
 
-In this example we define a create_router function in routers/pet.py
+Example custom router (`routers/pet.py`):
 
 ```python
-from fastapiutils import FastapiContext, User
-from fastapiutils.i18n import extract_locale_from_header
-from core.basemodels import Pet
-from core.db_pet import get_pet_by_id
 from fastapi import APIRouter, Depends, Request, Path, HTTPException, status
 from typing import Annotated
+from fastapiutils import User, CurrentActiveUser, extract_locale_from_header
+from fastapiutils.dependencies import get_database_service, get_i18n_service
+from .models import Pet  # Your custom models
 
-def create_router(auth_service: FastapiContext) -> APIRouter:
+def create_router() -> APIRouter:
     """Create the router for pet-related endpoints"""
     router = APIRouter()
-    """Get dependency function to ensure an active user is making the request"""
-    get_current_user_dep, get_current_active_user_dep = auth_service.create_dependency_functions()
 
     @router.get("/pet/{pet_id}", response_model=Pet, tags=["pets"])
     async def get_pet(
-        current_user: Annotated[User, Depends(get_current_active_user_dep)],
+        current_user: CurrentActiveUser,
         pet_id: str = Path(description="The ID of the pet to retrieve"),
         request: Request = None,
+        db_service = Depends(get_database_service),
+        i18n = Depends(get_i18n_service),
     ):
-        """Usage of the internationalization utility with parameter interpolation"""
+        """Usage of the dependency injection pattern"""
         locale = extract_locale_from_header(request.headers.get("accept-language"))
         
         # Validate pet_id length (example with parameter interpolation)
         if len(pet_id) > 36:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=auth_service.i18n.t("pet.id_too_long", locale, 
-                                       max_length=36, 
-                                       current_length=len(pet_id)),
+                detail=i18n.t("pet.id_too_long", locale, 
+                            max_length=36, 
+                            current_length=len(pet_id)),
             )
         
-        """Retrieve a specific pet by ID for the current user by using the database utility"""
+        """Retrieve a specific pet by ID for the current user"""
         sql = "SELECT * FROM pet WHERE id = %s AND user_id = %s"
-        result = auth_service.db_manager.execute_single_query(sql, (pet_id, current_user.id))
+        result = db_service.execute_single_query(sql, (pet_id, current_user.id))
         if not result:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=auth_service.i18n.t("pet.pet_not_found", locale),
+                detail=i18n.t("pet.pet_not_found", locale),
             )
         return Pet(**result)
 
     return router
+
+# In your main app
+app.include_router(create_router())
 ```
 
 ## Internationalization (i18n) with Parameter Interpolation
 
-The library now supports parameter interpolation in translation strings, allowing you to pass dynamic values into your translations.
+The library supports parameter interpolation in translation strings, allowing you to pass dynamic values into your translations.
 
 ### Basic Usage
 
 ```python
-from fastapiutils.i18n import extract_locale_from_header
+from fastapiutils import extract_locale_from_header
+from fastapiutils.dependencies import get_i18n_service
+from fastapi import Depends, Request
 
-# Extract locale from request headers
-locale = extract_locale_from_header(request.headers.get("accept-language"))
-
-# Use parameter interpolation in translations
-auth_service.i18n.t("pet.name_too_long", locale, max_length=50, current_length=75)
-# Returns: "Pet name must be 50 characters or less (current: 75)"
+# In your route handler
+async def my_route(
+    request: Request,
+    i18n = Depends(get_i18n_service)
+):
+    # Extract locale from request headers
+    locale = extract_locale_from_header(request.headers.get("accept-language"))
+    
+    # Use parameter interpolation in translations
+    message = i18n.t("pet.name_too_long", locale, max_length=50, current_length=75)
+    # Returns: "Pet name must be 50 characters or less (current: 75)"
 ```
 
 ### Translation File Format
@@ -322,21 +312,29 @@ Translation files support Python string formatting with named parameters:
 ### Validation Example
 
 ```python
-def validate_name(auth_service: FastapiContext, name: str, locale: str = "en") -> str:
+from fastapi import HTTPException, status, Depends
+from fastapiutils.dependencies import get_i18n_service
+
+async def validate_name(
+    name: str, 
+    locale: str = "en",
+    i18n = Depends(get_i18n_service)
+) -> str:
     """Validate pet name field with internationalized error messages"""
     if not name or not name.strip():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=auth_service.i18n.t("pet.name_required", locale),
+            detail=i18n.t("pet.name_required", locale),
         )
     
     cleaned_name = name.strip()
+    MAX_NAME_LENGTH = 50
     if len(cleaned_name) > MAX_NAME_LENGTH:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=auth_service.i18n.t("pet.name_too_long", locale, 
-                                   max_length=MAX_NAME_LENGTH, 
-                                   current_length=len(cleaned_name)),
+            detail=i18n.t("pet.name_too_long", locale, 
+                         max_length=MAX_NAME_LENGTH, 
+                         current_length=len(cleaned_name)),
         )
     
     return cleaned_name
@@ -356,9 +354,11 @@ The i18n system gracefully handles missing parameters and formatting errors:
 You can override or extend the built-in translations by providing a custom locales directory:
 
 ```python
-auth_service = FastapiContext(
+from fastapiutils import setup_dependencies
+
+setup_dependencies(
+    custom_locales_dir="/path/to/your/custom/locales",
     # ... other parameters ...
-    custom_locales_dir="/path/to/your/custom/locales"
 )
 ```
 
@@ -366,3 +366,69 @@ Custom locale files will be merged with built-in translations, allowing you to:
 - Override existing translations
 - Add new translation keys
 - Support additional languages
+
+## Complete Example
+
+See the `example.py` file for a complete working example that includes:
+
+- Environment variable loading with `python-dotenv`
+- Dependency injection setup
+- Router inclusion
+- Development server configuration
+
+To run the example:
+
+1. Copy `.env.example` to `.env` and configure your settings
+2. Install dependencies: `pip install -r requirements.txt`
+3. Run: `python example.py`
+
+## Using with .env Files
+
+For easier configuration management, use a `.env` file:
+
+```bash
+# Copy the example file
+cp .env.example .env
+
+# Edit the .env file with your configuration
+# Then in your Python code:
+```
+
+```python
+from dotenv import load_dotenv
+
+load_dotenv()  # This loads the .env file automatically
+```
+
+## Available Dependencies
+
+The following dependency functions are available for injection into your route handlers:
+
+### Service Dependencies
+- `get_auth_service()` - Returns the AuthService instance
+- `get_database_service()` - Returns the DatabaseService instance  
+- `get_mail_service()` - Returns the MailService instance (or None if not configured)
+- `get_i18n_service()` - Returns the I18nService instance
+
+### User Authentication Dependencies
+- `CurrentUser` - Type annotation for getting the current authenticated user
+- `CurrentActiveUser` - Type annotation for getting the current active (non-disabled) user
+
+Example using service dependencies:
+
+```python
+from fastapi import Depends, APIRouter
+from fastapiutils.dependencies import get_database_service, get_i18n_service
+
+router = APIRouter()
+
+@router.get("/custom-endpoint")
+async def custom_endpoint(
+    db_service = Depends(get_database_service),
+    i18n = Depends(get_i18n_service)
+):
+    # Use services directly
+    result = db_service.execute_query("SELECT * FROM some_table")
+    message = i18n.t("some.translation.key", "en")
+    return {"data": result, "message": message}
+```
