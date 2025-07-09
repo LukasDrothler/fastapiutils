@@ -165,16 +165,17 @@ class UserInDB(BaseUserInDB):
 ## Using Dependencies in Custom Routes
 
 ```python
-from fastapi import APIRouter
+from fastapi import Depends, APIRouter
 from fastapiutils import CurrentActiveUser
-from fastapiutils.dependencies import DatabaseServiceDependency
+from fastapiutils.dependencies import get_database_service
+from fastapiutils.database_service import DatabaseService
 
 router = APIRouter()
 
 @router.get("/protected")
 async def protected_route(
     current_user: CurrentActiveUser,
-    db_service: DatabaseServiceDependency
+    db_service: DatabaseService = Depends(get_database_service)
 ):
     return {"user": current_user.username, "user_id": current_user.id}
 ```

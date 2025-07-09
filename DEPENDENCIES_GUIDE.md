@@ -248,37 +248,18 @@ def get_profile(user: CurrentUser):
 
 ## Common Patterns
 
-## Modern Usage with Convenience Type Annotations (Recommended)
+## Common Patterns
 
-### Service Dependency Type Annotations
-
-For cleaner and more consistent code, FastAPI Utils provides convenience type annotations for all services:
-
+### Using in Route Handlers
 ```python
-# Available convenience type annotations
-AuthServiceDependency = Annotated[AuthService, Depends(get_auth_service)]
-DatabaseServiceDependency = Annotated[DatabaseService, Depends(get_database_service)]
-MailServiceDependency = Annotated[Optional[MailService], Depends(get_mail_service)]
-I18nServiceDependency = Annotated[I18nService, Depends(get_i18n_service)]
-
-# User convenience type annotations
-CurrentUser = Annotated[UserInDB, Depends(get_current_user)]
-CurrentActiveUser = Annotated[UserInDB, Depends(get_current_active_user)]
-```
-
-### Using in Route Handlers (Recommended)
-```python
-from fastapiutils.dependencies import (
-    AuthServiceDependency, 
-    DatabaseServiceDependency, 
-    MailServiceDependency, 
-    I18nServiceDependency, 
-    CurrentActiveUser
-)
+from fastapi import Depends
+from fastapiutils import CurrentActiveUser
+from fastapiutils.dependencies import get_mail_service
+from fastapiutils.mail_service import MailService
 
 @app.get("/send-email")
 def send_email(
-    mail_service: MailServiceDependency,
+    mail_service: MailService = Depends(get_mail_service),
     user: CurrentActiveUser
 ):
     if mail_service:
@@ -288,41 +269,20 @@ def send_email(
 @app.post("/users/register")
 def create_user(
     user_data: CreateUser,
-    auth_service: AuthServiceDependency,
-    db_service: DatabaseServiceDependency,
-    mail_service: MailServiceDependency,
-    i18n_service: I18nServiceDependency,
+    auth_service: AuthService = Depends(get_auth_service),
+    db_service: DatabaseService = Depends(get_database_service),
+    mail_service: MailService = Depends(get_mail_service),
+    i18n_service: I18nService = Depends(get_i18n_service),
 ):
-    # Clean, readable code with type safety
     return auth_service.create_user(user_data, "en", 
                                    db_service=db_service, 
                                    i18n_service=i18n_service)
 ```
 
-### Legacy Usage (Still Supported)
-```python
-@app.get("/send-email")
-def send_email(
-    mail_service: MailService = Depends(get_mail_service),
-    user: CurrentActiveUser
-):
-    if mail_service:
-        mail_service.send_email(user.email, "Hello!")
-    return {"status": "sent"}
-```
-
-### Benefits of the Convenience Type Annotations
-
-1. **Cleaner Code**: No need to repeat `= Depends(get_*)` in every route
-2. **Consistency**: All dependencies follow the same pattern
-3. **Less Imports**: Import the type annotations instead of both `Depends` and `get_*` functions
-4. **Type Safety**: Full type hints maintained
-5. **IDE Support**: Better autocomplete and error detection
-
 ### Testing with Mocks
 ```python
 def test_my_route():
-    # Override dependencies for testing (works with both approaches)
+    # Override dependencies for testing
     app.dependency_overrides[get_database_service] = lambda: MockDatabaseService()
     
     # Your test code here

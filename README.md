@@ -228,7 +228,9 @@ Example custom router (`routers/pet.py`):
 from fastapi import APIRouter, Depends, Request, Path, HTTPException, status
 from typing import Annotated
 from fastapiutils import User, CurrentActiveUser
-from fastapiutils.dependencies import DatabaseServiceDependency, I18nServiceDependency
+from fastapiutils.dependencies import get_database_service, get_i18n_service
+from fastapiutils.database_service import DatabaseService
+from fastapiutils.i18n_service import I18nService
 from .models import Pet  # Your custom models
 
 """Create the router for pet-related endpoints"""
@@ -239,8 +241,8 @@ async def get_pet(
     current_user: CurrentActiveUser,
     pet_id: str = Path(description="The ID of the pet to retrieve"),
     request: Request = None,
-    db_service: DatabaseServiceDependency,
-    i18n_service: I18nServiceDependency,
+    db_service: DatabaseService = Depends(get_database_service),
+    i18n_service: I18nService = Depends(get_i18n_service),
 ):
     """Usage of the dependency injection pattern"""
     locale = i18n_service.extract_locale_from_header(request.headers.get("accept-language"))
@@ -276,13 +278,14 @@ The library supports parameter interpolation in translation strings, allowing yo
 ### Basic Usage
 
 ```python
-from fastapiutils.dependencies import I18nServiceDependency
+from fastapiutils.dependencies import get_i18n_service
+from fastapiutils.i18n_service import I18nService
 from fastapi import Depends, Request
 
 # In your route handler
 async def my_route(
     request: Request,
-    i18n_service: I18nServiceDependency
+    i18n_service: I18nService = Depends(get_i18n_service)
 ):
     # Extract locale from request headers
     locale = i18n_service.extract_locale_from_header(request.headers.get("accept-language"))
@@ -310,12 +313,13 @@ Translation files support Python string formatting with named parameters:
 
 ```python
 from fastapi import HTTPException, status, Depends
-from fastapiutils.dependencies import I18nServiceDependency
+from fastapiutils.dependencies import get_i18n_service
+from fastapiutils.i18n_service import I18nService
 
 async def validate_name(
     name: str, 
     locale: str = "en",
-    i18n_service: I18nServiceDependency
+    i18n_service: I18nService = Depends(get_i18n_service)
 ) -> str:
     """Validate pet name field with internationalized error messages"""
     if not name or not name.strip():
@@ -399,15 +403,9 @@ load_dotenv()  # This loads the .env file automatically
 
 ## Available Dependencies
 
-The following dependency functions and type annotations are available for injection into your route handlers:
+The following dependency functions are available for injection into your route handlers:
 
-### Service Dependencies (Preferred - Type Annotations)
-- `AuthServiceDependency` - Type annotation for injecting the AuthService instance
-- `DatabaseServiceDependency` - Type annotation for injecting the DatabaseService instance  
-- `MailServiceDependency` - Type annotation for injecting the MailService instance (or None if not configured)
-- `I18nServiceDependency` - Type annotation for injecting the I18nService instance
-
-### Legacy Service Dependencies (Functions)
+### Service Dependencies
 - `get_auth_service()` - Returns the AuthService instance
 - `get_database_service()` - Returns the DatabaseService instance  
 - `get_mail_service()` - Returns the MailService instance (or None if not configured)
@@ -417,18 +415,20 @@ The following dependency functions and type annotations are available for inject
 - `CurrentUser` - Type annotation for getting the current authenticated user
 - `CurrentActiveUser` - Type annotation for getting the current active (non-disabled) user
 
-Example using service dependencies (recommended approach):
+Example using service dependencies:
 
 ```python
-from fastapi import APIRouter
-from fastapiutils.dependencies import DatabaseServiceDependency, I18nServiceDependency
+from fastapi import Depends, APIRouter
+from fastapiutils.dependencies import get_database_service, get_i18n_service
+from fastapiutils.database_service import DatabaseService
+from fastapiutils.i18n_service import I18nService
 
 router = APIRouter()
 
 @router.get("/custom-endpoint")
 async def custom_endpoint(
-    db_service: DatabaseServiceDependency,
-    i18n_service: I18nServiceDependency
+    db_service: DatabaseService = Depends(get_database_service),
+    i18n_service: I18nService = Depends(get_i18n_service)
 ):
     # Use services directly
     result = db_service.execute_query("SELECT * FROM some_table")

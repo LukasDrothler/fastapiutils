@@ -171,9 +171,3 @@ def get_current_active_user(
 # Convenience type annotations for use in route handlers
 CurrentUser = Annotated[UserInDB, Depends(get_current_user)]
 CurrentActiveUser = Annotated[UserInDB, Depends(get_current_active_user)]
-
-# Convenience type annotations for services
-AuthServiceDependency = Annotated[AuthService, Depends(get_auth_service)]
-DatabaseServiceDependency = Annotated[DatabaseService, Depends(get_database_service)]
-MailServiceDependency = Annotated[Optional[MailService], Depends(get_mail_service)]
-I18nServiceDependency = Annotated[I18nService, Depends(get_i18n_service)]
