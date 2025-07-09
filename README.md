@@ -240,8 +240,8 @@ def create_router() -> APIRouter:
         current_user: CurrentActiveUser,
         pet_id: str = Path(description="The ID of the pet to retrieve"),
         request: Request = None,
-        db_service = Depends(get_database_service),
-        i18n = Depends(get_i18n_service),
+        db_service: DatabaseService = Depends(get_database_service),
+        i18n_service: I18nService = Depends(get_i18n_service),
     ):
         """Usage of the dependency injection pattern"""
         locale = extract_locale_from_header(request.headers.get("accept-language"))
@@ -285,7 +285,7 @@ from fastapi import Depends, Request
 # In your route handler
 async def my_route(
     request: Request,
-    i18n = Depends(get_i18n_service)
+    i18n_service: I18nService = Depends(get_i18n_service)
 ):
     # Extract locale from request headers
     locale = extract_locale_from_header(request.headers.get("accept-language"))
@@ -318,7 +318,7 @@ from fastapiutils.dependencies import get_i18n_service
 async def validate_name(
     name: str, 
     locale: str = "en",
-    i18n = Depends(get_i18n_service)
+    i18n_service: I18nService = Depends(get_i18n_service)
 ) -> str:
     """Validate pet name field with internationalized error messages"""
     if not name or not name.strip():
@@ -424,8 +424,8 @@ router = APIRouter()
 
 @router.get("/custom-endpoint")
 async def custom_endpoint(
-    db_service = Depends(get_database_service),
-    i18n = Depends(get_i18n_service)
+    db_service: DatabaseService = Depends(get_database_service),
+    i18n_service: I18nService = Depends(get_i18n_service)
 ):
     # Use services directly
     result = db_service.execute_query("SELECT * FROM some_table")

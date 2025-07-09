@@ -9,7 +9,6 @@ from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 
 from fastapiutils.models import UserInDB
-from .auth_service import AuthService
 from .database_service import DatabaseService
 from .mail_service import MailService
 from .i18n_service import I18nService
@@ -77,20 +76,15 @@ def create_i18n_service(custom_locales_dir: Optional[str] = None, default_locale
 
 
 def create_auth_service(
-    db_service: DatabaseService,
-    mail_service: Optional[MailService],
-    i18n_service: I18nService,
     access_token_expire_minutes: int = 30,
     refresh_token_expire_days: int = 30,
     token_url: str = "token",
     private_key_filename: str = "private_key.pem",
     public_key_filename: str = "public_key.pem"
-) -> AuthService:
-    """Factory function to create AuthService instance with injected dependencies"""
+):
+    """Factory function to create AuthService instance without dependencies"""
+    from .auth_service import AuthService
     return AuthService(
-        db_service=db_service,
-        mail_service=mail_service,
-        i18n_service=i18n_service,
         access_token_expire_minutes=access_token_expire_minutes,
         refresh_token_expire_days=refresh_token_expire_days,
         token_url=token_url,
@@ -119,14 +113,7 @@ def setup_dependencies(
     
     # Register auth service factory that depends on other services
     def auth_service_factory():
-        db_service = container.get("database_service")
-        mail_service = container.get("mail_service")
-        i18n_service = container.get("i18n_service")
-        
         return create_auth_service(
-            db_service=db_service,
-            mail_service=mail_service,
-            i18n_service=i18n_service,
             access_token_expire_minutes=access_token_expire_minutes,
             refresh_token_expire_days=refresh_token_expire_days,
             token_url=token_url,
@@ -138,7 +125,7 @@ def setup_dependencies(
 
 
 @lru_cache()
-def get_auth_service() -> AuthService:
+def get_auth_service():
     """FastAPI dependency function to get AuthService instance"""
     return container.get("auth_service")
 
@@ -166,18 +153,21 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 def get_current_user(
     token: Annotated[str, Depends(oauth2_scheme)],
-    auth_service = Depends(get_auth_service)
+    auth_service = Depends(get_auth_service),
+    db_service: DatabaseService = Depends(get_database_service),
+    i18n_service: I18nService = Depends(get_i18n_service)
 ) -> UserInDB:
     """Dependency to get current user from JWT token"""
-    return auth_service.get_current_user(token)
+    return auth_service.get_current_user(token, db_service=db_service, i18n_service=i18n_service)
 
 
 def get_current_active_user(
     current_user: Annotated[UserInDB, Depends(get_current_user)],
-    auth_service = Depends(get_auth_service)
+    auth_service = Depends(get_auth_service),
+    i18n_service: I18nService = Depends(get_i18n_service)
 ) -> UserInDB:
     """Dependency to get current active user"""
-    return auth_service.get_current_active_user(current_user)
+    return auth_service.get_current_active_user(current_user, i18n_service=i18n_service)
 
 
 # Convenience type annotations for use in route handlers

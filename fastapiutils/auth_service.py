@@ -1,23 +1,23 @@
+from .database_service import DatabaseService
+from .mail_service import MailService
+from .i18n_service import I18nService
 import jwt
 import re
 import os
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 from passlib.context import CryptContext
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status, Depends
 from fastapi.security import OAuth2PasswordBearer
 from cryptography.hazmat.primitives import serialization
 
-from .models import  UserInDB, CreateUser
+from .models import UserInDB, CreateUser
 
 
 class AuthService:
     """Service for handling authentication-related operations"""
     
     def __init__(self,
-                 db_service,
-                 mail_service: Optional[object] = None,
-                 i18n_service: Optional[object] = None,
                  access_token_expire_minutes=30,
                  refresh_token_expire_days=30,
                  token_url="token",
@@ -25,8 +25,8 @@ class AuthService:
                  public_key_filename: str = "public_key.pem",
                  ):
         
-        """Initialize the authentication configuration with injected dependencies"""
-        rsa_keys_path=os.getenv("RSA_KEYS_PATH", "./keys")
+        """Initialize the authentication configuration"""
+        rsa_keys_path=os.getenv("RSA_KEYS_PATH")
         if not os.path.exists(rsa_keys_path):
             raise ValueError(f"RSA keys path does not exist: {rsa_keys_path}")
         
@@ -48,11 +48,6 @@ class AuthService:
         self.access_token_expire_minutes = access_token_expire_minutes
         self.refresh_token_expire_days = refresh_token_expire_days
         self.token_url = token_url
-
-        # Inject dependencies
-        self.db_service = db_service
-        self.mail_service = mail_service
-        self.i18n = i18n_service
 
         self.pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
         self.oauth2_scheme = OAuth2PasswordBearer(tokenUrl=self.token_url)
@@ -80,21 +75,21 @@ class AuthService:
         encoded_jwt = jwt.encode(to_encode, self.private_key, algorithm=self.algorithm)
         return encoded_jwt
     
-    def get_user(self, username: Optional[str] = None, email: Optional[str] = None) -> Optional[UserInDB]:
+    def get_user(self, username: Optional[str] = None, email: Optional[str] = None, db_service: DatabaseService=None) -> Optional[UserInDB]:
         """Get user from database"""
         result = None
         if username and email:
-            result = self.db_service.execute_single_query(
+            result = db_service.execute_single_query(
                 "SELECT * FROM user WHERE LOWER(username) = LOWER(%s) AND LOWER(email) = LOWER(%s)", 
                 (username, email)
             )
         elif email:
-            result = self.db_service.execute_single_query(
+            result = db_service.execute_single_query(
                 "SELECT * FROM user WHERE LOWER(email) = LOWER(%s)", 
                 (email,)
             )
         elif username:
-            result = self.db_service.execute_single_query(
+            result = db_service.execute_single_query(
                 "SELECT * FROM user WHERE LOWER(username) = LOWER(%s)", 
                 (username,)
             )
@@ -103,9 +98,9 @@ class AuthService:
             return UserInDB(**result)
         return None
     
-    def authenticate_user(self, username: str, password: str) -> Optional[UserInDB]:
+    def authenticate_user(self, username: str, password: str, db_service: DatabaseService = None) -> Optional[UserInDB]:
         """Authenticate a user"""
-        user = self.get_user(username=username)
+        user = self.get_user(username=username, db_service=db_service)
         if not user:
             return None
         if not self.verify_password(password, user.hashed_password):
@@ -113,79 +108,79 @@ class AuthService:
         
         # Update last_seen
         current_time = datetime.now(timezone.utc)
-        self.db_service.execute_modification_query(
+        db_service.execute_modification_query(
             "UPDATE user SET last_seen = %s WHERE id = %s", 
             (current_time, user.id)
         )
         return user
     
-    def validate_new_user(self, user: CreateUser, locale: str = "en"):
+    def validate_new_user(self, user: CreateUser, locale: str = "en", db_service: DatabaseService = None, i18n_service: I18nService = None):
         """Validate new user data"""
         if not re.match(r"^\w{3,}$", user.username):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=self.i18n.t("auth.username_invalid", locale),
+                detail=i18n_service.t("auth.username_invalid", locale),
             )
         if not re.match(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$", user.email):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=self.i18n.t("auth.email_invalid", locale),
+                detail=i18n_service.t("auth.email_invalid", locale),
             )
         if len(user.password) < 8 or not re.search(r"[A-Z]", user.password) or not re.search(r"[0-9]", user.password):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=self.i18n.t("auth.password_weak", locale),
+                detail=i18n_service.t("auth.password_weak", locale),
             )
         
-        if self.get_user(username=user.username):
+        if self.get_user(username=user.username, db_service=db_service):
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail=self.i18n.t("auth.username_taken", locale),
+                detail=i18n_service.t("auth.username_taken", locale),
             )
-        if self.get_user(email=user.email):
+        if self.get_user(email=user.email, db_service=db_service):
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail=self.i18n.t("auth.email_taken", locale),
+                detail=i18n_service.t("auth.email_taken", locale),
             )
     
-    def create_user(self, user: CreateUser, locale: str = "en") -> dict:
+    def create_user(self, user: CreateUser, locale: str = "en", db_service: DatabaseService = None, mail_service: Optional[MailService] = None, i18n_service: I18nService = None) -> dict:
         """Create a new user"""
-        self.validate_new_user(user, locale)
+        self.validate_new_user(user, locale, db_service=db_service, i18n_service=i18n_service)
         
-        uid = self.db_service.generate_uuid("user")
+        uid = db_service.generate_uuid("user")
         if uid is None:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=self.i18n.t("auth.user_creation_failed", locale),
+                detail=i18n_service.t("auth.user_creation_failed", locale),
             )
         
         hashed_password = self.get_password_hash(user.password)
         
-        self.db_service.execute_modification_query(
+        db_service.execute_modification_query(
             "INSERT INTO user (id, username, email, hashed_password) VALUES (%s, %s, %s, %s)",
             (uid, user.username, user.email, hashed_password)
         )
         
-        if self.mail_service is not None:
+        if mail_service is not None:
             try:
-                self.mail_service.send_email_plain_text(
-                    content=self.i18n.t("auth.welcome_email_content", locale, username=user.username),
-                    subject=self.i18n.t("auth.welcome_email_subject", locale),
+                mail_service.send_email_plain_text(
+                    content=i18n_service.t("auth.welcome_email_content", locale, username=user.username),
+                    subject=i18n_service.t("auth.welcome_email_subject", locale),
                     recipient=user.email
                 )
             except Exception as e:
                 raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail=self.i18n.t("auth.email_sending_failed", locale, error=str(e))
+                    detail=i18n_service.t("auth.email_sending_failed", locale, error=str(e))
                 )
 
-        return {"msg": self.i18n.t("auth.user_created", locale)}
+        return {"msg": i18n_service.t("auth.user_created", locale)}
     
-    def get_current_user(self, token: str) -> UserInDB:
+    def get_current_user(self, token: str, db_service: DatabaseService = None, i18n_service: I18nService = None) -> UserInDB:
         """Get current user from JWT token"""
         credentials_exception = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=self.i18n.t("auth.could_not_validate_credentials", "en"),
+            detail=i18n_service.t("auth.could_not_validate_credentials", "en"),
             headers={"WWW-Authenticate": "Bearer"},
         )
         
@@ -197,16 +192,16 @@ class AuthService:
         except jwt.InvalidTokenError:
             raise credentials_exception
             
-        user = self.get_user(username=username)
+        user = self.get_user(username=username, db_service=db_service)
         if user is None:
             raise credentials_exception
         return user
     
-    def get_current_active_user(self, current_user: UserInDB) -> UserInDB:
+    def get_current_active_user(self, current_user: UserInDB, i18n_service: I18nService = None) -> UserInDB:
         """Get current active user (not disabled)"""
         if current_user.disabled:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=self.i18n.t("auth.inactive_user", "en")
+                detail=i18n_service.t("auth.inactive_user", "en")
             )
         return current_user

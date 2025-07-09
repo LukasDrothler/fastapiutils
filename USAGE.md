@@ -174,7 +174,7 @@ router = APIRouter()
 @router.get("/protected")
 async def protected_route(
     current_user: CurrentActiveUser,
-    db_service = Depends(get_database_service)
+    db_service: DatabaseService = Depends(get_database_service)
 ):
     return {"user": current_user.username, "user_id": current_user.id}
 ```
