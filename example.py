@@ -4,7 +4,7 @@ Example usage of the fastapiutils package
 from fastapi import FastAPI
 import os
 from dotenv import load_dotenv
-from fastapiutils import (FastapiContext, create_auth_router, create_user_router)
+from fastapiutils import (AuthService, create_auth_router, create_user_router)
 
 load_dotenv()
 
@@ -13,13 +13,13 @@ app = FastAPI(title="FastAPI Utils Example")
 
 
 # Create FastAPI context with configuration objects
-fa_context = FastapiContext()
+auth_service = AuthService()
 
 # Include default routers
-app.include_router(create_auth_router(fa_context))
-app.include_router(create_user_router(fa_context))
+app.include_router(create_auth_router(auth_service))
+app.include_router(create_user_router(auth_service))
 # Include custom routers
-# app.include_router(custom.create_router(fa_context))
+# app.include_router(custom.create_router(auth_service))
 
 @app.get("/")
 async def root():

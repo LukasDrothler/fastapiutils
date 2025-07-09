@@ -77,7 +77,7 @@ mail_config = MailConfig(
 )
 
 # Create FastAPI context with configuration objects
-fa_context = FastapiContext(
+auth_service = FastapiContext(
     auth_config=auth_config,
     database_config=database_config,
     mail_config=mail_config,  # Optional: Enable welcome emails
@@ -85,8 +85,8 @@ fa_context = FastapiContext(
 )
 
 # Include routers
-app.include_router(create_auth_router(fa_context))
-app.include_router(create_user_router(fa_context))
+app.include_router(create_auth_router(auth_service))
+app.include_router(create_user_router(auth_service))
 ```
 
 ### Using Environment Variables
@@ -123,7 +123,7 @@ if os.getenv("SMTP_SERVER"):
         smtp_password=os.getenv("SMTP_PASSWORD")
     )
 
-fa_context = FastapiContext(
+auth_service = FastapiContext(
     auth_config=auth_config,
     database_config=database_config,
     mail_config=mail_config,
@@ -161,7 +161,7 @@ mail_config = MailConfig(
 )
 
 # Create FastAPI context with custom configuration
-fa_context = FastapiContext(
+auth_service = FastapiContext(
     auth_config=auth_config,
     database_config=database_config,
     mail_config=mail_config,             # Optional: Enable welcome emails
@@ -203,7 +203,7 @@ mail_config = MailConfig(
 )
 
 # Create FastAPI context
-fa_context = FastapiContext(
+auth_service = FastapiContext(
     auth_config=auth_config,
     database_config=database_config,
     mail_config=mail_config,  # Optional: Enable welcome emails
@@ -218,7 +218,7 @@ fa_context = FastapiContext(
 )
 
 # Create FastAPI context
-fa_context = FastapiContext(
+auth_service = FastapiContext(
     auth_config=auth_config,
     database_config=database_config,
     default_locale="en"
@@ -266,7 +266,7 @@ from fastapi import Depends
 from fastapiutils import FastapiContext
 
 # Get dependency functions
-get_current_user, get_current_active_user = fa_context.create_dependency_functions()
+get_current_user, get_current_active_user = auth_service.create_dependency_functions()
 
 @app.get("/protected")
 async def protected_route(current_user = Depends(get_current_active_user)):
@@ -303,7 +303,7 @@ if os.getenv("SMTP_SERVER"):
 
 # Built-in translations (en, de) are automatically loaded
 # Custom translations can override or extend them
-fa_context = FastapiContext(
+auth_service = FastapiContext(
     auth_config=auth_config,
     database_config=database_config,
     mail_config=mail_config,            # Optional: Enable welcome emails

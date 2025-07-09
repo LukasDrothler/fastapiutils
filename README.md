@@ -83,7 +83,7 @@ database_config = DatabaseConfig(
 )
 
 # Create FastAPI context with configuration objects
-fa_context = FastapiContext(
+auth_service = FastapiContext(
     auth_config=auth_config,
     database_config=database_config,
     mail_config=mail_config,  # Optional: Enable welcome emails
@@ -91,10 +91,10 @@ fa_context = FastapiContext(
 )
 
 # Include routers
-app.include_router(create_auth_router(fa_context))
-app.include_router(create_user_router(fa_context))
+app.include_router(create_auth_router(auth_service))
+app.include_router(create_user_router(auth_service))
 # Include custom routers (see later paragraph for explanation)
-app.include_router(pet.create_router(fa_context))
+app.include_router(pet.create_router(auth_service))
 ```
 
 ## Configuration
@@ -177,7 +177,7 @@ if os.getenv("SMTP_SERVER"):
         smtp_password=os.getenv("SMTP_PASSWORD")
     )
 
-fa_context = FastapiContext(
+auth_service = FastapiContext(
     auth_config=auth_config,
     database_config=database_config,
     mail_config=mail_config,
@@ -251,11 +251,11 @@ from core.db_pet import get_pet_by_id
 from fastapi import APIRouter, Depends, Request, Path, HTTPException, status
 from typing import Annotated
 
-def create_router(fa_context: FastapiContext) -> APIRouter:
+def create_router(auth_service: FastapiContext) -> APIRouter:
     """Create the router for pet-related endpoints"""
     router = APIRouter()
     """Get dependency function to ensure an active user is making the request"""
-    get_current_user_dep, get_current_active_user_dep = fa_context.create_dependency_functions()
+    get_current_user_dep, get_current_active_user_dep = auth_service.create_dependency_functions()
 
     @router.get("/pet/{pet_id}", response_model=Pet, tags=["pets"])
     async def get_pet(
@@ -270,18 +270,18 @@ def create_router(fa_context: FastapiContext) -> APIRouter:
         if len(pet_id) > 36:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=fa_context.i18n.t("pet.id_too_long", locale, 
+                detail=auth_service.i18n.t("pet.id_too_long", locale, 
                                        max_length=36, 
                                        current_length=len(pet_id)),
             )
         
         """Retrieve a specific pet by ID for the current user by using the database utility"""
         sql = "SELECT * FROM pet WHERE id = %s AND user_id = %s"
-        result = fa_context.db_manager.execute_single_query(sql, (pet_id, current_user.id))
+        result = auth_service.db_manager.execute_single_query(sql, (pet_id, current_user.id))
         if not result:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=fa_context.i18n.t("pet.pet_not_found", locale),
+                detail=auth_service.i18n.t("pet.pet_not_found", locale),
             )
         return Pet(**result)
 
@@ -301,7 +301,7 @@ from fastapiutils.i18n import extract_locale_from_header
 locale = extract_locale_from_header(request.headers.get("accept-language"))
 
 # Use parameter interpolation in translations
-fa_context.i18n.t("pet.name_too_long", locale, max_length=50, current_length=75)
+auth_service.i18n.t("pet.name_too_long", locale, max_length=50, current_length=75)
 # Returns: "Pet name must be 50 characters or less (current: 75)"
 ```
 
@@ -322,19 +322,19 @@ Translation files support Python string formatting with named parameters:
 ### Validation Example
 
 ```python
-def validate_name(fa_context: FastapiContext, name: str, locale: str = "en") -> str:
+def validate_name(auth_service: FastapiContext, name: str, locale: str = "en") -> str:
     """Validate pet name field with internationalized error messages"""
     if not name or not name.strip():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=fa_context.i18n.t("pet.name_required", locale),
+            detail=auth_service.i18n.t("pet.name_required", locale),
         )
     
     cleaned_name = name.strip()
     if len(cleaned_name) > MAX_NAME_LENGTH:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=fa_context.i18n.t("pet.name_too_long", locale, 
+            detail=auth_service.i18n.t("pet.name_too_long", locale, 
                                    max_length=MAX_NAME_LENGTH, 
                                    current_length=len(cleaned_name)),
         )
@@ -356,7 +356,7 @@ The i18n system gracefully handles missing parameters and formatting errors:
 You can override or extend the built-in translations by providing a custom locales directory:
 
 ```python
-fa_context = FastapiContext(
+auth_service = FastapiContext(
     # ... other parameters ...
     custom_locales_dir="/path/to/your/custom/locales"
 )

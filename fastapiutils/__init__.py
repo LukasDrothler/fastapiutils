@@ -1,4 +1,4 @@
-from .fastapi_context import FastapiContext
+from .auth_service import AuthService
 from .routers import create_auth_router, create_user_router
 from .models import User, UserInDB, CreateUser, Token, TokenData, RefreshTokenRequest
 from .database_service import DatabaseService
@@ -8,7 +8,7 @@ from .mail_service import MailService
 __version__ = "0.2.0"
 
 __all__ = [
-    "FastapiContext",
+    "AuthService",
     "create_auth_router",
     "create_user_router",
     "User",

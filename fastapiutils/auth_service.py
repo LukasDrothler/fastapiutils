@@ -15,8 +15,8 @@ from .models import  UserInDB, CreateUser, TokenData
 from .i18n_service import I18nService
 
 
-class FastapiContext:
-    """Main authentication manager class"""
+class AuthService:
+    """Service for handling authentication-related operations"""
     
     def __init__(self,
                  access_token_expire_minutes=30,
