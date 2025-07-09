@@ -7,9 +7,9 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jwt.exceptions import InvalidTokenError
 
-from .mail import MailManager
+from .mail_service import MailService
 from .database_service import DatabaseService
-from .config import AuthConfig, MailConfig
+from .config import AuthConfig
 from .models import  UserInDB, CreateUser, TokenData
 from .i18n import I18n
 
@@ -19,7 +19,6 @@ class FastapiContext:
     
     def __init__(self,
                  auth_config: AuthConfig,
-                 mail_config: Optional[MailConfig] = None,
                  custom_locales_dir: Optional[str] = None,
                  default_locale: str = "en",
                  ):
@@ -35,9 +34,11 @@ class FastapiContext:
 
         self.db_service = DatabaseService()
         
-        self.mail_manager = None
-        if mail_config:
-            self.mail_manager = MailManager(mail_config)
+        try:
+            self.mail_manager = MailService()
+        except:
+            self.mail_manager = None
+
 
         self.pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
         self.oauth2_scheme = OAuth2PasswordBearer(tokenUrl=self.token_url)

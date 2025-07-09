@@ -1,16 +1,13 @@
 """
 Example usage of the fastapiutils package
-
-This example shows the configuration approach using AuthConfig, DatabaseConfig, and MailConfig objects.
 """
 from fastapi import FastAPI
 import os
 from dotenv import load_dotenv
 from fastapiutils import (
-    FastapiContext, AuthConfig, MailConfig,
+    FastapiContext, AuthConfig,
     create_auth_router, create_user_router
 )
-from fastapiutils.database_service import DatabaseService
 
 load_dotenv()
 
@@ -25,18 +22,10 @@ auth_config = AuthConfig(
     token_url="token",
 )
 
-# Optional: Create mail configuration for welcome emails
-mail_config = MailConfig(
-    smtp_server=os.getenv("SMTP_SERVER"),
-    smtp_port=int(os.getenv("SMTP_PORT", "587")),
-    smtp_user=os.getenv("SMTP_USER"),
-    smtp_password=os.getenv("SMTP_PASSWORD")
-)
 
 # Create FastAPI context with configuration objects
 fa_context = FastapiContext(
     auth_config=auth_config,
-    mail_config=mail_config
 )
 
 # Include default routers

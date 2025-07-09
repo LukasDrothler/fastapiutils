@@ -61,7 +61,7 @@ openssl rsa -pubout -in private_key.pem -out public_key.pem
 
 ```python
 from fastapi import FastAPI
-from fastapiutils import FastapiContext, AuthConfig, DatabaseConfig, MailConfig, create_auth_router, create_user_router
+from fastapiutils import FastapiContext, AuthConfig, DatabaseConfig, create_auth_router, create_user_router
 from routers import pet
 
 app = FastAPI()
@@ -80,14 +80,6 @@ database_config = DatabaseConfig(
     user="root",
     password="your_password",
     database="your_database"
-)
-
-# Optional: Create mail configuration for welcome emails
-mail_config = MailConfig(
-    smtp_server="smtp.gmail.com",
-    smtp_port=587,
-    smtp_user="your_email@gmail.com",
-    smtp_password="your_app_password"
 )
 
 # Create FastAPI context with configuration objects
