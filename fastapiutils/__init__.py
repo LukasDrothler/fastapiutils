@@ -1,16 +1,22 @@
 from .auth_service import AuthService
-from .routers import create_auth_router, create_user_router
 from .models import User, UserInDB, CreateUser, Token, TokenData, RefreshTokenRequest
 from .database_service import DatabaseService
 from .i18n_service import I18nService, extract_locale_from_header
 from .mail_service import MailService
+from .dependencies import (
+    setup_dependencies, 
+    get_auth_service, 
+    get_database_service, 
+    get_mail_service, 
+    get_i18n_service,
+    CurrentUser, 
+    CurrentActiveUser
+)
 
 __version__ = "0.2.0"
 
 __all__ = [
     "AuthService",
-    "create_auth_router",
-    "create_user_router",
     "User",
     "UserInDB",
     "CreateUser",
@@ -21,4 +27,11 @@ __all__ = [
     "MailService",
     "I18nService",
     "extract_locale_from_header",
+    "setup_dependencies",
+    "get_auth_service",
+    "get_database_service",
+    "get_mail_service",
+    "get_i18n_service",
+    "CurrentUser",
+    "CurrentActiveUser",
 ]

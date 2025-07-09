@@ -1,34 +1,32 @@
 """
-Example usage of the fastapiutils package
+Example usage of the fastapiutils package with dependency injection
 """
 from fastapi import FastAPI
+from fastapiutils.routers import user, auth
 import os
 from dotenv import load_dotenv
-from fastapiutils import (AuthService, create_auth_router, create_user_router)
+from fastapiutils import setup_dependencies
 
 load_dotenv()
 
 # Create FastAPI app
 app = FastAPI(title="FastAPI Utils Example")
 
+# Setup dependency injection container
+setup_dependencies(
+    custom_locales_dir=None,  # Optional: path to custom locales
+    default_locale="en",
+    access_token_expire_minutes=int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30")),
+    refresh_token_expire_days=int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "30")),
+    token_url="token",
+    private_key_filename="private_key.pem",
+    public_key_filename="public_key.pem"
+)
 
-# Create FastAPI context with configuration objects
-auth_service = AuthService()
-
-# Include default routers
-app.include_router(create_auth_router(auth_service))
-app.include_router(create_user_router(auth_service))
-# Include custom routers
-# app.include_router(custom.create_router(auth_service))
-
-@app.get("/")
-async def root():
-    return {"message": "FastAPI Utils Example", "version": "0.2.0"}
-
-@app.get("/health")
-async def health():
-    return {"status": "healthy"}
+# Include routers (no need to pass auth_service anymore!)
+app.include_router(auth.router)
+app.include_router(user.router)
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("example:app", host="localhost", port=os.getenv("FASTAPI_PORT", 8000), log_level="info", reload=True)
+    uvicorn.run("example:app", host="localhost", port=int(os.getenv("FASTAPI_PORT", 8000)), log_level="info", reload=True)

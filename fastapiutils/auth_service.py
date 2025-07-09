@@ -2,33 +2,30 @@ import jwt
 import re
 import os
 from datetime import datetime, timedelta, timezone
-from typing import Optional, Annotated
+from typing import Optional
 from passlib.context import CryptContext
-from fastapi import Depends, HTTPException, status
+from fastapi import HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from jwt.exceptions import InvalidTokenError
 from cryptography.hazmat.primitives import serialization
 
-from .mail_service import MailService
-from .database_service import DatabaseService
-from .models import  UserInDB, CreateUser, TokenData
-from .i18n_service import I18nService
+from .models import  UserInDB, CreateUser
 
 
 class AuthService:
     """Service for handling authentication-related operations"""
     
     def __init__(self,
+                 db_service,
+                 mail_service: Optional[object] = None,
+                 i18n_service: Optional[object] = None,
                  access_token_expire_minutes=30,
                  refresh_token_expire_days=30,
                  token_url="token",
                  private_key_filename: str = "private_key.pem",
                  public_key_filename: str = "public_key.pem",
-                 custom_locales_dir: Optional[str] = None,
-                 default_locale: str = "en",
                  ):
         
-        """Initialize the authentication configuration"""
+        """Initialize the authentication configuration with injected dependencies"""
         rsa_keys_path=os.getenv("RSA_KEYS_PATH", "./keys")
         if not os.path.exists(rsa_keys_path):
             raise ValueError(f"RSA keys path does not exist: {rsa_keys_path}")
@@ -51,21 +48,14 @@ class AuthService:
         self.access_token_expire_minutes = access_token_expire_minutes
         self.refresh_token_expire_days = refresh_token_expire_days
         self.token_url = token_url
-        self.default_locale = default_locale
 
-        self.db_service = DatabaseService()
-        
-        try:
-            self.mail_manager = MailService()
-        except:
-            self.mail_manager = None
-
+        # Inject dependencies
+        self.db_service = db_service
+        self.mail_service = mail_service
+        self.i18n = i18n_service
 
         self.pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
         self.oauth2_scheme = OAuth2PasswordBearer(tokenUrl=self.token_url)
-        
-        # Initialize i18n (built-in locales are always loaded, custom can override/extend)
-        self.i18n = I18nService(custom_locales_dir=custom_locales_dir, default_locale=default_locale)
 
     
     def verify_password(self, plain_password: str, hashed_password: str) -> bool:
@@ -176,9 +166,9 @@ class AuthService:
             (uid, user.username, user.email, hashed_password)
         )
         
-        if self.mail_manager is not None:
+        if self.mail_service is not None:
             try:
-                self.mail_manager.send_email_plain_text(
+                self.mail_service.send_email_plain_text(
                     content=self.i18n.t("auth.welcome_email_content", locale, username=user.username),
                     subject=self.i18n.t("auth.welcome_email_subject", locale),
                     recipient=user.email
@@ -190,44 +180,3 @@ class AuthService:
                 )
 
         return {"msg": self.i18n.t("auth.user_created", locale)}
-    
-    def get_current_user(self, token: Annotated[str, Depends]) -> UserInDB:
-        """Get current user from token"""
-        credentials_exception = HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=self.i18n.t("auth.could_not_validate_credentials"),
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-        
-        try:
-            payload = jwt.decode(token, self.public_key, algorithms=[self.algorithm])
-            username = payload.get("sub")
-            if username is None:
-                raise credentials_exception
-            token_data = TokenData(username=username)
-        except InvalidTokenError:
-            raise credentials_exception
-        
-        user = self.get_user(username=token_data.username)
-        if user is None:
-            raise credentials_exception
-        return user
-    
-    def get_current_active_user(self, current_user: Annotated[UserInDB, Depends]) -> UserInDB:
-        """Get current active user"""
-        if current_user.disabled:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, 
-                detail=self.i18n.t("auth.inactive_user")
-            )
-        return current_user
-    
-    def create_dependency_functions(self):
-        """Create dependency functions for FastAPI"""
-        def get_current_user_dep(token: Annotated[str, Depends(self.oauth2_scheme)]):
-            return self.get_current_user(token)
-        
-        def get_current_active_user_dep(current_user: Annotated[UserInDB, Depends(get_current_user_dep)]):
-            return self.get_current_active_user(current_user)
-        
-        return get_current_user_dep, get_current_active_user_dep
