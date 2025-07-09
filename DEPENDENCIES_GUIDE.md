@@ -18,14 +18,12 @@ The dependency injection system in `dependencies.py` is designed to manage servi
 ```python
 class DependencyContainer:
     def __init__(self):
-        self._services: Dict[str, Any] = {}
         self._factories: Dict[str, Callable] = {}
         self._singletons: Dict[str, Any] = {}
 ```
 
 **What it does:**
 - Creates a container that holds different types of service registrations
-- `_services`: Currently unused (legacy)
 - `_factories`: Functions that know how to create service instances
 - `_singletons`: Already-created service instances (created once, reused)
 

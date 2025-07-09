@@ -18,7 +18,6 @@ class DependencyContainer:
     """Dependency injection container for managing service instances"""
     
     def __init__(self):
-        self._services: Dict[str, Any] = {}
         self._factories: Dict[str, Callable] = {}
         self._singletons: Dict[str, Any] = {}
         
@@ -47,7 +46,6 @@ class DependencyContainer:
     
     def clear(self) -> None:
         """Clear all registered services"""
-        self._services.clear()
         self._factories.clear()
         self._singletons.clear()
 
