@@ -8,7 +8,7 @@ from fastapiutils.auth_service import AuthService
 from fastapiutils.database_service import DatabaseService
 
 from ..models import Token, RefreshTokenRequest, TokenData
-from ..i18n_service import I18nService, extract_locale_from_header
+from ..i18n_service import I18nService
 from ..dependencies import get_auth_service, get_database_service, get_i18n_service
 
 """Create authentication router with dependency injection"""
@@ -23,7 +23,7 @@ async def login_for_access_token(
     i18n_service: I18nService = Depends(get_i18n_service),
     stay_logged_in: Optional[bool] = False
 ) -> Token:
-    locale = extract_locale_from_header(request.headers.get("accept-language"))
+    locale = i18n_service.extract_locale_from_header(request.headers.get("accept-language"))
     
     user = auth_service.authenticate_user(form_data.username, form_data.password, db_service=db_service)
     if not user:
@@ -48,7 +48,7 @@ async def refresh_access_token(
     db_service: DatabaseService = Depends(get_database_service),
     i18n_service: I18nService = Depends(get_i18n_service),
 ) -> Token:
-    locale = extract_locale_from_header(request.headers.get("accept-language"))
+    locale = i18n_service.extract_locale_from_header(request.headers.get("accept-language"))
     
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,

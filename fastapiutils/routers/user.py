@@ -4,7 +4,6 @@ from fastapiutils.database_service import DatabaseService
 from fastapiutils.mail_service import MailService
 
 from ..models import CreateUser, User
-from ..i18n_service import extract_locale_from_header
 from ..dependencies import get_auth_service, get_database_service, get_mail_service, get_i18n_service
 from ..dependencies import CurrentActiveUser
 
@@ -20,7 +19,7 @@ async def create_user(
     mail_service: MailService = Depends(get_mail_service),
     i18n_service: I18nService = Depends(get_i18n_service),
 ):
-    locale = extract_locale_from_header(request.headers.get("accept-language"))
+    locale = i18n_service.extract_locale_from_header(request.headers.get("accept-language"))
     msg = auth_service.create_user(user, locale, db_service=db_service, i18n_service=i18n_service)
     if mail_service is not None:
             try:

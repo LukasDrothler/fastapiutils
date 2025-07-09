@@ -1,8 +1,8 @@
 from .auth_service import AuthService
 from .models import User, UserInDB, CreateUser, Token, TokenData, RefreshTokenRequest
 from .database_service import DatabaseService
-from .i18n_service import I18nService, extract_locale_from_header
 from .mail_service import MailService
+from .i18n_service import I18nService
 from .dependencies import (
     setup_dependencies, 
     get_auth_service, 
@@ -26,7 +26,6 @@ __all__ = [
     "DatabaseService",
     "MailService",
     "I18nService",
-    "extract_locale_from_header",
     "setup_dependencies",
     "get_auth_service",
     "get_database_service",

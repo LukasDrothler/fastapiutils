@@ -119,19 +119,19 @@ class I18nService:
         return self.get_translation(key, locale, **kwargs)
 
 
-def extract_locale_from_header(accept_language: Optional[str]) -> str:
-    """Extract locale from Accept-Language header"""
-    if not accept_language:
+    def extract_locale_from_header(accept_language: Optional[str]) -> str:
+        """Extract locale from Accept-Language header"""
+        if not accept_language:
+            return "en"
+        
+        # Parse Accept-Language header (e.g., "en-US,en;q=0.9,de;q=0.8")
+        # For simplicity, we'll just take the first language code
+        languages = accept_language.split(',')
+        if languages:
+            # Get the first language and extract just the language code
+            first_lang = languages[0].split(';')[0].strip()
+            # Extract just the language part (e.g., "en" from "en-US")
+            locale = first_lang.split('-')[0].lower()
+            return locale
+        
         return "en"
-    
-    # Parse Accept-Language header (e.g., "en-US,en;q=0.9,de;q=0.8")
-    # For simplicity, we'll just take the first language code
-    languages = accept_language.split(',')
-    if languages:
-        # Get the first language and extract just the language code
-        first_lang = languages[0].split(';')[0].strip()
-        # Extract just the language part (e.g., "en" from "en-US")
-        locale = first_lang.split('-')[0].lower()
-        return locale
-    
-    return "en"

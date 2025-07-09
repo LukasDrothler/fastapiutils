@@ -227,7 +227,7 @@ Example custom router (`routers/pet.py`):
 ```python
 from fastapi import APIRouter, Depends, Request, Path, HTTPException, status
 from typing import Annotated
-from fastapiutils import User, CurrentActiveUser, extract_locale_from_header
+from fastapiutils import User, CurrentActiveUser
 from fastapiutils.dependencies import get_database_service, get_i18n_service
 from .models import Pet  # Your custom models
 
@@ -243,7 +243,7 @@ async def get_pet(
     i18n_service: I18nService = Depends(get_i18n_service),
 ):
     """Usage of the dependency injection pattern"""
-    locale = extract_locale_from_header(request.headers.get("accept-language"))
+    locale = i18n_service.extract_locale_from_header(request.headers.get("accept-language"))
     
     # Validate pet_id length (example with parameter interpolation)
     if len(pet_id) > 36:
@@ -276,7 +276,6 @@ The library supports parameter interpolation in translation strings, allowing yo
 ### Basic Usage
 
 ```python
-from fastapiutils import extract_locale_from_header
 from fastapiutils.dependencies import get_i18n_service
 from fastapi import Depends, Request
 
@@ -286,7 +285,7 @@ async def my_route(
     i18n_service: I18nService = Depends(get_i18n_service)
 ):
     # Extract locale from request headers
-    locale = extract_locale_from_header(request.headers.get("accept-language"))
+    locale = i18n_service.extract_locale_from_header(request.headers.get("accept-language"))
     
     # Use parameter interpolation in translations
     message = i18n.t("pet.name_too_long", locale, max_length=50, current_length=75)
