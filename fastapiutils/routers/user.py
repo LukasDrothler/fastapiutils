@@ -1,11 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, status
-from fastapiutils import AuthService, I18nService
-from fastapiutils.database_service import DatabaseService
-from fastapiutils.mail_service import MailService
+from fastapi import APIRouter, HTTPException, Request, status
 
 from ..models import CreateUser, User
-from ..dependencies import get_auth_service, get_database_service, get_mail_service, get_i18n_service
-from ..dependencies import CurrentActiveUser
+from ..dependencies import CurrentActiveUser, AuthServiceDependency, DatabaseServiceDependency, MailServiceDependency, I18nServiceDependency
 
 """Create user management router with dependency injection"""
 router = APIRouter()
@@ -14,10 +10,10 @@ router = APIRouter()
 async def create_user(
     user: CreateUser,
     request: Request,
-    auth_service: AuthService = Depends(get_auth_service),
-    db_service: DatabaseService = Depends(get_database_service),
-    mail_service: MailService = Depends(get_mail_service),
-    i18n_service: I18nService = Depends(get_i18n_service),
+    auth_service: AuthServiceDependency,
+    db_service: DatabaseServiceDependency,
+    mail_service: MailServiceDependency,
+    i18n_service: I18nServiceDependency,
 ):
     locale = i18n_service.extract_locale_from_header(request.headers.get("accept-language"))
     msg = auth_service.create_user(user, locale, db_service=db_service, i18n_service=i18n_service)

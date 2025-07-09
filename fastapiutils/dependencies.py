@@ -3,12 +3,12 @@ Dependency injection container for FastAPI Utils
 """
 from typing import Annotated, Optional, Any, Dict, Callable
 from functools import lru_cache
-import os
 
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 
 from fastapiutils.models import UserInDB
+from .auth_service import AuthService
 from .database_service import DatabaseService
 from .mail_service import MailService
 from .i18n_service import I18nService
@@ -123,7 +123,7 @@ def setup_dependencies(
 
 
 @lru_cache()
-def get_auth_service():
+def get_auth_service() -> AuthService:
     """FastAPI dependency function to get AuthService instance"""
     return container.get("auth_service")
 
@@ -171,3 +171,9 @@ def get_current_active_user(
 # Convenience type annotations for use in route handlers
 CurrentUser = Annotated[UserInDB, Depends(get_current_user)]
 CurrentActiveUser = Annotated[UserInDB, Depends(get_current_active_user)]
+
+# Convenience type annotations for services
+AuthServiceDependency = Annotated[AuthService, Depends(get_auth_service)]
+DatabaseServiceDependency = Annotated[DatabaseService, Depends(get_database_service)]
+MailServiceDependency = Annotated[Optional[MailService], Depends(get_mail_service)]
+I18nServiceDependency = Annotated[I18nService, Depends(get_i18n_service)]

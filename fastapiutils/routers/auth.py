@@ -4,12 +4,8 @@ from typing import Optional, Annotated
 from jwt.exceptions import InvalidTokenError
 import jwt
 
-from fastapiutils.auth_service import AuthService
-from fastapiutils.database_service import DatabaseService
-
 from ..models import Token, RefreshTokenRequest, TokenData
-from ..i18n_service import I18nService
-from ..dependencies import get_auth_service, get_database_service, get_i18n_service
+from ..dependencies import AuthServiceDependency, DatabaseServiceDependency, I18nServiceDependency
 
 """Create authentication router with dependency injection"""
 router = APIRouter()
@@ -18,9 +14,9 @@ router = APIRouter()
 async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     request: Request,
-    auth_service: AuthService = Depends(get_auth_service),
-    db_service: DatabaseService = Depends(get_database_service),
-    i18n_service: I18nService = Depends(get_i18n_service),
+    auth_service: AuthServiceDependency,
+    db_service: DatabaseServiceDependency,
+    i18n_service: I18nServiceDependency,
     stay_logged_in: Optional[bool] = False
 ) -> Token:
     locale = i18n_service.extract_locale_from_header(request.headers.get("accept-language"))
@@ -44,9 +40,9 @@ async def login_for_access_token(
 async def refresh_access_token(
     refresh_request: RefreshTokenRequest,
     request: Request,
-    auth_service: AuthService = Depends(get_auth_service),
-    db_service: DatabaseService = Depends(get_database_service),
-    i18n_service: I18nService = Depends(get_i18n_service),
+    auth_service: AuthServiceDependency,
+    db_service: DatabaseServiceDependency,
+    i18n_service: I18nServiceDependency,
 ) -> Token:
     locale = i18n_service.extract_locale_from_header(request.headers.get("accept-language"))
     

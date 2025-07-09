@@ -10,7 +10,11 @@ from .dependencies import (
     get_mail_service, 
     get_i18n_service,
     CurrentUser, 
-    CurrentActiveUser
+    CurrentActiveUser,
+    AuthServiceDependency,
+    DatabaseServiceDependency,
+    MailServiceDependency,
+    I18nServiceDependency
 )
 
 __version__ = "0.3.0"
@@ -33,4 +37,8 @@ __all__ = [
     "get_i18n_service",
     "CurrentUser",
     "CurrentActiveUser",
+    "AuthServiceDependency",
+    "DatabaseServiceDependency",
+    "MailServiceDependency",
+    "I18nServiceDependency",
 ]
