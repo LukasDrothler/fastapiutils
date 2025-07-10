@@ -18,7 +18,6 @@ CREATE TABLE `user` (
   UNIQUE KEY `email` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-DROP TABLE IF EXISTS `verification_code`;
 CREATE TABLE `verification_code` (
   `user_id` varchar(36) NOT NULL,
   `value` varchar(6) NOT NULL,

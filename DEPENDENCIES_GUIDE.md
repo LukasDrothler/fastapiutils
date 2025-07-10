@@ -88,14 +88,11 @@ def create_database_service() -> DatabaseService:
 
 #### Mail Service Factory
 ```python
-def create_mail_service() -> Optional[MailService]:
-    try:
-        return MailService()
-    except ValueError:
-        return None
+def create_mail_service() -> MailService:
+    return MailService()
 ```
-**What it does:** Tries to create a mail service, returns None if configuration is missing
-**Why Optional:** Email service might not be configured in all environments
+**What it does:** Creates a mail service instance
+**Note:** Mail service is now required for email verification functionality. This will raise an error if SMTP configuration is missing.
 
 #### I18n Service Factory
 ```python

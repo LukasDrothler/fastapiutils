@@ -28,6 +28,15 @@ CREATE TABLE `user` (
   UNIQUE KEY `username` (`username`),
   UNIQUE KEY `email` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `verification_code` (
+  `user_id` varchar(36) NOT NULL,
+  `value` varchar(6) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `verified_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`user_id`),
+  FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 ```
 
 ### RSA Keys
@@ -57,11 +66,8 @@ DB_NAME=your_database
 
 # RSA Keys path
 RSA_KEYS_PATH=./keys
-```
 
-**Optional Environment Variables (for email functionality):**
-```bash
-# Email configuration
+# Email configuration (REQUIRED for email verification)
 SMTP_SERVER=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USER=your_email@gmail.com
@@ -137,10 +143,12 @@ setup_dependencies(
 
 ### User Endpoints
 
-- `POST /users/register` - Register new user (sends welcome email if SMTP is configured)
-- `GET /users/me` - Get current user info
+- `POST /users/register` - Register new user (requires email verification)
+- `POST /users/verify-email` - Verify email with 6-digit code
+- `POST /users/resend-verification` - Resend verification code (24-hour cooldown)
+- `GET /users/me` - Get current user info (requires verified email)
 
-**Note**: When SMTP environment variables are configured, the `/users/register` endpoint will automatically send a localized welcome email to new users.
+**Note**: Email verification is mandatory. Users must verify their email with a 6-digit code sent via email before they can access protected endpoints.
 
 ## Extending Models
 
@@ -241,14 +249,12 @@ This will override the built-in "incorrect_credentials" message and add new tran
 - `DB_PASSWORD`: Database password
 - `DB_NAME`: Database name
 - `RSA_KEYS_PATH`: Path to directory containing RSA key files
+- `SMTP_SERVER`: SMTP server address (required for email verification)
+- `SMTP_PORT`: SMTP server port (required for email verification)
+- `SMTP_USER`: SMTP username/email (required for email verification)
+- `SMTP_PASSWORD`: SMTP password/app password (required for email verification)
 
-**Optional Environment Variables (for email functionality):**
-- `SMTP_SERVER`: SMTP server address
-- `SMTP_PORT`: SMTP server port
-- `SMTP_USER`: SMTP username/email
-- `SMTP_PASSWORD`: SMTP password/app password
-
-**Note**: When SMTP environment variables are provided, users will receive welcome emails upon registration with localized content.
+**Note**: Email configuration is mandatory as the system requires email verification for all new user registrations.
 
 ## Error Handling
 
@@ -275,7 +281,7 @@ DB_NAME=your-production-db
 
 RSA_KEYS_PATH=/etc/ssl/jwt-keys
 
-# Optional: Email configuration
+# Email configuration (REQUIRED for email verification)
 SMTP_SERVER=smtp.your-domain.com
 SMTP_PORT=587
 SMTP_USER=noreply@your-domain.com

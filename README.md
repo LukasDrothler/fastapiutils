@@ -1,13 +1,13 @@
 # FastAPI Utils
 
-A reusable FastAPI utilities package for authentication, user management, and database operations.
+A reusable FastAPI utilities package for authentication, user management, and database operations with email verification.
 
 ## Features
 
 - JWT-based authentication with RSA256 encryption
-- User registration and management
+- User registration with **mandatory email verification** (6-digit codes)
 - Database utilities for MySQL
-- Email notifications (welcome emails on registration)
+- Email verification system with resend functionality
 - Internationalization support (English and German built-in)
 - Environment variable-based configuration
 - Dependency injection architecture
@@ -24,11 +24,12 @@ pip install git+https://github.com/LukasDrothler/fastapiutils
 
 ### Database Setup
 
-Create a MySQL database and run the provided SQL file to create the user table:
+Create a MySQL database and run the provided SQL file to create the required tables:
 
 ```sql
 -- Use the provided user.sql file
--- The table includes unique constraints for username and email
+-- Creates user table and verification_code table for email verification
+
 CREATE TABLE `user` (
   `id` varchar(36) NOT NULL,
   `username` varchar(50) NOT NULL,
@@ -43,6 +44,15 @@ CREATE TABLE `user` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`),
   UNIQUE KEY `email` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `verification_code` (
+  `user_id` varchar(36) NOT NULL,
+  `value` varchar(6) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `verified_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`user_id`),
+  FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 ```
 
@@ -73,11 +83,8 @@ DB_NAME=your_database
 
 # RSA Keys path
 RSA_KEYS_PATH=./keys
-```
 
-**Optional Environment Variables:**
-```bash
-# Email configuration (optional - for welcome emails)
+# Email configuration (REQUIRED for email verification)
 SMTP_SERVER=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USER=your_email@gmail.com
@@ -133,14 +140,12 @@ Configure the dependency injection container with the following parameters:
 - `DB_PASSWORD`: Database password
 - `DB_NAME`: Database name
 - `RSA_KEYS_PATH`: Path to directory containing RSA key files
+- `SMTP_SERVER`: SMTP server address (required for email verification)
+- `SMTP_PORT`: SMTP server port (required for email verification)
+- `SMTP_USER`: SMTP username/email (required for email verification)
+- `SMTP_PASSWORD`: SMTP password/app password (required for email verification)
 
-**Optional Environment Variables (for email functionality):**
-- `SMTP_SERVER`: SMTP server address
-- `SMTP_PORT`: SMTP server port
-- `SMTP_USER`: SMTP username/email
-- `SMTP_PASSWORD`: SMTP password/app password
-
-**Note**: When email environment variables are provided, users will receive welcome emails upon registration with localized content.
+**Note**: Email configuration is now **required** as the system uses mandatory email verification with 6-digit codes sent to users upon registration.
 
 ## API Endpoints
 
@@ -151,8 +156,10 @@ Configure the dependency injection container with the following parameters:
 
 ### User Router
 
-- `POST /users/register` - Register new user
+- `POST /users/register` - Register new user (sends 6-digit verification code via email)
 - `GET /users/me` - Get current user profile
+- `POST /users/verify-email/{user_id}` - Verify email with 6-digit code
+- `POST /users/resend-verification/{user_id}` - Resend verification code
 
 ## Advanced Configuration
 
@@ -173,49 +180,40 @@ setup_dependencies(
 )
 ```
 
-## Email Configuration
+## Email Verification System
 
-The library supports sending welcome emails to users upon registration. This is optional and requires setting up SMTP environment variables.
+The library implements a **mandatory email verification system** using 6-digit codes. Users must verify their email address before they can fully access the platform.
 
-### Email Features
+### Email Verification Features
 
-- **Welcome Emails**: Automatically sent when users register
-- **Localized Content**: Email content is localized based on user's preferred language
-- **Error Handling**: Graceful handling of email sending failures
+- **6-Digit Codes**: Secure, user-friendly verification codes
+- **24-Hour Expiration**: Codes expire after 24 hours for security
+- **Resend Functionality**: Users can request new codes with 1-minute cooldown
+- **Single Use**: Codes become invalid after successful verification or reset
+- **Localized Content**: Verification emails are localized based on user's preferred language
+- **Database Tracking**: Verification status and timestamps are tracked
 - **SMTP Support**: Works with any SMTP server (Gmail, Outlook, custom servers)
 
-### Common SMTP Configurations
+### Email Verification Flow
 
-**Gmail (.env file):**
-```bash
-SMTP_SERVER=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=your_email@gmail.com
-SMTP_PASSWORD=your_app_password  # Use App Password, not regular password
-```
+1. **User Registration**: User provides username, email, and password
+2. **Code Generation**: System generates 6-digit code and stores in database
+3. **Email Sent**: Verification code emailed to user
+4. **User Verification**: User enters code via API endpoint
+5. **Account Activation**: Email marked as verified, user can fully access platform
+6. **Resend Option**: If code expired or mail was not received, the user can re-send a new code
 
-**Outlook (.env file):**
-```bash
-SMTP_SERVER=smtp-mail.outlook.com
-SMTP_PORT=587
-SMTP_USER=your_email@outlook.com
-SMTP_PASSWORD=your_password
-```
+### Email Verification Translation
 
-**Custom SMTP Server (.env file):**
-```bash
-SMTP_SERVER=mail.yourcompany.com
-SMTP_PORT=587
-SMTP_USER=noreply@yourcompany.com
-SMTP_PASSWORD=your_smtp_password
-```
+The email verification content is automatically translated based on the user's locale. The following translation keys are used:
 
-### Email Content Translation
-
-The welcome email content is automatically translated based on the user's locale. The following translation keys are used:
-
-- `auth.welcome_email_subject`: Email subject line
-- `auth.welcome_email_content`: Email body content (supports `{username}` parameter)
+- `auth.verification_email_subject`: Email subject line for verification
+- `auth.verification_email_content`: Email body content for verification (supports `{code}` parameter)
+- `auth.verification_code_expired`: Error message when verification code is expired
+- `auth.verification_code_invalid`: Error message when verification code is invalid
+- `auth.verification_code_already_verified`: Error message when email is already verified
+- `auth.verification_resend_cooldown`: Error message when trying to resend too soon
+- `auth.verification_resent`: Success message when verification code is resent
 - `auth.email_sending_failed`: Error message when email sending fails
 
 ## Custom Routers
@@ -251,7 +249,7 @@ async def get_pet(
     if len(pet_id) > 36:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=i18n.t("pet.id_too_long", locale, 
+            detail=i18n_service.t("pet.id_too_long", locale, 
                         max_length=36, 
                         current_length=len(pet_id)),
         )
@@ -262,7 +260,7 @@ async def get_pet(
     if not result:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=i18n.t("pet.pet_not_found", locale),
+            detail=i18n_service.t("pet.pet_not_found", locale),
         )
     return Pet(**result)
 
@@ -291,7 +289,7 @@ async def my_route(
     locale = i18n_service.extract_locale_from_header(request.headers.get("accept-language"))
     
     # Use parameter interpolation in translations
-    message = i18n.t("pet.name_too_long", locale, max_length=50, current_length=75)
+    message = i18n_service.t("pet.name_too_long", locale, max_length=50, current_length=75)
     # Returns: "Pet name must be 50 characters or less (current: 75)"
 ```
 
@@ -325,7 +323,7 @@ async def validate_name(
     if not name or not name.strip():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=i18n.t("pet.name_required", locale),
+            detail=i18n_service.t("pet.name_required", locale),
         )
     
     cleaned_name = name.strip()
@@ -333,7 +331,7 @@ async def validate_name(
     if len(cleaned_name) > MAX_NAME_LENGTH:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=i18n.t("pet.name_too_long", locale, 
+            detail=i18n_service.t("pet.name_too_long", locale, 
                          max_length=MAX_NAME_LENGTH, 
                          current_length=len(cleaned_name)),
         )
@@ -408,7 +406,7 @@ The following dependency functions are available for injection into your route h
 ### Service Dependencies
 - `get_auth_service()` - Returns the AuthService instance
 - `get_database_service()` - Returns the DatabaseService instance  
-- `get_mail_service()` - Returns the MailService instance (or None if not configured)
+- `get_mail_service()` - Returns the MailService instance
 - `get_i18n_service()` - Returns the I18nService instance
 
 ### User Authentication Dependencies
@@ -432,6 +430,6 @@ async def custom_endpoint(
 ):
     # Use services directly
     result = db_service.execute_query("SELECT * FROM some_table")
-    message = i18n.t("some.translation.key", "en")
+    message = i18n_service.t("some.translation.key", "en")
     return {"data": result, "message": message}
 ```
