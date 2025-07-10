@@ -35,7 +35,5 @@ async def create_user(
     return msg
 
 @router.get("/users/me", response_model=User, tags=["users"])
-async def read_users_me(
-    current_user: CurrentActiveUser,
-):
+async def read_users_me(current_user: CurrentActiveUser):
     return current_user
