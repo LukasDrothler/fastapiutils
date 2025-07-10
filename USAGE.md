@@ -143,10 +143,10 @@ setup_dependencies(
 
 ### User Endpoints
 
-- `POST /users/register` - Register new user (requires email verification)
-- `POST /users/verify-email` - Verify email with 6-digit code
-- `POST /users/resend-verification` - Resend verification code (24-hour cooldown)
-- `GET /users/me` - Get current user info (requires verified email)
+- `POST /user/register` - Register new user (requires email verification)
+- `POST /user/verify-email` - Verify email with 6-digit code
+- `POST /user/resend-verification` - Resend verification code (24-hour cooldown)
+- `GET /user/me` - Get current user info (requires verified email)
 
 **Note**: Email verification is mandatory. Users must verify their email with a 6-digit code sent via email before they can access protected endpoints.
 
@@ -320,7 +320,7 @@ setup_dependencies(
 
 # Include routers
 app.include_router(auth.router, prefix="/auth", tags=["authentication"])
-app.include_router(user.router, prefix="/users", tags=["users"])
+app.include_router(user.router, prefix="/user", tags=["users"])
 
 # Health check endpoint
 @app.get("/health")

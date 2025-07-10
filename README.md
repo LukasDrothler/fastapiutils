@@ -156,10 +156,10 @@ Configure the dependency injection container with the following parameters:
 
 ### User Router
 
-- `POST /users/register` - Register new user (sends 6-digit verification code via email)
-- `GET /users/me` - Get current user profile
-- `POST /users/verify-email/{user_id}` - Verify email with 6-digit code
-- `POST /users/resend-verification/{user_id}` - Resend verification code
+- `POST /user/register` - Register new user (sends 6-digit verification code via email)
+- `GET /user/me` - Get current user profile
+- `POST /user/verify-email/{user_id}` - Verify email with 6-digit code
+- `POST /user/resend-verification/{user_id}` - Resend verification code
 
 ## Advanced Configuration
 

@@ -16,12 +16,12 @@ logger = logging.getLogger('uvicorn.error')
 router = APIRouter()
 
 
-@router.get("/users/me", response_model=User, tags=["users"])
+@router.get("/user/me", response_model=User, tags=["users"])
 async def read_users_me(current_user: CurrentActiveUser):
     return current_user
 
 
-@router.post("/users/register", status_code=201, tags=["users"])
+@router.post("/user/register", status_code=201, tags=["users"])
 async def create_user(
     user: CreateUser,
     request: Request,
@@ -34,7 +34,7 @@ async def create_user(
     return auth_service.create_user(user, locale, db_service=db_service, i18n_service=i18n_service, mail_service=mail_service)
 
 
-@router.post("/users/verify-email/{user_id}", status_code=200, tags=["users"])
+@router.post("/user/verify-email/{user_id}", status_code=200, tags=["users"])
 async def verify_user_email(
     user_id: str,
     verify_request: VerifyEmailRequest,
@@ -67,7 +67,7 @@ async def verify_user_email(
     return {"msg": i18n_service.t("auth.email_verified_subject", locale), "user": user}
 
 
-@router.post("/users/resend-verification/{user_id}", status_code=200, tags=["users"])
+@router.post("/user/resend-verification/{user_id}", status_code=200, tags=["users"])
 async def send_new_verification_code(
     user_id: str,
     request: Request,

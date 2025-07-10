@@ -263,7 +263,7 @@ def send_email(
         mail_service.send_email(user.email, "Hello!")
     return {"status": "sent"}
 
-@app.post("/users/register")
+@app.post("/user/register")
 def create_user(
     user_data: CreateUser,
     auth_service: AuthService = Depends(get_auth_service),
