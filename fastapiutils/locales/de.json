@@ -24,6 +24,13 @@
     "verification_code_expired": "Verifizierungscode ist abgelaufen. Bitte fordern Sie einen neuen an.",
     "verification_code_resent": "Neuer Verifizierungscode wurde an Ihre E-Mail gesendet",
     "resend_cooldown": "Bitte warten Sie eine Minute, bevor Sie einen neuen Verifizierungscode anfordern",
-    "email_already_verified": "E-Mail-Adresse ist bereits verifiziert"
+    "email_already_verified": "E-Mail-Adresse ist bereits verifiziert",
+    "no_changes_made": "Keine Änderungen wurden vorgenommen",
+    "user_updated_successfully": "Benutzerinformationen erfolgreich aktualisiert",
+    "user_update_failed": "Fehler beim Aktualisieren der Benutzerinformationen: {error}",
+    "current_password_incorrect": "Aktuelles Passwort ist falsch",
+    "new_password_same_as_current": "Neues Passwort kann nicht dasselbe wie das aktuelle Passwort sein",
+    "password_updated_successfully": "Passwort erfolgreich aktualisiert",
+    "password_update_failed": "Fehler beim Aktualisieren des Passworts: {error}"
   }
 }

@@ -5,7 +5,7 @@ from ..i18n_service import I18nService
 from ..database_service import DatabaseService
 from ..email_verification import resend_verification_code, verify_user_email_with_code
 from ..mail_service import MailService
-from ..models import CreateUser, User, VerifyEmailRequest
+from ..models import CreateUser, User, VerifyEmailRequest, UpdateUser, UpdatePassword
 from ..dependencies import get_auth_service, get_database_service, get_mail_service, get_i18n_service, CurrentActiveUser
 
 import logging
@@ -89,3 +89,37 @@ async def send_new_verification_code(
         user, locale, db_service=db_service, 
         mail_service=mail_service, i18n_service=i18n_service
         )
+
+
+@router.put("/user/me", status_code=200, tags=["users"])
+async def update_user_info(
+    user_update: UpdateUser,
+    request: Request,
+    current_user: CurrentActiveUser,
+    auth_service: AuthService = Depends(get_auth_service),
+    db_service: DatabaseService = Depends(get_database_service),
+    i18n_service: I18nService = Depends(get_i18n_service),
+):
+    """Update current user's information"""
+    locale = i18n_service.extract_locale_from_header(request.headers.get("accept-language"))
+    return auth_service.update_user(
+        current_user.id, user_update, locale, 
+        db_service=db_service, i18n_service=i18n_service
+    )
+
+
+@router.put("/user/me/password", status_code=200, tags=["users"])
+async def update_user_password(
+    password_update: UpdatePassword,
+    request: Request,
+    current_user: CurrentActiveUser,
+    auth_service: AuthService = Depends(get_auth_service),
+    db_service: DatabaseService = Depends(get_database_service),
+    i18n_service: I18nService = Depends(get_i18n_service),
+):
+    """Update current user's password"""
+    locale = i18n_service.extract_locale_from_header(request.headers.get("accept-language"))
+    return auth_service.update_password(
+        current_user.id, password_update, locale,
+        db_service=db_service, i18n_service=i18n_service
+    )

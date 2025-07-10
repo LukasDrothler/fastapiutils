@@ -24,6 +24,13 @@
     "verification_code_expired": "Verification code has expired. Please request a new one.",
     "verification_code_resent": "New verification code has been sent to your email",
     "resend_cooldown": "Please wait one minute before requesting a new verification code",
-    "email_already_verified": "Email address is already verified"
+    "email_already_verified": "Email address is already verified",
+    "no_changes_made": "No changes were made",
+    "user_updated_successfully": "User information updated successfully",
+    "user_update_failed": "Failed to update user information: {error}",
+    "current_password_incorrect": "Current password is incorrect",
+    "new_password_same_as_current": "New password cannot be the same as current password",
+    "password_updated_successfully": "Password updated successfully",
+    "password_update_failed": "Failed to update password: {error}"
   }
 }

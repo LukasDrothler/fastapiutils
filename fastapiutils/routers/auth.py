@@ -32,9 +32,9 @@ async def login_for_access_token(
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    access_token = auth_service.create_bearer_token(username=user.username)
+    access_token = auth_service.create_bearer_token(user_id=user.id)
     if stay_logged_in:
-        refresh_token = auth_service.create_bearer_token(username=user.username, is_refresh=True)
+        refresh_token = auth_service.create_bearer_token(user_id=user.id, is_refresh=True)
         return Token(access_token=access_token, refresh_token=refresh_token)
     
     return Token(access_token=access_token)
@@ -57,10 +57,10 @@ async def refresh_access_token(
     
     try:
         payload = jwt.decode(refresh_request.refresh_token, auth_service.public_key, algorithms=[auth_service.algorithm])
-        username = payload.get("sub")
-        if username is None:
+        user_id = payload.get("sub")
+        if user_id is None:
             raise credentials_exception
-        token_data = TokenData(username=username)
+        token_data = TokenData(user_id=user_id)
     except InvalidTokenError:
         raise credentials_exception
     
@@ -69,5 +69,5 @@ async def refresh_access_token(
     if user is None or user.disabled:
         raise credentials_exception
     
-    access_token = auth_service.create_bearer_token(username=user.username)
+    access_token = auth_service.create_bearer_token(user_id=user.id)
     return Token(access_token=access_token, token_type="bearer")

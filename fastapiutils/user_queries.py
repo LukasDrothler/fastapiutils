@@ -98,10 +98,6 @@ class UserQueries:
             update_fields.append("email_verified = %s")
             update_values.append(False)
         
-        if user_update.premium_level is not None:
-            update_fields.append("premium_level = %s")
-            update_values.append(user_update.premium_level)
-        
         if update_fields:
             update_values.append(user_id)
             query = f"UPDATE user SET {', '.join(update_fields)} WHERE id = %s"

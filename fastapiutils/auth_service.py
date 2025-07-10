@@ -67,9 +67,9 @@ class AuthService:
         return self.pwd_context.hash(password)
 
 
-    def create_bearer_token(self, username: str, is_refresh: bool = False) -> str:
+    def create_bearer_token(self, user_id: str, is_refresh: bool = False) -> str:
         """Create a JWT token"""
-        data = {"sub": username}
+        data = {"sub": user_id}
         to_encode = data.copy()
         if is_refresh:
             expires_delta = timedelta(days=self.refresh_token_expire_days)
@@ -153,13 +153,13 @@ class AuthService:
         
         try:
             payload = jwt.decode(token, self.public_key, algorithms=[self.algorithm])
-            username = payload.get("sub")
-            if username is None:
+            user_id = payload.get("sub")
+            if user_id is None:
                 raise credentials_exception
         except jwt.InvalidTokenError:
             raise credentials_exception
             
-        user = self.get_user(username=username, db_service=db_service)
+        user = self.get_user(uid=user_id, db_service=db_service)
         if user is None:
             raise credentials_exception
         return user

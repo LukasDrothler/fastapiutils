@@ -37,7 +37,7 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     """Token payload data"""
-    username: Optional[str] = None
+    user_id: str
 
 
 class RefreshTokenRequest(BaseModel):
@@ -62,7 +62,6 @@ class UpdateUser(BaseModel):
     """Model for updating user information"""
     username: Optional[str] = None
     email: Optional[str] = None
-    premium_level: Optional[int] = None
 
 
 class UpdatePassword(BaseModel):
