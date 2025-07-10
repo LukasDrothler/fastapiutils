@@ -9,9 +9,21 @@
     "username_taken": "Benutzername bereits vergeben",
     "email_taken": "E-Mail bereits vergeben",
     "user_created": "Benutzer erfolgreich erstellt",
+    "user_created_verify_email": "Benutzer erfolgreich erstellt. Bitte überprüfen Sie Ihre E-Mail für einen 6-stelligen Verifizierungscode.",
     "user_creation_failed": "Benutzererstellung fehlgeschlagen",
+    "user_not_found": "Benutzer nicht gefunden",
     "welcome_email_subject": "Willkommen auf unserer Plattform!",
-    "welcome_email_content": "Hallo {username},\n\nWillkommen auf unserer Plattform! Ihr Konto wurde erfolgreich erstellt.\n\nSie können sich jetzt anmelden und unsere Dienste nutzen.\n\nMit freundlichen Grüßen,\nIhr Team",
-    "email_sending_failed": "Fehler beim Senden der Willkommens-E-Mail: {error}"
+    "email_verification_subject": "Ihr Verifizierungscode",
+    "email_verification_content": "Hallo {username},\n\nVielen Dank für Ihre Registrierung! Bitte verwenden Sie den folgenden 6-stelligen Code, um Ihre E-Mail-Adresse zu verifizieren:\n\n{verification_code}\n\nDieser Code läuft in 24 Stunden ab.\n\nFalls Sie dieses Konto nicht erstellt haben, ignorieren Sie bitte diese E-Mail.\n\nMit freundlichen Grüßen,\nIhr Team",
+    "email_verified_subject": "E-Mail erfolgreich verifiziert!",
+    "email_verified_content": "Ihre E-Mail-Adresse wurde erfolgreich verifiziert. Sie können nun alle Funktionen unserer Plattform nutzen.\n\nMit freundlichen Grüßen,\nIhr Team",
+    "email_sending_failed": "Fehler beim Senden der E-Mail: {error}",
+    "no_verification_code": "Kein Verifizierungscode für diesen Benutzer gefunden",
+    "invalid_verification_code": "Ungültiger Verifizierungscode",
+    "verification_code_already_used": "Dieser Verifizierungscode wurde bereits verwendet",
+    "verification_code_expired": "Verifizierungscode ist abgelaufen. Bitte fordern Sie einen neuen an.",
+    "verification_code_resent": "Neuer Verifizierungscode wurde an Ihre E-Mail gesendet",
+    "resend_cooldown": "Bitte warten Sie eine Minute, bevor Sie einen neuen Verifizierungscode anfordern",
+    "email_already_verified": "E-Mail-Adresse ist bereits verifiziert"
   }
 }

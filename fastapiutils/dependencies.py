@@ -7,7 +7,7 @@ from functools import lru_cache
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 
-from fastapiutils.models import UserInDB
+from .models import UserInDB
 from .auth_service import AuthService
 from .database_service import DatabaseService
 from .mail_service import MailService
@@ -59,13 +59,9 @@ def create_database_service() -> DatabaseService:
     return DatabaseService()
 
 
-def create_mail_service() -> Optional[MailService]:
+def create_mail_service() -> MailService:
     """Factory function to create MailService instance"""
-    try:
-        return MailService()
-    except ValueError:
-        # Mail service is optional, return None if not configured
-        return None
+    return MailService()
 
 
 def create_i18n_service(custom_locales_dir: Optional[str] = None, default_locale: str = "en") -> I18nService:
@@ -135,7 +131,7 @@ def get_database_service() -> DatabaseService:
 
 
 @lru_cache()
-def get_mail_service() -> Optional[MailService]:
+def get_mail_service() -> MailService:
     """FastAPI dependency function to get MailService instance"""
     return container.get("mail_service")
 

@@ -43,3 +43,16 @@ class TokenData(BaseModel):
 class RefreshTokenRequest(BaseModel):
     """Request model for token refresh"""
     refresh_token: str
+
+
+class VerificationCode(BaseModel):
+    """Model for email verification codes"""
+    user_id: str
+    value: str
+    created_at: datetime
+    verified_at: Optional[datetime] = None
+
+
+class VerifyEmailRequest(BaseModel):
+    """Request model for email verification with code"""
+    code: str

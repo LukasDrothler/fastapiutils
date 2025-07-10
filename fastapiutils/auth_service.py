@@ -1,17 +1,20 @@
+from .models import UserInDB, CreateUser
+from .email_verification import create_verification_code
 from .database_service import DatabaseService
 from .mail_service import MailService
 from .i18n_service import I18nService
-import jwt
-import re
-import os
+
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 from passlib.context import CryptContext
-from fastapi import HTTPException, status, Depends
+from fastapi import HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from cryptography.hazmat.primitives import serialization
 
-from .models import UserInDB, CreateUser
+import jwt
+import re
+import os
+
 
 
 class AuthService:
@@ -57,10 +60,12 @@ class AuthService:
         """Verify a password against its hash"""
         return self.pwd_context.verify(plain_password, hashed_password)
     
+
     def get_password_hash(self, password: str) -> str:
         """Hash a password"""
         return self.pwd_context.hash(password)
-    
+
+
     def create_bearer_token(self, username: str, is_refresh: bool = False) -> str:
         """Create a JWT token"""
         data = {"sub": username}
@@ -74,11 +79,18 @@ class AuthService:
         to_encode.update({"exp": expire})
         encoded_jwt = jwt.encode(to_encode, self.private_key, algorithm=self.algorithm)
         return encoded_jwt
+
     
-    def get_user(self, username: Optional[str] = None, email: Optional[str] = None, db_service: DatabaseService=None) -> Optional[UserInDB]:
+    def get_user(self, uid: Optional[str] = None, username: Optional[str] = None, email: Optional[str] = None, db_service: DatabaseService=None) -> Optional[UserInDB]:
         """Get user from database"""
         result = None
-        if username and email:
+
+        if uid:
+            result = db_service.execute_single_query(
+                "SELECT * FROM user WHERE id = %s", 
+                (uid,)
+            )
+        elif username and email:
             result = db_service.execute_single_query(
                 "SELECT * FROM user WHERE LOWER(username) = LOWER(%s) AND LOWER(email) = LOWER(%s)", 
                 (username, email)
@@ -97,7 +109,8 @@ class AuthService:
         if result:
             return UserInDB(**result)
         return None
-    
+
+
     def authenticate_user(self, username: str, password: str, db_service: DatabaseService = None) -> Optional[UserInDB]:
         """Authenticate a user"""
         user = self.get_user(username=username, db_service=db_service)
@@ -113,7 +126,8 @@ class AuthService:
             (current_time, user.id)
         )
         return user
-    
+
+
     def validate_new_user(self, user: CreateUser, locale: str = "en", db_service: DatabaseService = None, i18n_service: I18nService = None):
         """Validate new user data"""
         if not re.match(r"^\w{3,}$", user.username):
@@ -142,8 +156,9 @@ class AuthService:
                 status_code=status.HTTP_409_CONFLICT,
                 detail=i18n_service.t("auth.email_taken", locale),
             )
-    
-    def create_user(self, user: CreateUser, locale: str = "en", db_service: DatabaseService = None, mail_service: Optional[MailService] = None, i18n_service: I18nService = None) -> dict:
+
+
+    def create_user(self, user: CreateUser, locale: str = "en", db_service: DatabaseService = None, mail_service: MailService = None, i18n_service: I18nService = None) -> dict:
         """Create a new user"""
         self.validate_new_user(user, locale, db_service=db_service, i18n_service=i18n_service)
         
@@ -161,21 +176,26 @@ class AuthService:
             (uid, user.username, user.email, hashed_password)
         )
         
-        if mail_service is not None:
-            try:
-                mail_service.send_email_plain_text(
-                    content=i18n_service.t("auth.welcome_email_content", locale, username=user.username),
-                    subject=i18n_service.t("auth.welcome_email_subject", locale),
-                    recipient=user.email
-                )
-            except Exception as e:
-                raise HTTPException(
-                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail=i18n_service.t("auth.email_sending_failed", locale, error=str(e))
-                )
+        # Generate 6-digit verification code
+        verification_code = create_verification_code(uid, db_service=db_service)
+        
+        try:
+            mail_service.send_email_plain_text(
+                content=i18n_service.t("auth.email_verification_content", locale, 
+                                        username=user.username, 
+                                        verification_code=verification_code),
+                subject=i18n_service.t("auth.email_verification_subject", locale),
+                recipient=user.email
+            )
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=i18n_service.t("auth.email_sending_failed", locale, error=str(e))
+            )
 
-        return {"msg": i18n_service.t("auth.user_created", locale)}
-    
+        return {"msg": i18n_service.t("auth.user_created_verify_email", locale)}
+
+
     def get_current_user(self, token: str, db_service: DatabaseService = None, i18n_service: I18nService = None) -> UserInDB:
         """Get current user from JWT token"""
         credentials_exception = HTTPException(
@@ -196,7 +216,8 @@ class AuthService:
         if user is None:
             raise credentials_exception
         return user
-    
+
+
     def get_current_active_user(self, current_user: UserInDB, i18n_service: I18nService = None) -> UserInDB:
         """Get current active user (not disabled)"""
         if current_user.disabled:

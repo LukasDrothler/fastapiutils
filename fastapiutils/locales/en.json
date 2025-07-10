@@ -9,9 +9,21 @@
     "username_taken": "Username already in use",
     "email_taken": "Email already in use",
     "user_created": "User created successfully",
+    "user_created_verify_email": "User created successfully. Please check your email for a 6-digit verification code.",
     "user_creation_failed": "User creation failed",
+    "user_not_found": "User not found",
     "welcome_email_subject": "Welcome to our platform!",
-    "welcome_email_content": "Hello {username},\n\nWelcome to our platform! Your account has been successfully created.\n\nYou can now log in and start using our services.\n\nBest regards,\nThe Team",
-    "email_sending_failed": "Failed to send welcome email: {error}"
+    "email_verification_subject": "Your verification code",
+    "email_verification_content": "Hello {username},\n\nThank you for registering! Please use the following 6-digit code to verify your email address:\n\n{verification_code}\n\nThis code will expire in 24 hours.\n\nIf you didn't create this account, please ignore this email.\n\nBest regards,\nThe Team",
+    "email_verified_subject": "Email verified successfully!",
+    "email_verified_content": "Your email address has been successfully verified. You can now access all features of our platform.\n\nBest regards,\nThe Team",
+    "email_sending_failed": "Failed to send email: {error}",
+    "no_verification_code": "No verification code found for this user",
+    "invalid_verification_code": "Invalid verification code",
+    "verification_code_already_used": "This verification code has already been used",
+    "verification_code_expired": "Verification code has expired. Please request a new one.",
+    "verification_code_resent": "New verification code has been sent to your email",
+    "resend_cooldown": "Please wait one minute before requesting a new verification code",
+    "email_already_verified": "Email address is already verified"
   }
 }

@@ -1,5 +1,5 @@
 from .auth_service import AuthService
-from .models import User, UserInDB, CreateUser, Token, TokenData, RefreshTokenRequest
+from .models import User, UserInDB, CreateUser, Token, TokenData, RefreshTokenRequest, VerificationCode, VerifyEmailRequest
 from .database_service import DatabaseService
 from .mail_service import MailService
 from .i18n_service import I18nService
@@ -23,6 +23,8 @@ __all__ = [
     "Token",
     "TokenData",
     "RefreshTokenRequest",
+    "VerificationCode",
+    "VerifyEmailRequest",
     "DatabaseService",
     "MailService",
     "I18nService",

@@ -4,10 +4,9 @@ from typing import Optional, Annotated
 from jwt.exceptions import InvalidTokenError
 import jwt
 
-from fastapiutils.auth_service import AuthService
-from fastapiutils.database_service import DatabaseService
-from fastapiutils.i18n_service import I18nService
-
+from ..auth_service import AuthService
+from ..database_service import DatabaseService
+from ..i18n_service import I18nService
 from ..models import Token, RefreshTokenRequest, TokenData
 from ..dependencies import get_auth_service, get_database_service, get_i18n_service
 
