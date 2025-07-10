@@ -56,3 +56,16 @@ class VerificationCode(BaseModel):
 class VerifyEmailRequest(BaseModel):
     """Request model for email verification with code"""
     code: str
+
+
+class UpdateUser(BaseModel):
+    """Model for updating user information"""
+    username: Optional[str] = None
+    email: Optional[str] = None
+    premium_level: Optional[int] = None
+
+
+class UpdatePassword(BaseModel):
+    """Model for updating user password"""
+    current_password: str
+    new_password: str

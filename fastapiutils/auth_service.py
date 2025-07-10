@@ -1,8 +1,10 @@
-from .models import UserInDB, CreateUser
+from .models import UserInDB, CreateUser, UpdateUser, UpdatePassword
 from .email_verification import create_verification_code
 from .database_service import DatabaseService
 from .mail_service import MailService
 from .i18n_service import I18nService
+from .user_validators import UserValidators
+from .user_queries import UserQueries
 
 from datetime import datetime, timedelta, timezone
 from typing import Optional
@@ -12,7 +14,6 @@ from fastapi.security import OAuth2PasswordBearer
 from cryptography.hazmat.primitives import serialization
 
 import jwt
-import re
 import os
 
 
@@ -83,31 +84,14 @@ class AuthService:
     
     def get_user(self, uid: Optional[str] = None, username: Optional[str] = None, email: Optional[str] = None, db_service: DatabaseService=None) -> Optional[UserInDB]:
         """Get user from database"""
-        result = None
-
         if uid:
-            result = db_service.execute_single_query(
-                "SELECT * FROM user WHERE id = %s", 
-                (uid,)
-            )
+            return UserQueries.get_user_by_id(uid, db_service=db_service)
         elif username and email:
-            result = db_service.execute_single_query(
-                "SELECT * FROM user WHERE LOWER(username) = LOWER(%s) AND LOWER(email) = LOWER(%s)", 
-                (username, email)
-            )
+            return UserQueries.get_user_by_username_and_email(username, email, db_service=db_service)
         elif email:
-            result = db_service.execute_single_query(
-                "SELECT * FROM user WHERE LOWER(email) = LOWER(%s)", 
-                (email,)
-            )
+            return UserQueries.get_user_by_email(email, db_service=db_service)
         elif username:
-            result = db_service.execute_single_query(
-                "SELECT * FROM user WHERE LOWER(username) = LOWER(%s)", 
-                (username,)
-            )
-        
-        if result:
-            return UserInDB(**result)
+            return UserQueries.get_user_by_username(username, db_service=db_service)
         return None
 
 
@@ -120,49 +104,15 @@ class AuthService:
             return None
         
         # Update last_seen
-        current_time = datetime.now(timezone.utc)
-        db_service.execute_modification_query(
-            "UPDATE user SET last_seen = %s WHERE id = %s", 
-            (current_time, user.id)
-        )
+        UserQueries.update_user_last_seen(user.id, db_service=db_service)
         return user
-
-
-    def validate_new_user(self, user: CreateUser, locale: str = "en", db_service: DatabaseService = None, i18n_service: I18nService = None):
-        """Validate new user data"""
-        if not re.match(r"^\w{3,}$", user.username):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=i18n_service.t("auth.username_invalid", locale),
-            )
-        if not re.match(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$", user.email):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=i18n_service.t("auth.email_invalid", locale),
-            )
-        if len(user.password) < 8 or not re.search(r"[A-Z]", user.password) or not re.search(r"[0-9]", user.password):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=i18n_service.t("auth.password_weak", locale),
-            )
-        
-        if self.get_user(username=user.username, db_service=db_service):
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail=i18n_service.t("auth.username_taken", locale),
-            )
-        if self.get_user(email=user.email, db_service=db_service):
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail=i18n_service.t("auth.email_taken", locale),
-            )
 
 
     def create_user(self, user: CreateUser, locale: str = "en", db_service: DatabaseService = None, mail_service: MailService = None, i18n_service: I18nService = None) -> dict:
         """Create a new user"""
-        self.validate_new_user(user, locale, db_service=db_service, i18n_service=i18n_service)
+        UserValidators.validate_new_user(user, locale, db_service=db_service, i18n_service=i18n_service)
         
-        uid = db_service.generate_uuid("user")
+        uid = UserQueries.generate_user_uuid(db_service=db_service)
         if uid is None:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -171,10 +121,7 @@ class AuthService:
         
         hashed_password = self.get_password_hash(user.password)
         
-        db_service.execute_modification_query(
-            "INSERT INTO user (id, username, email, hashed_password) VALUES (%s, %s, %s, %s)",
-            (uid, user.username, user.email, hashed_password)
-        )
+        UserQueries.create_user(uid, user.username, user.email, hashed_password, db_service=db_service)
         
         # Generate 6-digit verification code
         verification_code = create_verification_code(uid, db_service=db_service)
@@ -226,3 +173,59 @@ class AuthService:
                 detail=i18n_service.t("auth.inactive_user", "en")
             )
         return current_user
+
+
+    def update_user(self, user_id: str, user_update: UpdateUser, locale: str = "en", db_service: DatabaseService = None, i18n_service: I18nService = None) -> dict:
+        """Update user information"""
+        # Get current user to verify they exist
+        current_user = self.get_user(uid=user_id, db_service=db_service)
+        if not current_user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=i18n_service.t("auth.user_not_found", locale)
+            )
+        
+        # Validate update data
+        UserValidators.validate_user_update(user_update, user_id, locale, db_service, i18n_service)
+        
+        # Update user fields
+        fields_updated = UserQueries.update_user_fields(user_id, user_update, db_service=db_service)
+        
+        if not fields_updated:
+            return {"msg": i18n_service.t("auth.no_changes_made", locale)}
+        
+        try:
+            return {"msg": i18n_service.t("auth.user_updated_successfully", locale)}
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=i18n_service.t("auth.user_update_failed", locale, error=str(e))
+            )
+
+
+    def update_password(self, user_id: str, password_update: UpdatePassword, locale: str = "en", db_service: DatabaseService = None, i18n_service: I18nService = None) -> dict:
+        """Update user password"""
+        # Get current user to verify they exist and get their current password
+        current_user = self.get_user(uid=user_id, db_service=db_service)
+        if not current_user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=i18n_service.t("auth.user_not_found", locale)
+            )
+        
+        # Validate password update
+        UserValidators.validate_password_update(password_update, current_user.hashed_password, 
+                                               self.pwd_context, locale, i18n_service)
+        
+        # Hash new password
+        new_hashed_password = self.get_password_hash(password_update.new_password)
+        
+        # Update password in database
+        try:
+            UserQueries.update_user_password(user_id, new_hashed_password, db_service=db_service)
+            return {"msg": i18n_service.t("auth.password_updated_successfully", locale)}
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=i18n_service.t("auth.password_update_failed", locale, error=str(e))
+            )
