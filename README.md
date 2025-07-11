@@ -56,18 +56,6 @@ CREATE TABLE `verification_code` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 ```
 
-### RSA Keys
-
-Generate RSA key pair for JWT signing:
-
-```bash
-# Generate private key
-openssl genpkey -algorithm RSA -out private_key.pem -pkcs8
-
-# Generate public key
-openssl rsa -pubout -in private_key.pem -out public_key.pem
-```
-
 ### Environment Variables
 
 Set up the following environment variables:
@@ -139,7 +127,7 @@ Configure the dependency injection container with the following parameters:
 - `DB_USER`: Database username
 - `DB_PASSWORD`: Database password
 - `DB_NAME`: Database name
-- `RSA_KEYS_PATH`: Path to directory containing RSA key files
+- `RSA_KEYS_PATH`: Path to directory containing RSA key files. If no found, new are generated
 - `SMTP_SERVER`: SMTP server address (required for email verification)
 - `SMTP_PORT`: SMTP server port (required for email verification)
 - `SMTP_USER`: SMTP username/email (required for email verification)
