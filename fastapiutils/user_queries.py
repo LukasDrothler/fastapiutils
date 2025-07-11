@@ -91,13 +91,6 @@ class UserQueries:
             update_fields.append("username = %s")
             update_values.append(user_update.username)
         
-        if user_update.email is not None:
-            update_fields.append("email = %s")
-            update_values.append(user_update.email)
-            # Reset email verification when email is updated
-            update_fields.append("email_verified = %s")
-            update_values.append(False)
-        
         if update_fields:
             update_values.append(user_id)
             query = f"UPDATE user SET {', '.join(update_fields)} WHERE id = %s"
