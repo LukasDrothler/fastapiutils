@@ -13,7 +13,7 @@ class UserValidators:
     """Collection of validation methods for authentication operations"""
     
     @staticmethod
-    def validate_username(username: str, locale: str = "en", i18n_service: I18nService = None) -> None:
+    def validate_username_format(username: str, locale: str = "en", i18n_service: I18nService = None) -> None:
         """Validate username format"""
         if not re.match(r"^\w{3,}$", username):
             raise HTTPException(
@@ -22,7 +22,7 @@ class UserValidators:
             )
     
     @staticmethod
-    def validate_email(email: str, locale: str = "en", i18n_service: I18nService = None) -> None:
+    def validate_email_format(email: str, locale: str = "en", i18n_service: I18nService = None) -> None:
         """Validate email format"""
         if not re.match(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$", email):
             raise HTTPException(
@@ -71,8 +71,8 @@ class UserValidators:
     def validate_new_user(user: CreateUser, locale: str = "en", db_service: DatabaseService = None, 
                          i18n_service: I18nService = None) -> None:
         """Validate all fields for new user creation"""
-        UserValidators.validate_username(user.username, locale, i18n_service)
-        UserValidators.validate_email(user.email, locale, i18n_service)
+        UserValidators.validate_username_format(user.username, locale, i18n_service)
+        UserValidators.validate_email_format(user.email, locale, i18n_service)
         UserValidators.validate_password_strength(user.password, locale, i18n_service)
         UserValidators.validate_username_unique(user.username, locale=locale, db_service=db_service, i18n_service=i18n_service)
         UserValidators.validate_email_unique(user.email, locale=locale, db_service=db_service, i18n_service=i18n_service)
@@ -82,12 +82,8 @@ class UserValidators:
                            db_service: DatabaseService = None, i18n_service: I18nService = None) -> None:
         """Validate fields for user update"""
         if user_update.username is not None:
-            UserValidators.validate_username(user_update.username, locale, i18n_service)
+            UserValidators.validate_username_format(user_update.username, locale, i18n_service)
             UserValidators.validate_username_unique(user_update.username, user_id, locale, db_service, i18n_service)
-        
-        if user_update.email is not None:
-            UserValidators.validate_email(user_update.email, locale, i18n_service)
-            UserValidators.validate_email_unique(user_update.email, user_id, locale, db_service, i18n_service)
     
     @staticmethod
     def validate_password_update(password_update: UpdatePassword, current_hashed_password: str, 

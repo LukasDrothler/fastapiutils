@@ -1,5 +1,5 @@
+from .verification_queries import VerificationQueries
 from .models import UserInDB, CreateUser, UpdateUser, UpdatePassword
-from .email_verification import create_verification_code
 from .database_service import DatabaseService
 from .mail_service import MailService
 from .i18n_service import I18nService
@@ -124,7 +124,7 @@ class AuthService:
         UserQueries.create_user(uid, user.username, user.email, hashed_password, db_service=db_service)
         
         # Generate 6-digit verification code
-        verification_code = create_verification_code(uid, db_service=db_service)
+        verification_code = VerificationQueries.create_verification_code(uid, db_service=db_service)
         
         try:
             mail_service.send_email_plain_text(

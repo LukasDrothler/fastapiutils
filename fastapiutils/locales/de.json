@@ -31,6 +31,13 @@
     "current_password_incorrect": "Aktuelles Passwort ist falsch",
     "new_password_same_as_current": "Neues Passwort kann nicht dasselbe wie das aktuelle Passwort sein",
     "password_updated_successfully": "Passwort erfolgreich aktualisiert",
-    "password_update_failed": "Fehler beim Aktualisieren des Passworts: {error}"
+    "password_update_failed": "Fehler beim Aktualisieren des Passworts: {error}",
+    "email_change_verification_subject": "Verifizieren Sie Ihre neue E-Mail-Adresse",
+    "email_change_verification_content": "Hallo {username},\n\nSie haben eine Änderung Ihrer E-Mail-Adresse angefordert. Bitte verwenden Sie den folgenden 6-stelligen Code, um Ihre neue E-Mail-Adresse zu verifizieren:\n\n{verification_code}\n\nDieser Code läuft in 24 Stunden ab.\n\nFalls Sie diese Änderung nicht angefordert haben, ignorieren Sie bitte diese E-Mail.\n\nMit freundlichen Grüßen,\nIhr Team",
+    "email_change_verification_sent": "Verifizierungscode wurde an Ihre neue E-Mail-Adresse gesendet. Bitte überprüfen Sie Ihre E-Mail.",
+    "email_change_verified_successfully": "E-Mail-Adresse erfolgreich aktualisiert",
+    "email_change_failed": "Fehler beim Aktualisieren der E-Mail-Adresse: {error}",
+    "invalid_email_change_code": "Ungültiger Verifizierungscode für E-Mail-Änderung",
+    "email_same_as_current": "Neue E-Mail-Adresse kann nicht dieselbe wie die aktuelle E-Mail-Adresse sein"
   }
 }

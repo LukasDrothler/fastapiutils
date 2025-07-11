@@ -31,6 +31,13 @@
     "current_password_incorrect": "Current password is incorrect",
     "new_password_same_as_current": "New password cannot be the same as current password",
     "password_updated_successfully": "Password updated successfully",
-    "password_update_failed": "Failed to update password: {error}"
+    "password_update_failed": "Failed to update password: {error}",
+    "email_change_verification_subject": "Verify your new email address",
+    "email_change_verification_content": "Hello {username},\n\nYou have requested to change your email address. Please use the following 6-digit code to verify your new email address:\n\n{verification_code}\n\nThis code will expire in 24 hours.\n\nIf you didn't request this change, please ignore this email.\n\nBest regards,\nThe Team",
+    "email_change_verification_sent": "Verification code sent to your new email address. Please check your email.",
+    "email_change_verified_successfully": "Email address updated successfully",
+    "email_change_failed": "Failed to update email address: {error}",
+    "invalid_email_change_code": "Invalid verification code for email change",
+    "email_same_as_current": "New email cannot be the same as your current email address"
   }
 }

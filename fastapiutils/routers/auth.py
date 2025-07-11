@@ -4,6 +4,7 @@ from typing import Optional, Annotated
 from jwt.exceptions import InvalidTokenError
 import jwt
 
+from ..user_queries import UserQueries
 from ..auth_service import AuthService
 from ..database_service import DatabaseService
 from ..i18n_service import I18nService
@@ -65,7 +66,7 @@ async def refresh_access_token(
         raise credentials_exception
     
     # Get and validate current user
-    user = auth_service.get_user(username=token_data.username, db_service=db_service)
+    user = UserQueries.get_user_by_id(token_data.user_id, db_service=db_service)
     if user is None or user.disabled:
         raise credentials_exception
     

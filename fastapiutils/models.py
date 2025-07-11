@@ -56,12 +56,20 @@ class VerificationCode(BaseModel):
 class VerifyEmailRequest(BaseModel):
     """Request model for email verification with code"""
     code: str
+    email: str
 
+class ResendVerificationRequest(BaseModel):
+    """Request model for resending verification code"""
+    email: str
 
 class UpdateUser(BaseModel):
     """Model for updating user information"""
     username: Optional[str] = None
-    email: Optional[str] = None
+
+
+class UpdateMail(BaseModel):
+    """Model for updating user email"""
+    email: str
 
 
 class UpdatePassword(BaseModel):
