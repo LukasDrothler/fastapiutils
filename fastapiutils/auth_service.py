@@ -12,11 +12,14 @@ from passlib.context import CryptContext
 from fastapi import HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.backends import default_backend
 
 import jwt
 import os
+import logging
 
-
+logger = logging.getLogger('uvicorn.error')
 
 class AuthService:
     """Service for handling authentication-related operations"""
@@ -38,11 +41,28 @@ class AuthService:
         private_key_path = os.path.join(rsa_keys_path, private_key_filename)
         public_key_path = os.path.join(rsa_keys_path, public_key_filename)
         
-        if not os.path.exists(private_key_path):
-            raise ValueError(f"Private key not found: {private_key_path}")
-        if not os.path.exists(public_key_path):
-            raise ValueError(f"Public key not found: {public_key_path}")
-        
+        if not os.path.exists(private_key_path) or not os.path.exists(public_key_path):
+            logger.info(f"No RSA keys found at {rsa_keys_path}, with filenames {private_key_filename} and {public_key_filename}. Generating new keys..")
+            
+            key = rsa.generate_private_key(
+                backend=default_backend(),
+                public_exponent=65537,
+                key_size=2048
+            )
+            private_key = key.private_bytes(
+                serialization.Encoding.PEM,
+                serialization.PrivateFormat.PKCS8,
+                serialization.NoEncryption()
+            )
+            public_key = key.public_key().public_bytes(
+                serialization.Encoding.PEM,
+                serialization.PublicFormat.SubjectPublicKeyInfo
+            )
+            with open(private_key_path, 'wb') as f:
+                f.write(private_key)
+            with open(public_key_path, 'wb') as f:
+                f.write(public_key)
+
         with open(private_key_path, 'rb') as f:
             self.private_key = serialization.load_pem_private_key(f.read(), password=None)
         with open(public_key_path, 'rb') as f:
