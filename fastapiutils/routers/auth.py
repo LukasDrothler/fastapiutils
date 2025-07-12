@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from typing import Optional, Annotated
 from jwt.exceptions import InvalidTokenError
@@ -21,7 +21,7 @@ async def login_for_access_token(
     auth_service: AuthService = Depends(get_auth_service),
     db_service: DatabaseService = Depends(get_database_service),
     i18n_service: I18nService = Depends(get_i18n_service),
-    stay_logged_in: Optional[bool] = False
+    stay_logged_in: bool = Query(False, description="Whether to issue a refresh token")
 ) -> Token:
     locale = i18n_service.extract_locale_from_header(request.headers.get("accept-language"))
     
