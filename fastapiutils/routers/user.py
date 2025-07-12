@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, Request
 from ..auth_service import AuthService
 from ..i18n_service import I18nService
 from ..database_service import DatabaseService
-from ..email_verification import resend_verification_code, send_email_change_verification, verify_user_email_change, verify_user_email_with_code
+from ..email_verification import send_verification_code, send_email_change_verification, verify_user_email_change, verify_user_email_with_code
 from ..mail_service import MailService
 from ..models import CreateUser, ResendVerificationRequest, User, UserInDB, VerifyEmailRequest, UpdateUser, UpdatePassword, UpdateMail, VerifyEmailRequest
 from ..dependencies import get_auth_service, get_database_service, get_mail_service, get_i18n_service, CurrentActiveUser
@@ -67,7 +67,7 @@ async def send_new_verification_code(
     mail_service: MailService = Depends(get_mail_service),
 ):
     locale = i18n_service.extract_locale_from_header(request.headers.get("accept-language"))
-    return resend_verification_code(
+    return send_verification_code(
         email=resend_request.email,
         locale=locale,
         db_service=db_service,

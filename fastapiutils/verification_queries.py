@@ -66,7 +66,7 @@ class VerificationQueries:
     
 
     @staticmethod
-    def can_resend_verification(user_id: str, db_service: DatabaseService = None) -> bool:
+    def can_send_verification(user_id: str, db_service: DatabaseService = None) -> bool:
         """Check if user can resend verification code (1 minute cooldown)"""
         existing_code = db_service.execute_single_query(
             "SELECT created_at FROM verification_code WHERE user_id = %s",

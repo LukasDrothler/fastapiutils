@@ -95,7 +95,7 @@ def verify_user_email_with_code(
     return {"msg": i18n_service.t("auth.email_verified_subject", locale)}
 
 
-def resend_verification_code(
+def send_verification_code(
         email: str, locale: str = "en", 
         db_service: DatabaseService = None, 
         mail_service: MailService = None, 
@@ -110,17 +110,10 @@ def resend_verification_code(
         )
     
     # Check if user can resend
-    if not VerificationQueries.can_resend_verification(user.id, db_service=db_service):
+    if not VerificationQueries.can_send_verification(user.id, db_service=db_service):
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             detail=i18n_service.t("auth.resend_cooldown", locale),
-        )
-    
-    # Check if email is already verified
-    if user.email_verified:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=i18n_service.t("auth.email_already_verified", locale),
         )
     
     try:
