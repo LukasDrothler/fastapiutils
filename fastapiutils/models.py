@@ -59,21 +59,25 @@ class VerifyEmailRequest(BaseModel):
     code: str
     email: str
 
-class ResendVerificationRequest(BaseModel):
-    """Request model for resending verification code"""
+
+class SendVerificationRequest(BaseModel):
+    """Request model for sending verification code"""
     email: str
+
 
 class UpdateUser(BaseModel):
     """Model for updating user information"""
     username: Optional[str] = None
 
 
-class UpdateMail(BaseModel):
-    """Model for updating user email"""
-    email: str
-
-
 class UpdatePassword(BaseModel):
     """Model for updating user password"""
     current_password: str
     new_password: str
+
+
+class UpdateForgottenPassword(BaseModel):
+    """Model for updating forgotten password"""
+    email: str
+    new_password: str
+    verification_code: str

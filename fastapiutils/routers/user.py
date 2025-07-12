@@ -3,9 +3,9 @@ from fastapi import APIRouter, Depends, Request
 from ..auth_service import AuthService
 from ..i18n_service import I18nService
 from ..database_service import DatabaseService
-from ..email_verification import resend_verification_code, send_email_change_verification, verify_user_email_change, verify_user_email_with_code
+from ..email_verification import resend_verification_code, send_email_change_verification, send_forgot_password_verification, update_forgotten_password_with_code, verify_forgot_password_with_code, verify_user_email_change, verify_user_email_with_code
 from ..mail_service import MailService
-from ..models import CreateUser, ResendVerificationRequest, User, UserInDB, VerifyEmailRequest, UpdateUser, UpdatePassword, UpdateMail, VerifyEmailRequest
+from ..models import CreateUser, SendVerificationRequest, UpdateForgottenPassword, User, VerifyEmailRequest, UpdateUser, UpdatePassword, VerifyEmailRequest
 from ..dependencies import get_auth_service, get_database_service, get_mail_service, get_i18n_service, CurrentActiveUser
 
 import logging
@@ -60,7 +60,7 @@ async def verify_user_email(
 
 @router.post("/user/resend-verification", status_code=200, tags=["users"])
 async def send_new_verification_code(
-    resend_request: ResendVerificationRequest,
+    send_verification_request: SendVerificationRequest,
     request: Request,
     db_service: DatabaseService = Depends(get_database_service),
     i18n_service: I18nService = Depends(get_i18n_service),
@@ -68,7 +68,7 @@ async def send_new_verification_code(
 ):
     locale = i18n_service.extract_locale_from_header(request.headers.get("accept-language"))
     return resend_verification_code(
-        email=resend_request.email,
+        email=send_verification_request.email,
         locale=locale,
         db_service=db_service,
         mail_service=mail_service, 
@@ -97,7 +97,7 @@ async def update_user_info(
 
 
 @router.put("/user/me/password", status_code=200, tags=["users"])
-async def update_user_password(
+async def change_user_password(
     password_update: UpdatePassword,
     request: Request,
     current_user: CurrentActiveUser,
@@ -118,7 +118,7 @@ async def update_user_password(
 
 @router.post("/user/me/email/change", status_code=200, tags=["users"])
 async def request_user_email_change(
-    email_update: UpdateMail,
+    send_verification_request: SendVerificationRequest,
     request: Request,
     current_user: CurrentActiveUser,
     db_service: DatabaseService = Depends(get_database_service),
@@ -130,7 +130,7 @@ async def request_user_email_change(
 
     return send_email_change_verification(
         user=current_user,
-        new_email=email_update.email,
+        new_email=send_verification_request.email,
         locale=locale,
         db_service=db_service,
         mail_service=mail_service,
@@ -152,6 +152,59 @@ async def user_email_change_verification(
         user=current_user,
         verify_request=verify_request,
         locale=locale,
+        db_service=db_service,
+        i18n_service=i18n_service
+        )
+
+
+@router.post("/user/forgot-password/request", status_code=200, tags=["users"])
+async def request_forgot_password(
+    send_verification_request: SendVerificationRequest,
+    request: Request,
+    db_service: DatabaseService = Depends(get_database_service),
+    i18n_service: I18nService = Depends(get_i18n_service),
+    mail_service: MailService = Depends(get_mail_service),
+):
+    locale = i18n_service.extract_locale_from_header(request.headers.get("accept-language"))
+    return send_forgot_password_verification(
+        email=send_verification_request.email,
+        locale=locale,
+        db_service=db_service,
+        mail_service=mail_service, 
+        i18n_service=i18n_service
+        )
+
+
+@router.post("/user/forgot-password/verify", status_code=200, tags=["users"])
+async def forgot_password_verification(
+    verify_request: VerifyEmailRequest,
+    request: Request,
+    db_service: DatabaseService = Depends(get_database_service),
+    i18n_service: I18nService = Depends(get_i18n_service),
+):
+    """Verify email change with 6-digit code and update user's email"""
+    locale = i18n_service.extract_locale_from_header(request.headers.get("accept-language"))
+    return verify_forgot_password_with_code(
+        verify_request=verify_request,
+        locale=locale,
+        db_service=db_service,
+        i18n_service=i18n_service
+        )
+
+@router.post("/user/forgot-password/change", status_code=200, tags=["users"])
+async def change_forgotten_password(
+    update_forgotten_password: UpdateForgottenPassword,
+    request: Request,
+    auth_service: AuthService = Depends(get_auth_service),
+    db_service: DatabaseService = Depends(get_database_service),
+    i18n_service: I18nService = Depends(get_i18n_service),
+):
+    """Verify email change with 6-digit code and update user's email"""
+    locale = i18n_service.extract_locale_from_header(request.headers.get("accept-language"))
+    return update_forgotten_password_with_code(
+        update_forgotten_password=update_forgotten_password,
+        locale=locale,
+        auth_service=auth_service,
         db_service=db_service,
         i18n_service=i18n_service
         )

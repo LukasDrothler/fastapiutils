@@ -239,10 +239,11 @@ class AuthService:
     def update_password(
             self,
             user_id: str,
-            password_update: UpdatePassword,
             db_service: DatabaseService,
             i18n_service: I18nService,
-            locale: str
+            locale: str,
+            password_update: Optional[UpdatePassword] = None,
+            new_password: Optional[str] = None
             ) -> dict:
         """Update user password"""
         # Get current user to verify they exist and get their current password
@@ -253,16 +254,31 @@ class AuthService:
                 detail=i18n_service.t("auth.user_not_found", locale)
             )
         
-        # Validate password update
-        UserValidators.validate_password_update(password_update, current_user.hashed_password, 
-                                               self.pwd_context, locale, i18n_service)
-        
-        # Hash new password
-        new_hashed_password = self.get_password_hash(password_update.new_password)
+        UserValidators.validate_new_password(
+                password_update=password_update,
+                current_hashed_password=current_user.hashed_password,
+                new_password=new_password,
+                pwd_context=self.pwd_context,
+                locale=locale,
+                i18n_service=i18n_service
+            )
+
+        if password_update is not None:
+            new_hashed_password = self.get_password_hash(password_update.new_password)
+        elif new_password is not None:
+            new_hashed_password = self.get_password_hash(new_password)
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=i18n_service.t("auth.no_password_provided", locale)
+            )
         
         # Update password in database
         try:
-            UserQueries.update_user_password(user_id, new_hashed_password, db_service=db_service)
+            UserQueries.update_user_password(
+                user_id=user_id, 
+                hashed_password=new_hashed_password, 
+                db_service=db_service)
             return {"msg": i18n_service.t("auth.password_updated_successfully", locale)}
         except Exception as e:
             raise HTTPException(

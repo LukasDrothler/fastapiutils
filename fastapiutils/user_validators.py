@@ -1,6 +1,7 @@
 """
 Authentication validation utilities
 """
+from typing import Optional
 from .models import CreateUser, UpdateUser, UpdatePassword
 from .database_service import DatabaseService
 from .i18n_service import I18nService
@@ -99,22 +100,36 @@ class UserValidators:
             UserValidators.validate_username_unique(user_update.username, locale, db_service, i18n_service)
     
     @staticmethod
-    def validate_password_update(password_update: UpdatePassword, current_hashed_password: str, 
-                               pwd_context, locale: str, i18n_service: I18nService) -> None:
+    def validate_new_password(
+        current_hashed_password: str,
+        pwd_context, locale: str,
+        i18n_service: I18nService,
+        password_update: Optional[UpdatePassword],
+        new_password: Optional[str] = None,
+        allow_same_as_current: bool = True
+        ) -> None:
         """Validate password update"""
+        _newPassword = new_password
         # Verify current password
-        if not pwd_context.verify(password_update.current_password, current_hashed_password):
+        if password_update is not None:
+            if not pwd_context.verify(password_update.current_password, current_hashed_password):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=i18n_service.t("auth.current_password_incorrect", locale)
+                )
+            _newPassword = password_update.new_password
+
+        if not _newPassword:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=i18n_service.t("auth.current_password_incorrect", locale)
+                detail=i18n_service.t("auth.no_password_provided", locale)
             )
-        
-        # Validate new password strength
-        UserValidators.validate_password_strength(password_update.new_password, locale, i18n_service)
-        
-        # Check if new password is the same as current password
-        if pwd_context.verify(password_update.new_password, current_hashed_password):
+
+        if not allow_same_as_current and pwd_context.verify(_newPassword, current_hashed_password):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=i18n_service.t("auth.new_password_same_as_current", locale)
             )
+
+        UserValidators.validate_password_strength(_newPassword, locale, i18n_service)
+        return None

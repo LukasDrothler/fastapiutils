@@ -87,7 +87,11 @@ class UserQueries:
         )
     
     @staticmethod
-    def update_user_password(user_id: str, hashed_password: str, db_service: DatabaseService) -> None:
+    def update_user_password(
+        user_id: str,
+        hashed_password: str,
+        db_service: DatabaseService
+        ) -> None:
         """Update user's password"""
         db_service.execute_modification_query(
             "UPDATE user SET hashed_password = %s WHERE id = %s",

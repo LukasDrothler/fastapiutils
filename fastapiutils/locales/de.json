@@ -36,8 +36,14 @@
     "email_change_verification_content": "Hallo {username},\n\nSie haben eine Änderung Ihrer E-Mail-Adresse angefordert. Bitte verwenden Sie den folgenden 6-stelligen Code, um Ihre neue E-Mail-Adresse zu verifizieren:\n\n{verification_code}\n\nDieser Code läuft in 24 Stunden ab.\n\nFalls Sie diese Änderung nicht angefordert haben, ignorieren Sie bitte diese E-Mail.\n\nMit freundlichen Grüßen,\nIhr Team",
     "email_change_verification_sent": "Verifizierungscode wurde an Ihre neue E-Mail-Adresse gesendet. Bitte überprüfen Sie Ihre E-Mail.",
     "email_change_verified_successfully": "E-Mail-Adresse erfolgreich aktualisiert",
+    "forgot_password_verified_successfully": "E-Mail erfolgreich verifiziert. Sie können nun Ihr Passwort zurücksetzen.",
+    "forgotten_password_updated_successfully": "Passwort erfolgreich aktualisiert",
+    "no_password_provided": "Kein Passwort zum Aktualisieren angegeben",
     "email_change_failed": "Fehler beim Aktualisieren der E-Mail-Adresse: {error}",
     "invalid_email_change_code": "Ungültiger Verifizierungscode für E-Mail-Änderung",
-    "email_same_as_current": "Neue E-Mail-Adresse kann nicht dieselbe wie die aktuelle E-Mail-Adresse sein"
+    "email_same_as_current": "Neue E-Mail-Adresse kann nicht dieselbe wie die aktuelle E-Mail-Adresse sein",
+    "forgot_password_verification_subject": "Passwort-Reset Verifizierungscode",
+    "forgot_password_verification_content": "Hallo {username},\n\nSie haben eine Passwort-Zurücksetzung angefordert. Bitte verwenden Sie den folgenden 6-stelligen Verifizierungscode, um den Passwort-Reset-Prozess abzuschließen:\n\n{verification_code}\n\nDieser Code läuft in 24 Stunden ab. Falls Sie diese Passwort-Zurücksetzung nicht angefordert haben, ignorieren Sie bitte diese E-Mail.\n\nMit freundlichen Grüßen,\nIhr Team",
+    "forgot_password_verification_code_sent": "Passwort-Reset Verifizierungscode wurde an Ihre E-Mail-Adresse gesendet"
   }
 }
