@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, Request
 from ..auth_service import AuthService
 from ..i18n_service import I18nService
 from ..database_service import DatabaseService
-from ..email_verification import send_verification_code, send_email_change_verification, verify_user_email_change, verify_user_email_with_code
+from ..email_verification import resend_verification_code, send_email_change_verification, verify_user_email_change, verify_user_email_with_code
 from ..mail_service import MailService
 from ..models import CreateUser, ResendVerificationRequest, User, UserInDB, VerifyEmailRequest, UpdateUser, UpdatePassword, UpdateMail, VerifyEmailRequest
 from ..dependencies import get_auth_service, get_database_service, get_mail_service, get_i18n_service, CurrentActiveUser
@@ -22,7 +22,7 @@ async def read_users_me(current_user: CurrentActiveUser):
 
 
 @router.post("/user/register", status_code=201, tags=["users"])
-async def create_user(
+async def create_new_user(
     user: CreateUser,
     request: Request,
     auth_service: AuthService = Depends(get_auth_service),
@@ -31,8 +31,8 @@ async def create_user(
     i18n_service: I18nService = Depends(get_i18n_service),
 ):
     locale = i18n_service.extract_locale_from_header(request.headers.get("accept-language"))
-    return auth_service.create_user(
-        user=user, 
+    return auth_service.register_new_user(
+        user=user,
         locale=locale,
         db_service=db_service,
         i18n_service=i18n_service,
@@ -67,7 +67,7 @@ async def send_new_verification_code(
     mail_service: MailService = Depends(get_mail_service),
 ):
     locale = i18n_service.extract_locale_from_header(request.headers.get("accept-language"))
-    return send_verification_code(
+    return resend_verification_code(
         email=resend_request.email,
         locale=locale,
         db_service=db_service,

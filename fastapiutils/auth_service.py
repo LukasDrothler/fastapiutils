@@ -111,23 +111,10 @@ class AuthService:
         encoded_jwt = jwt.encode(to_encode, self.private_key, algorithm=self.algorithm)
         return encoded_jwt
 
-    
-    def get_user(self, uid: Optional[str] = None, username: Optional[str] = None, email: Optional[str] = None, db_service: DatabaseService=None) -> Optional[UserInDB]:
-        """Get user from database"""
-        if uid:
-            return UserQueries.get_user_by_id(uid, db_service=db_service)
-        elif username and email:
-            return UserQueries.get_user_by_username_and_email(username, email, db_service=db_service)
-        elif email:
-            return UserQueries.get_user_by_email(email, db_service=db_service)
-        elif username:
-            return UserQueries.get_user_by_username(username, db_service=db_service)
-        return None
 
-
-    def authenticate_user(self, username: str, password: str, db_service: DatabaseService = None) -> Optional[UserInDB]:
+    def authenticate_user(self, username: str, password: str, db_service: DatabaseService) -> Optional[UserInDB]:
         """Authenticate a user"""
-        user = self.get_user(username=username, db_service=db_service)
+        user = UserQueries.get_user_by_username(username, db_service=db_service)
         if not user:
             return None
         if not self.verify_password(password, user.hashed_password):
@@ -138,23 +125,35 @@ class AuthService:
         return user
 
 
-    def create_user(self, user: CreateUser, locale: str = "en", db_service: DatabaseService = None, mail_service: MailService = None, i18n_service: I18nService = None) -> dict:
+    def register_new_user(
+            self, 
+            user: CreateUser,
+            db_service: DatabaseService,
+            mail_service: MailService,
+            i18n_service: I18nService,
+            locale: str
+            ) -> dict:
         """Create a new user"""
         UserValidators.validate_new_user(user, locale, db_service=db_service, i18n_service=i18n_service)
-        
-        uid = UserQueries.generate_user_uuid(db_service=db_service)
-        if uid is None:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=i18n_service.t("auth.user_creation_failed", locale),
-            )
-        
         hashed_password = self.get_password_hash(user.password)
         
-        UserQueries.create_user(uid, user.username, user.email, hashed_password, db_service=db_service)
+        UserQueries.create_user(
+            username=user.username,
+            email=user.email,
+            hashed_password=hashed_password,
+            db_service=db_service,
+            i18n_service=i18n_service,
+            locale=locale
+        )
         
         # Generate 6-digit verification code
-        verification_code = VerificationQueries.create_verification_code(uid, db_service=db_service)
+        verification_code = VerificationQueries.create_verification_code(
+            user=None,
+            email=user.email,
+            db_service=db_service,
+            i18n_service=i18n_service,
+            locale=locale
+        )
         
         try:
             mail_service.send_email_plain_text(
@@ -173,7 +172,7 @@ class AuthService:
         return {"msg": i18n_service.t("auth.user_created_verify_email", locale)}
 
 
-    def get_current_user(self, token: str, db_service: DatabaseService = None, i18n_service: I18nService = None) -> UserInDB:
+    def get_current_user(self, token: str, db_service: DatabaseService, i18n_service: I18nService) -> UserInDB:
         """Get current user from JWT token"""
         credentials_exception = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -189,13 +188,13 @@ class AuthService:
         except jwt.InvalidTokenError:
             raise credentials_exception
             
-        user = self.get_user(uid=user_id, db_service=db_service)
+        user = UserQueries.get_user_by_id(user_id, db_service=db_service)
         if user is None:
             raise credentials_exception
         return user
 
 
-    def get_current_active_user(self, current_user: UserInDB, i18n_service: I18nService = None) -> UserInDB:
+    def get_current_active_user(self, current_user: UserInDB, i18n_service: I18nService) -> UserInDB:
         """Get current active user (not disabled)"""
         if current_user.disabled:
             raise HTTPException(
@@ -205,20 +204,24 @@ class AuthService:
         return current_user
 
 
-    def update_user(self, user_id: str, user_update: UpdateUser, locale: str = "en", db_service: DatabaseService = None, i18n_service: I18nService = None) -> dict:
+    def update_user(
+            self,
+            user_id: str,
+            user_update: UpdateUser,
+            db_service: DatabaseService,
+            i18n_service: I18nService,
+            locale: str
+            ) -> dict:
         """Update user information"""
         # Get current user to verify they exist
-        current_user = self.get_user(uid=user_id, db_service=db_service)
+        current_user = UserQueries.get_user_by_id(user_id, db_service=db_service)
         if not current_user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=i18n_service.t("auth.user_not_found", locale)
             )
-        
-        # Validate update data
-        UserValidators.validate_user_update(user_update, user_id, locale, db_service, i18n_service)
-        
-        # Update user fields
+
+        UserValidators.validate_user_update(user_update, locale, db_service, i18n_service)
         fields_updated = UserQueries.update_user_fields(user_id, user_update, db_service=db_service)
         
         if not fields_updated:
@@ -233,10 +236,17 @@ class AuthService:
             )
 
 
-    def update_password(self, user_id: str, password_update: UpdatePassword, locale: str = "en", db_service: DatabaseService = None, i18n_service: I18nService = None) -> dict:
+    def update_password(
+            self,
+            user_id: str,
+            password_update: UpdatePassword,
+            db_service: DatabaseService,
+            i18n_service: I18nService,
+            locale: str
+            ) -> dict:
         """Update user password"""
         # Get current user to verify they exist and get their current password
-        current_user = self.get_user(uid=user_id, db_service=db_service)
+        current_user = UserQueries.get_user_by_id(user_id, db_service=db_service)
         if not current_user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,

@@ -305,7 +305,7 @@ from fastapiutils.i18n_service import I18nService
 
 async def validate_name(
     name: str, 
-    locale: str = "en",
+    locale: str
     i18n_service: I18nService = Depends(get_i18n_service)
 ) -> str:
     """Validate pet name field with internationalized error messages"""

@@ -14,9 +14,9 @@ from fastapi import HTTPException, status
 def _check_verification_code(
         user_id: str,
         verify_request: VerifyEmailRequest,
-        locale: str = "en", 
-        db_service: DatabaseService = None,
-        i18n_service: I18nService = None
+        db_service: DatabaseService,
+        i18n_service: I18nService,
+        locale: str, 
         ) -> UserInDB:
     """Check if verification code is valid, not used and not expired"""
     verification_record = VerificationQueries.get_verification_code_by_user_id(
@@ -56,10 +56,10 @@ def _check_verification_code(
 
 def verify_user_email_with_code(
         verify_request: VerifyEmailRequest, 
-        locale: str = "en", 
-        db_service: DatabaseService = None, 
-        i18n_service = None,
-        mail_service: MailService = None
+        db_service: DatabaseService, 
+        i18n_service: I18nService,
+        mail_service: MailService,
+        locale: str, 
         ) -> bool:
     """Verify user email using 6-digit code"""
 
@@ -78,8 +78,8 @@ def verify_user_email_with_code(
         i18n_service=i18n_service
     )
 
-    VerificationQueries.mark_verification_code_as_used(user.id, db_service=db_service)
-    VerificationQueries.update_user_email_verified_status(user.id, True, db_service=db_service)
+    VerificationQueries.mark_verification_code_as_used(user_id=user.id, db_service=db_service)
+    VerificationQueries.update_user_email_verified_status(user_id=user.id, verified=True, db_service=db_service)
 
     # Send confirmation email
     try:
@@ -95,37 +95,37 @@ def verify_user_email_with_code(
     return {"msg": i18n_service.t("auth.email_verified_subject", locale)}
 
 
-def send_verification_code(
-        email: str, locale: str = "en", 
-        db_service: DatabaseService = None, 
-        mail_service: MailService = None, 
-        i18n_service = None
-        ) -> dict:
-    """Resend verification code if 1 minute has passed"""
-    user = UserQueries.get_user_by_email(email, db_service=db_service)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=i18n_service.t("auth.user_not_found", locale),
+def resend_verification_code(
+        email: str,
+        db_service: DatabaseService,
+        mail_service: MailService,
+        i18n_service: I18nService,
+        locale: str,
+    ) -> dict:
+
+    user = UserQueries.get_user_by_email(email=email, db_service=db_service)
+    verification_code = VerificationQueries.create_verification_code(
+        user=None,
+        email=email,
+        locale=locale,
+        db_service=db_service,
+        i18n_service=i18n_service
         )
-    
-    # Check if user can resend
-    if not VerificationQueries.can_send_verification(user.id, db_service=db_service):
+
+    if user.email_verified:
         raise HTTPException(
-            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail=i18n_service.t("auth.resend_cooldown", locale),
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=i18n_service.t("auth.email_already_verified", locale)
         )
-    
+
     try:
         # Generate new verification code
-        verification_code = VerificationQueries.create_verification_code(user.id, db_service=db_service)
-        
         mail_service.send_email_plain_text(
             content=i18n_service.t("auth.email_verification_content", locale, 
                                     username=user.username, 
                                     verification_code=verification_code),
             subject=i18n_service.t("auth.email_verification_subject", locale),
-            recipient=user.email
+            recipient=email
         )
     except Exception as e:
         raise HTTPException(
@@ -136,9 +136,14 @@ def send_verification_code(
     return {"msg": i18n_service.t("auth.verification_code_resent", locale)}
 
 
-def send_email_change_verification(user: UserInDB, new_email: str, locale: str = "en", 
-                         db_service: DatabaseService = None, mail_service: MailService = None, 
-                         i18n_service: I18nService = None) -> dict:
+def send_email_change_verification(
+        user: UserInDB,
+        new_email: str,
+        db_service: DatabaseService,
+        mail_service: MailService, 
+        i18n_service: I18nService,
+        locale: str, 
+        ) -> dict:
     """Initiate email change process by sending verification code to new email"""
 
     # Check if new email is the same as current email
@@ -149,8 +154,19 @@ def send_email_change_verification(user: UserInDB, new_email: str, locale: str =
         )
 
     UserValidators.validate_email_format(new_email, locale, i18n_service)
-    UserValidators.validate_email_unique(new_email, user.id, locale, db_service, i18n_service)
-    verification_code = VerificationQueries.create_verification_code(user.id, db_service=db_service)
+    UserValidators.validate_email_unique(
+            email=new_email,
+            locale=locale, 
+            db_service=db_service, 
+            i18n_service=i18n_service
+        )
+    verification_code = VerificationQueries.create_verification_code(
+        user=user,
+        email=new_email,
+        locale=locale,
+        db_service=db_service,
+        i18n_service=i18n_service
+    )
     
     # Send verification email to new email address
     try:
@@ -170,8 +186,13 @@ def send_email_change_verification(user: UserInDB, new_email: str, locale: str =
     return {"msg": i18n_service.t("auth.email_change_verification_sent", locale)}
 
 
-def verify_user_email_change(user: UserInDB, verify_request: VerifyEmailRequest, locale: str = "en", 
-                       db_service: DatabaseService = None, i18n_service: I18nService = None) -> dict:
+def verify_user_email_change(
+        user: UserInDB,
+        verify_request: VerifyEmailRequest,
+        db_service: DatabaseService,
+        i18n_service: I18nService,
+        locale: str,
+        ) -> dict:
     """Verify email change using 6-digit code and update user's email"""
 
     _check_verification_code(
@@ -182,9 +203,14 @@ def verify_user_email_change(user: UserInDB, verify_request: VerifyEmailRequest,
         i18n_service=i18n_service
     )
     
-    UserValidators.validate_email_format(verify_request.email, locale, i18n_service)
-    UserValidators.validate_email_unique(verify_request.email, user.id, locale, db_service, i18n_service)
-    VerificationQueries.update_user_email(user.id, verify_request.email, db_service=db_service)
-    VerificationQueries.mark_verification_code_as_used(user.id, db_service=db_service)
+    UserValidators.validate_email_format(email=verify_request.email, locale=locale, i18n_service=i18n_service)
+    UserValidators.validate_email_unique(
+            email=verify_request.email,
+            locale=locale, 
+            db_service=db_service, 
+            i18n_service=i18n_service
+        )
+    VerificationQueries.update_user_email(user_id=user.id, new_email=verify_request.email, db_service=db_service)
+    VerificationQueries.mark_verification_code_as_used(user_id=user.id, db_service=db_service)
     
     return {"msg": i18n_service.t("auth.email_change_verified_successfully", locale)}

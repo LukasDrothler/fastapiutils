@@ -271,9 +271,11 @@ def create_user(
     mail_service: MailService = Depends(get_mail_service),
     i18n_service: I18nService = Depends(get_i18n_service),
 ):
-    return auth_service.create_user(user_data, "en", 
-                                   db_service=db_service, 
-                                   i18n_service=i18n_service)
+    return auth_service.register_new_user(
+        user_data, "en", 
+        db_service=db_service, 
+        i18n_service=i18n_service
+        )
 ```
 
 ### Testing with Mocks
