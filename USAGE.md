@@ -135,6 +135,108 @@ setup_dependencies(
 )
 ```
 
+## API Workflows
+
+### User Registration and Email Verification
+
+```python
+import requests
+
+# 1. Register new user
+response = requests.post("http://localhost:8000/user/register", json={
+    "username": "johndoe",
+    "email": "john@example.com", 
+    "password": "SecurePass123"
+})
+# Returns: {"msg": "User created successfully. Please check your email for a 6-digit verification code."}
+
+# 2. Verify email with 6-digit code (received via email)
+response = requests.post("http://localhost:8000/user/verify-email", json={
+    "email": "john@example.com",
+    "code": "123456"
+})
+# Returns: {"msg": "Email verified successfully!"}
+
+# 3. User can now login and access protected endpoints
+response = requests.post("http://localhost:8000/token", data={
+    "username": "johndoe",
+    "password": "SecurePass123"
+})
+# Returns: {"access_token": "...", "token_type": "bearer", "refresh_token": "..."}
+```
+
+### Password Reset Workflow
+
+```python
+import requests
+
+# 1. Request password reset (no authentication required)
+response = requests.post("http://localhost:8000/user/forgot-password/request", json={
+    "email": "john@example.com"
+})
+# Returns: {"msg": "Password reset verification code has been sent to your email address"}
+
+# 2. Verify reset code (user receives 6-digit code via email)
+response = requests.post("http://localhost:8000/user/forgot-password/verify", json={
+    "email": "john@example.com",
+    "code": "654321"
+})
+# Returns: {"msg": "Verification code verified successfully"}
+
+# 3. Change password using verified code
+response = requests.post("http://localhost:8000/user/forgot-password/change", json={
+    "email": "john@example.com",
+    "verification_code": "654321",
+    "new_password": "NewSecurePass456"
+})
+# Returns: {"msg": "Password updated successfully"}
+```
+
+### Email Change Workflow
+
+```python
+import requests
+
+# User must be authenticated for email change
+headers = {"Authorization": "Bearer your_access_token"}
+
+# 1. Request email change (sends verification code to NEW email)
+response = requests.post("http://localhost:8000/user/me/email/change",
+    headers=headers,
+    json={"email": "newemail@example.com"}
+)
+# Returns: {"msg": "Verification code sent to your new email address. Please check your email."}
+
+# 2. Verify new email with 6-digit code (sent to new email address)
+response = requests.post("http://localhost:8000/user/me/email/verify",
+    headers=headers,
+    json={
+        "email": "newemail@example.com",
+        "code": "789012"
+    }
+)
+# Returns: {"msg": "Email address updated successfully"}
+```
+
+### Password Change (Authenticated)
+
+```python
+import requests
+
+# User must be authenticated
+headers = {"Authorization": "Bearer your_access_token"}
+
+# Change password (requires current password)
+response = requests.put("http://localhost:8000/user/me/password",
+    headers=headers,
+    json={
+        "current_password": "OldPassword123",
+        "new_password": "NewPassword456"
+    }
+)
+# Returns: {"msg": "Password updated successfully"}
+```
+
 ## API Endpoints
 
 ### Authentication Endpoints
@@ -144,12 +246,63 @@ setup_dependencies(
 
 ### User Endpoints
 
+#### User Management
 - `POST /user/register` - Register new user (requires email verification)
-- `POST /user/verify-email` - Verify email with 6-digit code
-- `POST /user/resend-verification` - Resend verification code (24-hour cooldown)
 - `GET /user/me` - Get current user info (requires verified email)
+- `PUT /user/me` - Update current user information
+- `PUT /user/me/password` - Change current user's password
+
+#### Email Verification
+- `POST /user/verify-email` - Verify email with 6-digit code
+- `POST /user/resend-verification` - Resend verification code (1-minute cooldown)
+
+#### Email Change
+- `POST /user/me/email/change` - Request email change (sends verification code to new email)
+- `POST /user/me/email/verify` - Verify new email with 6-digit code
+
+#### Password Reset
+- `POST /user/forgot-password/request` - Request password reset (sends verification code to email)
+- `POST /user/forgot-password/verify` - Verify password reset code  
+- `POST /user/forgot-password/change` - Change password using verified reset code
 
 **Note**: Email verification is mandatory. Users must verify their email with a 6-digit code sent via email before they can access protected endpoints.
+
+## Request/Response Models
+
+The package provides several Pydantic models for API requests and responses:
+
+### Authentication Models
+- `Token` - OAuth2 token response with access_token, token_type, and refresh_token
+- `RefreshTokenRequest` - Request model for token refresh
+
+### User Models  
+- `CreateUser` - User registration model (username, email, password)
+- `User` - Public user model (excludes sensitive data)
+- `UserInDB` - Internal user model with hashed password
+- `UpdateUser` - User update model for profile changes
+- `UpdatePassword` - Password change model (current_password, new_password)
+
+### Verification Models
+- `SendVerificationRequest` - Email-only model for requesting verification codes
+- `VerifyEmailRequest` - Email and code model for verification
+- `UpdateForgottenPassword` - Password reset model (email, verification_code, new_password)
+
+### Example Usage in Custom Routes
+
+```python
+from fastapiutils.models import CreateUser, User, VerifyEmailRequest
+from pydantic import BaseModel
+
+# Extend existing models
+class ExtendedUser(User):
+    phone_number: Optional[str] = None
+    company: Optional[str] = None
+
+# Create custom models following the same pattern
+class CustomRequest(BaseModel):
+    custom_field: str
+    optional_field: Optional[int] = None
+```
 
 ## Extending Models
 
@@ -261,10 +414,31 @@ This will override the built-in "incorrect_credentials" message and add new tran
 
 The package raises appropriate HTTP exceptions with localized messages:
 
-- 400 Bad Request - Invalid user data
-- 401 Unauthorized - Invalid credentials
-- 409 Conflict - Username/email already exists
-- 500 Internal Server Error - Database errors
+### Common Error Codes
+- **400 Bad Request** - Invalid user data, expired/invalid verification codes
+- **401 Unauthorized** - Invalid credentials, missing authentication
+- **404 Not Found** - User not found, invalid verification code
+- **409 Conflict** - Username/email already exists
+- **500 Internal Server Error** - Database errors, email sending failures
+
+### Security Features
+
+#### Password Reset Security
+- **Short Expiration**: Reset codes expire after 24 hours
+- **Single Use**: Reset codes become invalid after use
+- **Secure Hashing**: New passwords are securely hashed before storage
+
+#### Email Change Security
+- **Authentication Required**: User must be logged in to change email
+- **New Email Verification**: Verification sent to new email address only
+- **Uniqueness Validation**: Ensures new email isn't already in use
+- **Atomic Updates**: Email only updated after successful verification
+
+#### General Security
+- **Rate Limiting**: 1-minute cooldown for verification code resends
+- **Code Validation**: Strict 6-digit code format validation
+- **Secure Storage**: All verification codes stored with timestamps
+- **Localized Errors**: Error messages respect user's language preference
 
 ## Production Deployment
 

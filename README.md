@@ -145,10 +145,24 @@ Configure the dependency injection container with the following parameters:
 
 ### User Router
 
+#### User Management
 - `POST /user/register` - Register new user (sends 6-digit verification code via email)
 - `GET /user/me` - Get current user profile
-- `POST /user/verify-email/{user_id}` - Verify email with 6-digit code
-- `POST /user/resend-verification/{user_id}` - Resend verification code
+- `PUT /user/me` - Update current user information
+- `PUT /user/me/password` - Change current user's password
+
+#### Email Verification
+- `POST /user/verify-email` - Verify email with 6-digit code
+- `POST /user/resend-verification` - Resend verification code
+
+#### Email Change
+- `POST /user/me/email/change` - Request email change (sends verification code to new email)
+- `POST /user/me/email/verify` - Verify new email with 6-digit code
+
+#### Password Reset
+- `POST /user/forgot-password/request` - Request password reset (sends verification code to email)
+- `POST /user/forgot-password/verify` - Verify password reset code
+- `POST /user/forgot-password/change` - Change password using verified reset code
 
 ## Advanced Configuration
 
@@ -191,6 +205,98 @@ The library implements a **mandatory email verification system** using 6-digit c
 4. **User Verification**: User enters code via API endpoint
 5. **Account Activation**: Email marked as verified, user can fully access platform
 6. **Resend Option**: If code expired or mail was not received, the user can re-send a new code
+
+## Password Reset Workflow
+
+The package provides a secure password reset system using verification codes sent via email.
+
+### Password Reset Features
+
+- **Email-based Reset**: Reset codes sent to user's registered email address
+- **6-Digit Codes**: Same secure format as email verification
+- **24-Hour Expiration**: Reset codes expire after 24 hours
+- **Single Use**: Reset codes become invalid after use
+- **Localized Emails**: Reset emails are localized based on user's preferred language
+
+### Password Reset Flow
+
+1. **Request Reset**: User provides email address via `POST /user/forgot-password/request`
+2. **Code Generation**: If email exists, system generates 6-digit reset code
+3. **Email Sent**: Reset code emailed to user
+4. **Verify Code**: User submits reset code via `POST /user/forgot-password/verify`
+5. **Change Password**: User provides new password via `POST /user/forgot-password/change`
+6. **Password Updated**: Password is securely hashed and updated in database
+
+### Password Reset API Usage
+
+```python
+# 1. Request password reset
+response = requests.post("http://localhost:8000/user/forgot-password/request", json={
+    "email": "user@example.com"
+})
+# Returns: {"msg": "Password reset verification code has been sent to your email address"}
+
+# 2. Verify reset code (user receives code via email)
+response = requests.post("http://localhost:8000/user/forgot-password/verify", json={
+    "email": "user@example.com",
+    "code": "123456"
+})
+# Returns: {"msg": "Verification code verified successfully"}
+
+# 3. Change password with verified code
+response = requests.post("http://localhost:8000/user/forgot-password/change", json={
+    "email": "user@example.com",
+    "verification_code": "123456", 
+    "new_password": "new_secure_password"
+})
+# Returns: {"msg": "Password updated successfully"}
+```
+
+## Email Change Workflow
+
+Users can securely change their email address using a verification-based system.
+
+### Email Change Features
+
+- **New Email Verification**: Verification code sent to the new email address
+- **Security Validation**: Ensures new email is unique and properly formatted
+- **6-Digit Codes**: Consistent with other verification systems
+- **24-Hour Expiration**: Verification codes expire after 24 hours
+- **Authenticated Process**: User must be logged in to change email
+- **Atomic Updates**: Email only updated after successful verification
+
+### Email Change Flow
+
+1. **Request Change**: Authenticated user provides new email via `POST /user/me/email/change`
+2. **Validation**: System validates new email format and uniqueness
+3. **Code Generation**: System generates 6-digit verification code
+4. **Email Sent**: Verification code sent to the new email address
+5. **Verify New Email**: User submits verification code via `POST /user/me/email/verify`
+6. **Email Updated**: User's email address is updated in the database
+
+### Email Change API Usage
+
+```python
+# Headers with authentication token
+headers = {"Authorization": "Bearer your_access_token"}
+
+# 1. Request email change (sends code to new email)
+response = requests.post("http://localhost:8000/user/me/email/change", 
+    headers=headers,
+    json={"email": "newemail@example.com"}
+)
+# Returns: {"msg": "Verification code sent to your new email address. Please check your email."}
+
+# 2. Verify new email with code (received via email)
+response = requests.post("http://localhost:8000/user/me/email/verify",
+    headers=headers, 
+    json={
+        "email": "newemail@example.com",
+        "code": "123456"
+    }
+)
+# Returns: {"msg": "Email address updated successfully"}
+```
 
 ### Email Verification Translation
 
