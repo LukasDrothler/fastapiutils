@@ -33,9 +33,9 @@ async def login_for_access_token(
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    access_token = auth_service.create_bearer_token(user_id=user.id)
+    access_token = auth_service.create_bearer_token(user=user)
     if stay_logged_in:
-        refresh_token = auth_service.create_bearer_token(user_id=user.id, is_refresh=True)
+        refresh_token = auth_service.create_bearer_token(user=user, is_refresh=True)
         return Token(access_token=access_token, refresh_token=refresh_token)
     
     return Token(access_token=access_token)
@@ -70,5 +70,5 @@ async def refresh_access_token(
     if user is None or user.disabled:
         raise credentials_exception
     
-    access_token = auth_service.create_bearer_token(user_id=user.id)
-    return Token(access_token=access_token, token_type="bearer")
+    access_token = auth_service.create_bearer_token(user=user)
+    return Token(access_token=access_token)

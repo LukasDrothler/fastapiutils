@@ -9,6 +9,7 @@ class User(BaseModel):
     username: str
     email: str
     email_verified: bool = False
+    is_admin: bool = False
     premium_level: int = 0
     stripe_customer_id: Optional[str] = None
     disabled: bool = False

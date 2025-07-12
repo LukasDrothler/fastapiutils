@@ -87,9 +87,19 @@ class AuthService:
         return self.pwd_context.hash(password)
 
 
-    def create_bearer_token(self, user_id: str, is_refresh: bool = False) -> str:
+    def create_bearer_token(self, user: UserInDB, is_refresh: bool = False) -> str:
         """Create a JWT token"""
-        data = {"sub": user_id}
+        data = {
+            "sub": user.id,
+            "username": user.username,
+            "email": user.email,
+            "email_verified": user.email_verified,
+            "premium_level": user.premium_level,
+            "is_admin": user.is_admin,
+            "disabled": user.disabled,
+            "last_seen": user.last_seen.isoformat() if user.last_seen else None,
+            "created_at": user.created_at.isoformat() if user.created_at else None
+            }
         to_encode = data.copy()
         if is_refresh:
             expires_delta = timedelta(days=self.refresh_token_expire_days)

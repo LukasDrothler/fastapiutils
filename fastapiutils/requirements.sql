@@ -8,6 +8,7 @@ CREATE TABLE `user` (
   `email` varchar(100) NOT NULL,
   `email_verified` tinyint(1) NOT NULL DEFAULT '0',
   `premium_level` int DEFAULT '0',
+  `is_admin` tinyint(1) NOT NULL DEFAULT '0',
   `stripe_customer_id` varchar(50) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `last_seen` timestamp NULL DEFAULT NULL,
