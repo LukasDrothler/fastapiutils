@@ -62,7 +62,6 @@ async def verify_user_email(
 async def send_new_verification_code(
     resend_request: ResendVerificationRequest,
     request: Request,
-    auth_service: AuthService = Depends(get_auth_service),
     db_service: DatabaseService = Depends(get_database_service),
     i18n_service: I18nService = Depends(get_i18n_service),
     mail_service: MailService = Depends(get_mail_service),
@@ -71,7 +70,6 @@ async def send_new_verification_code(
     return resend_verification_code(
         email=resend_request.email,
         locale=locale,
-        auth_service=auth_service,
         db_service=db_service,
         mail_service=mail_service, 
         i18n_service=i18n_service

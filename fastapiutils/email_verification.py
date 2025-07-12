@@ -97,7 +97,6 @@ def verify_user_email_with_code(
 
 def resend_verification_code(
         email: str, locale: str = "en", 
-        auth_service: AuthService = None,
         db_service: DatabaseService = None, 
         mail_service: MailService = None, 
         i18n_service = None
