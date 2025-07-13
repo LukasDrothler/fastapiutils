@@ -20,7 +20,7 @@ class UserValidators:
         if not re.match(r"^\w{3,}$", username):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=i18n_service.t("auth.username_invalid", locale),
+                detail=i18n_service.t("api.auth.validation.username_invalid", locale),
             )
     
     @staticmethod
@@ -29,7 +29,7 @@ class UserValidators:
         if not re.match(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$", email):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=i18n_service.t("auth.email_invalid", locale),
+                detail=i18n_service.t("api.auth.validation.email_invalid", locale),
             )
     
     @staticmethod
@@ -40,7 +40,7 @@ class UserValidators:
             not re.search(r"[0-9]", password)):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=i18n_service.t("auth.password_weak", locale),
+                detail=i18n_service.t("api.auth.validation.password_weak", locale),
             )
     
     @staticmethod
@@ -53,7 +53,7 @@ class UserValidators:
         if existing_user:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail=i18n_service.t("auth.username_taken", locale),
+                detail=i18n_service.t("api.auth.validation.username_taken", locale),
             )
     
     @staticmethod
@@ -69,7 +69,7 @@ class UserValidators:
         if existing_user:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail=i18n_service.t("auth.email_taken", locale),
+                detail=i18n_service.t("api.auth.validation.email_taken", locale),
             )
     
     @staticmethod
@@ -115,20 +115,20 @@ class UserValidators:
             if not pwd_context.verify(password_update.current_password, current_hashed_password):
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=i18n_service.t("auth.current_password_incorrect", locale)
+                    detail=i18n_service.t("api.auth.password_management.current_password_incorrect", locale)
                 )
             _newPassword = password_update.new_password
 
         if not _newPassword:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=i18n_service.t("auth.no_password_provided", locale)
+                detail=i18n_service.t("api.auth.password_management.no_password_provided", locale)
             )
 
         if not allow_same_as_current and pwd_context.verify(_newPassword, current_hashed_password):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=i18n_service.t("auth.new_password_same_as_current", locale)
+                detail=i18n_service.t("api.auth.password_management.new_password_same_as_current", locale)
             )
 
         UserValidators.validate_password_strength(_newPassword, locale, i18n_service)

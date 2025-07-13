@@ -29,7 +29,7 @@ async def login_for_access_token(
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=i18n_service.t("auth.incorrect_credentials", locale),
+            detail=i18n_service.t("api.auth.credentials.incorrect_credentials", locale),
             headers={"WWW-Authenticate": "Bearer"},
         )
     
@@ -52,7 +52,7 @@ async def refresh_access_token(
     
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail=i18n_service.t("auth.could_not_validate_credentials", locale),
+        detail=i18n_service.t("api.auth.credentials.could_not_validate_credentials", locale),
         headers={"WWW-Authenticate": "Bearer"},
     )
     

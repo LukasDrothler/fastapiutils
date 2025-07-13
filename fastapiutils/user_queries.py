@@ -70,7 +70,7 @@ class UserQueries:
         if uid is None:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=i18n_service.t("auth.user_creation_failed", locale),
+                detail=i18n_service.t("api.auth.user_management.user_creation_failed", locale),
             )
         db_service.execute_modification_query(
             "INSERT INTO user (id, username, email, hashed_password) VALUES (%s, %s, %s, %s)",

@@ -1,49 +1,144 @@
 {
-  "auth": {
-    "incorrect_credentials": "Incorrect username or password",
-    "could_not_validate_credentials": "Could not validate credentials",
-    "inactive_user": "Inactive user",
-    "username_invalid": "Username must contain only letters, numbers, and underscores and be at least 3 characters long",
-    "email_invalid": "Invalid email format",
-    "password_weak": "Password must be at least 8 characters long and contain at least one uppercase letter and one number",
-    "username_taken": "Username already in use",
-    "email_taken": "Email already in use",
-    "user_created": "User created successfully",
-    "user_created_verify_email": "User created successfully. Please check your email for a 6-digit verification code.",
-    "user_creation_failed": "User creation failed",
-    "user_not_found": "User not found",
-    "welcome_email_subject": "Welcome to our platform!",
-    "email_verification_subject": "Your verification code",
-    "email_verification_content": "Hello {username},\n\nThank you for registering! Please use the following 6-digit code to verify your email address:\n\n{verification_code}\n\nThis code will expire in 24 hours.\n\nIf you didn't create this account, please ignore this email.\n\nBest regards,\nThe Team",
-    "email_verified_subject": "Email verified successfully!",
-    "email_verified_content": "Your email address has been successfully verified. You can now access all features of our platform.\n\nBest regards,\nThe Team",
-    "email_sending_failed": "Failed to send email: {error}",
-    "no_verification_code": "No verification code found for this user",
-    "invalid_verification_code": "Invalid verification code",
-    "verification_code_already_used": "This verification code has already been used",
-    "verification_code_expired": "Verification code has expired. Please request a new one.",
-    "verification_code_resent": "New verification code has been sent to your email",
-    "resend_cooldown": "Please wait one minute before requesting a new verification code",
-    "email_already_verified": "Email address is already verified",
-    "no_changes_made": "No changes were made",
-    "user_updated_successfully": "User information updated successfully",
-    "user_update_failed": "Failed to update user information: {error}",
-    "current_password_incorrect": "Current password is incorrect",
-    "new_password_same_as_current": "New password cannot be the same as current password",
-    "password_updated_successfully": "Password updated successfully",
-    "password_update_failed": "Failed to update password: {error}",
-    "email_change_verification_subject": "Verify your new email address",
-    "email_change_verification_content": "Hello {username},\n\nYou have requested to change your email address. Please use the following 6-digit code to verify your new email address:\n\n{verification_code}\n\nThis code will expire in 24 hours.\n\nIf you didn't request this change, please ignore this email.\n\nBest regards,\nThe Team",
-    "email_change_verification_sent": "Verification code sent to your new email address. Please check your email.",
-    "email_change_verified_successfully": "Email address updated successfully",
-    "forgot_password_verified_successfully": "E-Mail successfully verified. You can now reset your password.",
-    "forgotten_password_updated_successfully": "Password updated successfully",
-    "no_password_provided": "No password provided for update",
-    "email_change_failed": "Failed to update email address: {error}",
-    "invalid_email_change_code": "Invalid verification code for email change",
-    "email_same_as_current": "New email cannot be the same as your current email address",
-    "forgot_password_verification_subject": "Password Reset Verification Code",
-    "forgot_password_verification_content": "Hello {username},\n\nYou have requested to reset your password. Please use the following 6-digit verification code to complete the password reset process:\n\n{verification_code}\n\nThis code will expire in 24 hours. If you did not request this password reset, please ignore this email.\n\nBest regards,\nThe Team",
-    "forgot_password_verification_code_sent": "Password reset verification code has been sent to your email address"
+  "api": {
+    "auth": {
+      "credentials": {
+        "incorrect_credentials": "Incorrect username or password",
+        "could_not_validate_credentials": "Could not validate credentials",
+        "inactive_user": "Inactive user"
+      },
+      "validation": {
+        "username_invalid": "Username must contain only letters, numbers, and underscores and be at least 3 characters long",
+        "email_invalid": "Invalid email format",
+        "password_weak": "Password must be at least 8 characters long and contain at least one uppercase letter and one number",
+        "username_taken": "Username already in use",
+        "email_taken": "Email already in use",
+        "email_same_as_current": "New email cannot be the same as your current email address"
+      },
+      "user_management": {
+        "user_created": "User created successfully",
+        "user_created_verify_email": "User created successfully. Please check your email for a 6-digit verification code.",
+        "user_creation_failed": "User creation failed",
+        "user_not_found": "User not found",
+        "no_changes_made": "No changes were made",
+        "user_updated_successfully": "User information updated successfully",
+        "user_update_failed": "Failed to update user information: {error}"
+      },
+      "password_management": {
+        "current_password_incorrect": "Current password is incorrect",
+        "new_password_same_as_current": "New password cannot be the same as current password",
+        "password_updated_successfully": "Password updated successfully",
+        "password_update_failed": "Failed to update password: {error}",
+        "no_password_provided": "No password provided for update",
+        "forgot_password_verified_successfully": "E-Mail successfully verified. You can now reset your password.",
+        "forgotten_password_updated_successfully": "Password updated successfully"
+      },
+      "verification": {
+        "no_verification_code": "No verification code found for this user",
+        "invalid_verification_code": "Invalid verification code",
+        "verification_code_already_used": "This verification code has already been used",
+        "verification_code_expired": "Verification code has expired. Please request a new one.",
+        "verification_code_resent": "New verification code has been sent to your email",
+        "resend_cooldown": "Please wait one minute before requesting a new verification code",
+        "email_already_verified": "Email address is already verified"
+      },
+      "email_change": {
+        "email_change_verification_sent": "Verification code sent to your new email address. Please check your email.",
+        "email_change_verified_successfully": "Email address updated successfully",
+        "email_change_failed": "Failed to update email address: {error}",
+        "invalid_email_change_code": "Invalid verification code for email change"
+      },
+      "forgot_password": {
+        "forgot_password_verification_code_sent": "Password reset verification code has been sent to your email address"
+      }
+    },
+    "email": {
+      "email_sending_failed": "Failed to send email: {error}"
+    }
+  },
+  "email": {
+    "subjects": {
+      "welcome": "Welcome to our platform!",
+      "email_verification": "Your verification code",
+      "email_verified": "Email verified successfully!",
+      "email_change_verification": "Verify your new email address",
+      "forgot_password_verification": "Password Reset Verification Code"
+    },
+    "fallback_content": {
+      "email_verification": "Hello {username},\n\nThank you for registering! Please use the following 6-digit code to verify your email address:\n\n{verification_code}\n\nThis code will expire in 24 hours.\n\nIf you didn't create this account, please ignore this email.\n\nBest regards,\nThe Team",
+      "email_verified": "Your email address has been successfully verified. You can now access all features of our platform.\n\nBest regards,\nThe Team",
+      "email_change_verification": "Hello {username},\n\nYou have requested to change your email address. Please use the following 6-digit code to verify your new email address:\n\n{verification_code}\n\nThis code will expire in 24 hours.\n\nIf you didn't request this change, please ignore this email.\n\nBest regards,\nThe Team",
+      "forgot_password_verification": "Hello {username},\n\nYou have requested to reset your password. Please use the following 6-digit verification code to complete the password reset process:\n\n{verification_code}\n\nThis code will expire in 24 hours. If you did not request this password reset, please ignore this email.\n\nBest regards,\nThe Team"
+    }
+  },
+  "email_templates": {
+    "app_config": {
+      "app_name": "Deine App",
+      "app_owner": "Dein Name",
+      "contact_email": "name@app.com"
+    },
+    "shared_content": {
+      "support_message": "Questions? I'm here to help! Drop me a line at {contact_email} - I personally read and respond to every message.",
+      "personal_note": "Built with ❤️ by a solo developer who truly cares about your experience.",
+      "app_benefits": "Once verified, you'll unlock all the powerful features designed to make your life easier.",
+      "security_footer": "Your security is my top priority. This email was sent from a secure server."
+    },
+    "templates": {
+      "email_verification": {
+        "config": {
+          "email_title": "🚀 Let's Get You Started - Verify Your Email"
+        },
+        "content": {
+          "welcome_title": "Welcome {username}! 🎉",
+          "welcome_message": "Thank you for joining our community! I'm excited to have you on board. To unlock all the amazing features waiting for you, please verify your email address with the code below:",
+          "expiration_message": "This verification code expires in 24 hours. Don't worry - if it expires, you can always request a new one.",
+          "warning_title": "🔒 Security First:",
+          "warning_message": "This code is for your eyes only. I'll never ask for it via phone or email. Keep it safe!",
+          "next_steps_title": "What's next?",
+          "next_steps_message": "Once verified, you'll have instant access to all premium features. Get ready to experience something amazing!",
+          "excitement_message": "I can't wait for you to explore everything {app_name} has to offer. Let's get started!",
+          "cta_button_text": "Verify My Email",
+          "didnt_signup_title": "Didn't sign up?",
+          "didnt_signup_message": "If you didn't create this account, no worries! Just ignore this email and nothing will happen.",
+          "feature_preview_title": "🎯 What awaits you:",
+          "feature_1": "✨ Powerful tools designed for your success",
+          "feature_2": "🔐 Bank-level security for your peace of mind",
+          "feature_3": "📱 Seamless experience across all devices",
+          "feature_4": "🚀 Regular updates with new features"
+        }
+      },
+      "forgot_password_verification": {
+        "config": {
+          "email_title": "Password Reset Request"
+        },
+        "content": {
+          "title": "Password Reset Request",
+          "greeting": "Hello {username},",
+          "main_message": "We received a request to reset your password. If you made this request, please use the verification code below to reset your password:",
+          "expiration_message": "This verification code will expire in 24 hours. If you didn't request a password reset, please ignore this email - your password will remain unchanged.",
+          "security_title": "Security Notice:",
+          "security_message": "If you didn't request this password reset, please consider changing your password and enabling two-factor authentication for better security.",
+          "support_message": "If you have any concerns about your account security, please contact me at {contact_email} immediately."
+        }
+      },
+      "email_change_verification": {
+        "config": {
+          "email_title": "Email Change Verification"
+        },
+        "content": {
+          "title": "Email Change Verification",
+          "greeting": "Hello {username},",
+          "main_message": "You have requested to change your email address. Please use the verification code below to verify your new email address:",
+          "expiration_message": "This verification code will expire in 24 hours. If you didn't request this email change, please ignore this email.",
+          "security_title": "Security Notice:",
+          "security_message": "If you didn't request this email change, please consider changing your password and enabling two-factor authentication for better security.",
+          "support_message": "If you have any concerns about your account security, please contact me at {contact_email} immediately."
+        }
+      },
+      "email_verified": {
+        "config": {
+          "email_title": "Email Verified Successfully"
+        }
+      }
+    }
   }
 }

@@ -94,7 +94,7 @@ class VerificationQueries:
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=i18n_service.t("auth.user_not_found", locale),
+                detail=i18n_service.t("api.auth.user_management.user_not_found", locale),
             )
         
         existing_code = db_service.execute_single_query(
@@ -113,7 +113,7 @@ class VerificationQueries:
         if time_diff <= timedelta(minutes=1):
             raise HTTPException(
                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-                detail=i18n_service.t("auth.resend_cooldown", locale),
+                detail=i18n_service.t("api.auth.verification.resend_cooldown", locale),
             )
         return None
     

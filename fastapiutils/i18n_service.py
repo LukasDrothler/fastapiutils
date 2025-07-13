@@ -86,7 +86,7 @@ class I18nService:
         if locale not in self._translations:
             return key
         
-        # Navigate through nested keys (e.g., "auth.incorrect_credentials")
+        # Navigate through nested keys (e.g., "api.auth.credentials.incorrect_credentials")
         translation = self._translations[locale]
         keys = key.split('.')
         
