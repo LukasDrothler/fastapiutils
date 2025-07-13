@@ -33,16 +33,20 @@ class AuthService:
                  ):
         
         """Initialize the authentication configuration"""
-        rsa_keys_path=os.getenv("RSA_KEYS_PATH")
-        if not os.path.exists(rsa_keys_path):
-            raise ValueError(f"RSA keys path does not exist: {rsa_keys_path}")
+        if "RSA_KEYS_DIR" in os.environ:
+            _rsa_keys_path = os.environ["RSA_KEYS_DIR"]
+            logger.info(f"Using  '{_rsa_keys_path}' from environment variable 'RSA_KEYS_DIR'")
+        else:
+            _rsa_keys_path = os.path.join(os.path.dirname(__file__), "keys")
+            logger.info(f"Using default RSA keys directory '{_rsa_keys_path}' since 'RSA_KEYS_DIR' not set")
+        
         
         self.algorithm = "RS256"
-        private_key_path = os.path.join(rsa_keys_path, private_key_filename)
-        public_key_path = os.path.join(rsa_keys_path, public_key_filename)
+        private_key_path = os.path.join(_rsa_keys_path, private_key_filename)
+        public_key_path = os.path.join(_rsa_keys_path, public_key_filename)
         
         if not os.path.exists(private_key_path) or not os.path.exists(public_key_path):
-            logger.info(f"No RSA keys found at {rsa_keys_path}, with filenames {private_key_filename} and {public_key_filename}. Generating new keys..")
+            logger.info(f"No RSA keys found at {_rsa_keys_path}, with filenames {private_key_filename} and {public_key_filename}. Generating new keys..")
             
             key = rsa.generate_private_key(
                 backend=default_backend(),
@@ -155,28 +159,22 @@ class AuthService:
             locale=locale
         )
         
-        try:
-            mail_service.send_email_plain_text(
-                content=i18n_service.t("auth.email_verification_content", locale, 
-                                        username=user.username, 
-                                        verification_code=verification_code),
-                subject=i18n_service.t("auth.email_verification_subject", locale),
-                recipient=user.email
-            )
-        except Exception as e:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=i18n_service.t("auth.email_sending_failed", locale, error=str(e))
-            )
+        mail_service.send_email_verification_mail(
+            recipient=user.email,
+            username=user.username,
+            verification_code=verification_code,
+            i18n_service=i18n_service,
+            locale=locale
+        )  
 
-        return {"msg": i18n_service.t("auth.user_created_verify_email", locale)}
+        return {"msg": i18n_service.t("api.auth.user_management.user_created_verify_email", locale)}
 
 
     def get_current_user(self, token: str, db_service: DatabaseService, i18n_service: I18nService) -> UserInDB:
         """Get current user from JWT token"""
         credentials_exception = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=i18n_service.t("auth.could_not_validate_credentials", "en"),
+            detail=i18n_service.t("api.auth.credentials.could_not_validate_credentials", "en"),
             headers={"WWW-Authenticate": "Bearer"},
         )
         
@@ -199,7 +197,7 @@ class AuthService:
         if current_user.disabled:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=i18n_service.t("auth.inactive_user", "en")
+                detail=i18n_service.t("api.auth.credentials.inactive_user", "en")
             )
         return current_user
 
@@ -218,21 +216,21 @@ class AuthService:
         if not current_user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=i18n_service.t("auth.user_not_found", locale)
+                detail=i18n_service.t("api.auth.user_management.user_not_found", locale)
             )
 
         UserValidators.validate_user_update(user_update, locale, db_service, i18n_service)
         fields_updated = UserQueries.update_user_fields(user_id, user_update, db_service=db_service)
         
         if not fields_updated:
-            return {"msg": i18n_service.t("auth.no_changes_made", locale)}
+            return {"msg": i18n_service.t("api.auth.user_management.no_changes_made", locale)}
         
         try:
-            return {"msg": i18n_service.t("auth.user_updated_successfully", locale)}
+            return {"msg": i18n_service.t("api.auth.user_management.user_updated_successfully", locale)}
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=i18n_service.t("auth.user_update_failed", locale, error=str(e))
+                detail=i18n_service.t("api.auth.user_management.user_update_failed", locale, error=str(e))
             )
 
 
@@ -251,7 +249,7 @@ class AuthService:
         if not current_user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=i18n_service.t("auth.user_not_found", locale)
+                detail=i18n_service.t("api.auth.user_management.user_not_found", locale)
             )
         
         UserValidators.validate_new_password(
@@ -270,7 +268,7 @@ class AuthService:
         else:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=i18n_service.t("auth.no_password_provided", locale)
+                detail=i18n_service.t("api.auth.password_management.no_password_provided", locale)
             )
         
         # Update password in database
@@ -279,9 +277,9 @@ class AuthService:
                 user_id=user_id, 
                 hashed_password=new_hashed_password, 
                 db_service=db_service)
-            return {"msg": i18n_service.t("auth.password_updated_successfully", locale)}
+            return {"msg": i18n_service.t("api.auth.password_management.password_updated_successfully", locale)}
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=i18n_service.t("auth.password_update_failed", locale, error=str(e))
+                detail=i18n_service.t("api.auth.password_management.password_update_failed", locale, error=str(e))
             )

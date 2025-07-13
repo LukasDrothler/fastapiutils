@@ -1,5 +1,8 @@
 
 from typing import Optional
+from datetime import datetime, timezone, timedelta
+
+from fastapi import HTTPException, status
 
 from .auth_service import AuthService
 from .user_queries import UserQueries
@@ -25,7 +28,7 @@ def _check_verification_code(
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=i18n_service.t("auth.user_not_found", locale),
+            detail=i18n_service.t("api.auth.user_management.user_not_found", locale),
         )
 
     verification_record = VerificationQueries.get_verification_code_by_user_id(
@@ -35,21 +38,21 @@ def _check_verification_code(
     if not verification_record:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=i18n_service.t("auth.no_verification_code", locale),
+            detail=i18n_service.t("api.auth.verification.no_verification_code", locale),
         )
     
     # Check if code matches
     if verification_record.value != code:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=i18n_service.t("auth.invalid_verification_code", locale),
+            detail=i18n_service.t("api.auth.verification.invalid_verification_code", locale),
         )
     
     # Check if code has already been used
     if not allow_verified and verification_record.verified_at is not None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=i18n_service.t("auth.verification_code_already_used", locale),
+            detail=i18n_service.t("api.auth.verification.verification_code_already_used", locale),
         )
     
     # Check if code is expired (24 hours)
@@ -57,7 +60,7 @@ def _check_verification_code(
     if time_diff >= timedelta(hours=24):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=i18n_service.t("auth.verification_code_expired", locale),
+            detail=i18n_service.t("api.auth.verification.verification_code_expired", locale),
         )
     
     return None
@@ -87,15 +90,17 @@ def verify_user_email_with_code(
     # Send confirmation email
     try:
         mail_service.send_email_plain_text(
-            content=i18n_service.t("auth.email_verified_content", locale),
-            subject=i18n_service.t("auth.email_verified_subject", locale),
-            recipient=verify_request.email
+            content=i18n_service.t("email.fallback_content.email_verified", locale),
+            subject=i18n_service.t("email.subjects.email_verified", locale),
+            recipient=verify_request.email,
+            i18n_service=i18n_service,
+            locale=locale
         )
     except Exception:
         # If email sending fails, we still mark the email as verified
         pass
     
-    return {"msg": i18n_service.t("auth.email_verified_subject", locale)}
+    return {"msg": i18n_service.t("email.subjects.email_verified", locale)}
 
 
 def resend_verification_code(
@@ -118,25 +123,18 @@ def resend_verification_code(
     if user.email_verified:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=i18n_service.t("auth.email_already_verified", locale)
+            detail=i18n_service.t("api.auth.verification.email_already_verified", locale)
         )
 
-    try:
-        # Generate new verification code
-        mail_service.send_email_plain_text(
-            content=i18n_service.t("auth.email_verification_content", locale, 
-                                    username=user.username, 
-                                    verification_code=verification_code),
-            subject=i18n_service.t("auth.email_verification_subject", locale),
-            recipient=email
-        )
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=i18n_service.t("auth.email_sending_failed", locale, error=str(e))
+    mail_service.send_email_verification_mail(
+            recipient=user.email,
+            username=user.username,
+            verification_code=verification_code,
+            i18n_service=i18n_service,
+            locale=locale
         )
 
-    return {"msg": i18n_service.t("auth.verification_code_resent", locale)}
+    return {"msg": i18n_service.t("api.auth.verification.verification_code_resent", locale)}
 
 
 def send_forgot_password_verification(
@@ -157,21 +155,35 @@ def send_forgot_password_verification(
         )
 
     try:
-        # Generate new verification code
-        mail_service.send_email_plain_text(
-            content=i18n_service.t("auth.forgot_password_verification_content", locale, 
-                                    username=user.username, 
-                                    verification_code=verification_code),
-            subject=i18n_service.t("auth.forgot_password_verification_subject", locale),
-            recipient=email
+        # Get company name from locale configuration
+        config = mail_service._load_template_config("forgot_password_verification", i18n_service, locale)
+        app_name = config.get("defaults", {}).get("app_name", "YourApp")
+        contact_email = config.get("defaults", {}).get("contact_email", "support@yourapp.com")
+        
+        # Use template system for forgot password verification
+        mail_service.send_email_with_template(
+            template_name="forgot_password_verification",
+            variables={
+                "username": user.username,
+                "verification_code": verification_code,
+                "app_name": app_name,
+                "contact_email": contact_email
+            },
+            subject=i18n_service.t("email.subjects.forgot_password_verification", locale),
+            recipient=email,
+            locale=locale,
+            plain_text_content=i18n_service.t("email.fallback_content.forgot_password_verification", locale, 
+                                            username=user.username, 
+                                            verification_code=verification_code),
+            i18n_service=i18n_service
         )
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=i18n_service.t("auth.email_sending_failed", locale, error=str(e))
+            detail=i18n_service.t("api.email.email_sending_failed", locale, error=str(e))
         )
 
-    return {"msg": i18n_service.t("auth.forgot_password_verification_code_sent", locale)}
+    return {"msg": i18n_service.t("api.auth.forgot_password.forgot_password_verification_code_sent", locale)}
 
 
 def send_email_change_verification(
@@ -188,7 +200,7 @@ def send_email_change_verification(
     if user.email.lower() == new_email.lower():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=i18n_service.t("auth.email_same_as_current", locale)
+            detail=i18n_service.t("api.auth.validation.email_same_as_current", locale)
         )
 
     UserValidators.validate_email_format(new_email, locale, i18n_service)
@@ -208,20 +220,35 @@ def send_email_change_verification(
     
     # Send verification email to new email address
     try:
-        mail_service.send_email_plain_text(
-            content=i18n_service.t("auth.email_change_verification_content", locale, 
-                                    username=user.username, 
-                                    verification_code=verification_code),
-            subject=i18n_service.t("auth.email_change_verification_subject", locale),
-            recipient=new_email
+        # Get company name from locale configuration
+        config = mail_service._load_template_config("email_change_verification", i18n_service, locale)
+        app_name = config.get("defaults", {}).get("app_name", "YourApp")
+        contact_email = config.get("defaults", {}).get("contact_email", "support@yourapp.com")
+        
+        # Use template system for email change verification
+        mail_service.send_email_with_template(
+            template_name="email_change_verification",
+            variables={
+                "username": user.username,
+                "verification_code": verification_code,
+                "app_name": app_name,
+                "contact_email": contact_email
+            },
+            subject=i18n_service.t("email.subjects.email_change_verification", locale),
+            recipient=new_email,
+            locale=locale,
+            plain_text_content=i18n_service.t("email.fallback_content.email_change_verification", locale, 
+                                            username=user.username, 
+                                            verification_code=verification_code),
+            i18n_service=i18n_service
         )
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=i18n_service.t("auth.email_sending_failed", locale, error=str(e))
+            detail=i18n_service.t("api.email.email_sending_failed", locale, error=str(e))
         )
     
-    return {"msg": i18n_service.t("auth.email_change_verification_sent", locale)}
+    return {"msg": i18n_service.t("api.auth.email_change.email_change_verification_sent", locale)}
 
 
 def verify_user_email_change(
@@ -251,7 +278,7 @@ def verify_user_email_change(
     VerificationQueries.update_user_email(user_id=user.id, new_email=verify_request.email, db_service=db_service)
     VerificationQueries.mark_verification_code_as_used(user_id=user.id, db_service=db_service)
     
-    return {"msg": i18n_service.t("auth.email_change_verified_successfully", locale)}
+    return {"msg": i18n_service.t("api.auth.email_change.email_change_verified_successfully", locale)}
 
 
 def verify_forgot_password_with_code(
@@ -273,7 +300,7 @@ def verify_forgot_password_with_code(
 
     VerificationQueries.mark_verification_code_as_used(user_id=user.id, db_service=db_service)
     
-    return {"msg": i18n_service.t("auth.forgot_password_verified_successfully", locale)}
+    return {"msg": i18n_service.t("api.auth.password_management.forgot_password_verified_successfully", locale)}
 
 
 def update_forgotten_password_with_code(
@@ -303,4 +330,4 @@ def update_forgotten_password_with_code(
         locale=locale
     )
     
-    return {"msg": i18n_service.t("auth.forgotten_password_updated_successfully", locale)}
+    return {"msg": i18n_service.t("api.auth.password_management.forgotten_password_updated_successfully", locale)}
