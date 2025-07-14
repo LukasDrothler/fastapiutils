@@ -14,8 +14,6 @@ app = FastAPI(title="FastAPI Utils Example")
 
 # Setup dependency injection container
 setup_dependencies(
-    custom_locales_dir="./example_locales",
-    default_locale="en",
     access_token_expire_minutes=30,
     refresh_token_expire_days=30,
     token_url="token",

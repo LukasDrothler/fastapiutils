@@ -1,4 +1,10 @@
 {
+  "app_config": {
+    "app_name": "Your App",
+    "app_owner": "Your Name",
+    "contact_email": "yourname@yourapp.com",
+    "logo_url": "https://finyed.com/logo-no-background.png"
+  },
   "api": {
     "auth": {
       "credentials": {
@@ -71,74 +77,59 @@
     }
   },
   "email_templates": {
-    "app_config": {
-      "app_name": "Your App",
-      "app_owner": "Your Name",
-      "contact_email": "yourname@yourapp.com"
-    },
     "shared_content": {
       "support_message": "Fragen? Ich helfe gerne! Schreiben Sie mir an {contact_email} - ich lese und beantworte persönlich jede Nachricht.",
       "personal_note": "Mit ❤️ von einem Solo-Entwickler erstellt, der sich wirklich um Ihre Erfahrung kümmert.",
       "app_benefits": "Nach der Verifizierung schalten Sie alle leistungsstarken Funktionen frei, die Ihr Leben einfacher machen.",
       "security_footer": "Ihre Sicherheit ist meine oberste Priorität. Diese E-Mail wurde von einem sicheren Server gesendet."
     },
-    "templates": {
-      "email_verification": {
-        "config": {
-          "email_title": "🚀 Lassen Sie uns beginnen - E-Mail bestätigen"
-        },
-        "content": {
-          "welcome_title": "Willkommen bei {app_name}, {username}! 🎉",
-          "welcome_message": "Vielen Dank, dass Sie unserer Community beigetreten sind! Ich freue mich, Sie an Bord zu haben. Um alle fantastischen Funktionen freizuschalten, die auf Sie warten, bestätigen Sie bitte Ihre E-Mail-Adresse mit dem untenstehenden Code:",
-          "expiration_message": "Dieser Verifizierungscode läuft in 24 Stunden ab. Keine Sorge - falls er abläuft, können Sie jederzeit einen neuen anfordern.",
-          "warning_title": "🔒 Sicherheit zuerst:",
-          "warning_message": "Dieser Code ist nur für Ihre Augen bestimmt. Ich werde niemals telefonisch oder per E-Mail danach fragen. Bewahren Sie ihn sicher auf!",
-          "next_steps_title": "Wie geht es weiter?",
-          "next_steps_message": "Nach der Verifizierung haben Sie sofortigen Zugang zu allen Premium-Funktionen. Machen Sie sich bereit für etwas Fantastisches!",
-          "excitement_message": "Ich kann es kaum erwarten, dass Sie alles erkunden, was {app_name} zu bieten hat. Lassen Sie uns anfangen!",
-          "cta_button_text": "E-Mail bestätigen",
-          "didnt_signup_title": "Nicht angemeldet?",
-          "didnt_signup_message": "Falls Sie dieses Konto nicht erstellt haben, keine Sorge! Ignorieren Sie einfach diese E-Mail und nichts wird passieren.",
-          "feature_preview_title": "🎯 Was Sie erwartet:",
-          "feature_1": "✨ Leistungsstarke Tools für Ihren Erfolg",
-          "feature_2": "🔐 Banken-Level Sicherheit für Ihre Ruhe",
-          "feature_3": "📱 Nahtlose Erfahrung auf allen Geräten",
-          "feature_4": "🚀 Regelmäßige Updates mit neuen Funktionen"
-        }
-      },
-      "forgot_password_verification": {
-        "config": {
-          "email_title": "Passwort-Reset Anfrage"
-        },
-        "content": {
-          "title": "Passwort-Reset Anfrage",
-          "greeting": "Hallo {username},",
-          "main_message": "Wir haben eine Anfrage zur Zurücksetzung Ihres Passworts erhalten. Falls Sie diese Anfrage gestellt haben, verwenden Sie bitte den unten stehenden Verifizierungscode, um Ihr Passwort zurückzusetzen:",
-          "expiration_message": "Dieser Verifizierungscode läuft in 24 Stunden ab. Falls Sie keine Passwort-Zurücksetzung angefordert haben, ignorieren Sie bitte diese E-Mail - Ihr Passwort bleibt unverändert.",
-          "security_title": "Sicherheitshinweis:",
-          "security_message": "Falls Sie diese Passwort-Zurücksetzung nicht angefordert haben, sollten Sie in Betracht ziehen, Ihr Passwort zu ändern und die Zwei-Faktor-Authentifizierung für bessere Sicherheit zu aktivieren.",
-          "support_message": "Falls Sie Bedenken bezüglich der Sicherheit Ihres Kontos haben, wenden Sie sich bitte umgehend an mich unter {contact_email}."
-        }
-      },
-      "email_change_verification": {
-        "config": {
-          "email_title": "E-Mail-Änderung Verifizierung"
-        },
-        "content": {
-          "title": "E-Mail-Änderung Verifizierung",
-          "greeting": "Hallo {username},",
-          "main_message": "Sie haben eine Änderung Ihrer E-Mail-Adresse angefordert. Bitte verwenden Sie den unten stehenden Verifizierungscode, um Ihre neue E-Mail-Adresse zu verifizieren:",
-          "expiration_message": "Dieser Verifizierungscode läuft in 24 Stunden ab. Falls Sie diese E-Mail-Änderung nicht angefordert haben, ignorieren Sie bitte diese E-Mail.",
-          "security_title": "Sicherheitshinweis:",
-          "security_message": "Falls Sie diese E-Mail-Änderung nicht angefordert haben, sollten Sie in Betracht ziehen, Ihr Passwort zu ändern und die Zwei-Faktor-Authentifizierung für bessere Sicherheit zu aktivieren.",
-          "support_message": "Falls Sie Bedenken bezüglich der Sicherheit Ihres Kontos haben, wenden Sie sich bitte umgehend an mich unter {contact_email}."
-        }
-      },
-      "email_verified": {
-        "config": {
-          "email_title": "E-Mail erfolgreich verifiziert"
-        }
+    "email_verification": {
+      "email_title": "🚀 Lassen Sie uns beginnen - E-Mail bestätigen",
+      "content": {
+        "welcome_title": "Willkommen bei {app_name}, {username}! 🎉",
+        "welcome_message": "Vielen Dank, dass Sie unserer Community beigetreten sind! Ich freue mich, Sie an Bord zu haben. Um alle fantastischen Funktionen freizuschalten, die auf Sie warten, bestätigen Sie bitte Ihre E-Mail-Adresse mit dem untenstehenden Code:",
+        "expiration_message": "Dieser Verifizierungscode läuft in 24 Stunden ab. Keine Sorge - falls er abläuft, können Sie jederzeit einen neuen anfordern.",
+        "warning_title": "🔒 Sicherheit zuerst:",
+        "warning_message": "Dieser Code ist nur für Ihre Augen bestimmt. Ich werde niemals telefonisch oder per E-Mail danach fragen. Bewahren Sie ihn sicher auf!",
+        "next_steps_title": "Wie geht es weiter?",
+        "next_steps_message": "Nach der Verifizierung haben Sie sofortigen Zugang zu allen Premium-Funktionen. Machen Sie sich bereit für etwas Fantastisches!",
+        "excitement_message": "Ich kann es kaum erwarten, dass Sie alles erkunden, was {app_name} zu bieten hat. Lassen Sie uns anfangen!",
+        "cta_button_text": "E-Mail bestätigen",
+        "didnt_signup_title": "Nicht angemeldet?",
+        "didnt_signup_message": "Falls Sie dieses Konto nicht erstellt haben, keine Sorge! Ignorieren Sie einfach diese E-Mail und nichts wird passieren.",
+        "feature_preview_title": "🎯 Was Sie erwartet:",
+        "feature_1": "✨ Leistungsstarke Tools für Ihren Erfolg",
+        "feature_2": "🔐 Banken-Level Sicherheit für Ihre Ruhe",
+        "feature_3": "📱 Nahtlose Erfahrung auf allen Geräten",
+        "feature_4": "🚀 Regelmäßige Updates mit neuen Funktionen"
       }
+    },
+    "forgot_password_verification": {
+      "email_title": "Passwort-Reset Anfrage",
+      "content": {
+        "title": "Passwort-Reset Anfrage",
+        "greeting": "Hallo {username},",
+        "main_message": "Wir haben eine Anfrage zur Zurücksetzung Ihres Passworts erhalten. Falls Sie diese Anfrage gestellt haben, verwenden Sie bitte den unten stehenden Verifizierungscode, um Ihr Passwort zurückzusetzen:",
+        "expiration_message": "Dieser Verifizierungscode läuft in 24 Stunden ab. Falls Sie keine Passwort-Zurücksetzung angefordert haben, ignorieren Sie bitte diese E-Mail - Ihr Passwort bleibt unverändert.",
+        "security_title": "Sicherheitshinweis:",
+        "security_message": "Falls Sie diese Passwort-Zurücksetzung nicht angefordert haben, sollten Sie in Betracht ziehen, Ihr Passwort zu ändern und die Zwei-Faktor-Authentifizierung für bessere Sicherheit zu aktivieren.",
+        "support_message": "Falls Sie Bedenken bezüglich der Sicherheit Ihres Kontos haben, wenden Sie sich bitte umgehend an mich unter {contact_email}."
+      }
+    },
+    "email_change_verification": {
+      "email_title": "E-Mail-Änderung Verifizierung",
+      "content": {
+        "title": "E-Mail-Änderung Verifizierung",
+        "greeting": "Hallo {username},",
+        "main_message": "Sie haben eine Änderung Ihrer E-Mail-Adresse angefordert. Bitte verwenden Sie den unten stehenden Verifizierungscode, um Ihre neue E-Mail-Adresse zu verifizieren:",
+        "expiration_message": "Dieser Verifizierungscode läuft in 24 Stunden ab. Falls Sie diese E-Mail-Änderung nicht angefordert haben, ignorieren Sie bitte diese E-Mail.",
+        "security_title": "Sicherheitshinweis:",
+        "security_message": "Falls Sie diese E-Mail-Änderung nicht angefordert haben, sollten Sie in Betracht ziehen, Ihr Passwort zu ändern und die Zwei-Faktor-Authentifizierung für bessere Sicherheit zu aktivieren.",
+        "support_message": "Falls Sie Bedenken bezüglich der Sicherheit Ihres Kontos haben, wenden Sie sich bitte umgehend an mich unter {contact_email}."
+      }
+    },
+    "email_verified": {
+      "email_title": "E-Mail erfolgreich verifiziert"
     }
   }
 }

@@ -1,7 +1,9 @@
 import json
+import logging
 import os
 from typing import Dict, Any, Optional
 
+logger = logging.getLogger('uvicorn.error')
 
 def _deep_merge_dicts(base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, Any]:
     """Deep merge two dictionaries, with override values taking precedence"""
@@ -17,17 +19,27 @@ def _deep_merge_dicts(base: Dict[str, Any], override: Dict[str, Any]) -> Dict[st
 class I18nService:
     """Internationalization helper class"""
     
-    def __init__(self, custom_locales_dir: Optional[str] = None, default_locale: str = "en"):
-        self.default_locale = default_locale
+    def __init__(self):
         self._translations: Dict[str, Dict[str, Any]] = {}
-        
         # Always load built-in locales first
         self._load_builtin_translations()
-        
-        # Then load custom locales if provided (these can override built-in ones)
-        if custom_locales_dir is not None:
+
+        if "LOCALES_DIR" in os.environ:
+            custom_locales_dir = os.environ["LOCALES_DIR"]
+            logger.info(f"Using custom locales directory '{custom_locales_dir}' from environment variable 'LOCALES_DIR'")
             self._load_custom_translations(custom_locales_dir)
-    
+        else:
+            custom_locales_dir = None
+            logger.warning(f"Using default locales since 'LOCALES_DIR' not set")
+
+        if "DEFAULT_LOCALE" in os.environ:
+            self.default_locale = os.environ["DEFAULT_LOCALE"]
+            logger.info(f"Using default locale '{self.default_locale}' from environment variable 'DEFAULT_LOCALE'")
+        else:
+            self.default_locale = "en"
+            logger.warning(f"Using default locale 'en' since 'DEFAULT_LOCALE' not set")
+
+
     def _load_builtin_translations(self):
         """Load built-in translation files from the package's locales directory"""
         current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -45,7 +57,8 @@ class I18nService:
                         self._translations[locale] = json.load(f)
                 except Exception as e:
                     print(f"Error loading built-in translation file {filename}: {e}")
-    
+
+
     def _load_custom_translations(self, custom_locales_dir: str):
         """Load custom translation files that can override built-in translations"""
         if not os.path.exists(custom_locales_dir):
@@ -72,7 +85,8 @@ class I18nService:
                         
                 except Exception as e:
                     print(f"Error loading custom translation file {filename}: {e}")
-    
+
+
     def get_translation(self, key: str, locale: Optional[str] = None, **kwargs) -> str:
         """Get translation for a given key and locale with parameter interpolation"""
         if locale is None:
@@ -113,7 +127,8 @@ class I18nService:
                 return translation
             except (KeyError, TypeError):
                 return key
-    
+
+
     def t(self, key: str, locale: Optional[str] = None, **kwargs) -> str:
         """Shorthand for get_translation with parameter interpolation support"""
         return self.get_translation(key, locale, **kwargs)

@@ -10,8 +10,10 @@
     <div style="background-color: {{container_background}}; padding: 0; border-radius: 16px; box-shadow: 0 4px 25px rgba(0,0,0,0.1); border: 1px solid {{border_color}}; max-width: 100%; overflow: hidden;">
         <!-- Header with gradient background -->
         <div style="background-color: {{primary_color}}; background: linear-gradient(135deg, {{primary_color}} 0%, {{secondary_color}} 100%); padding: 40px 30px 30px 30px; text-align: center; color: white;">
-            <img src="{{logo_url}}" alt="{{app_name}} logo" style="max-width: 150px; max-height: 70px; width: auto; height: auto; display: block; margin: 0 auto 15px auto;">
-            <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">{{app_name}}</h1>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 20px;">
+                <img src="{{logo_url}}" alt="{{app_name}} logo" style="max-width: 150px; max-height: 70px; width: auto; height: auto; flex-shrink: 0;">
+                <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.1); line-height: 70px;">{{app_name}}</h1>
+            </div>
         </div>
         
         <!-- Main content -->
