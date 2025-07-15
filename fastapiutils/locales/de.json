@@ -22,7 +22,7 @@
       },
       "user_management": {
         "user_created": "Benutzer erfolgreich erstellt",
-        "user_created_verify_email": "Benutzer erfolgreich erstellt. Bitte überprüfen Sie Ihre E-Mail für einen 6-stelligen Verifizierungscode.",
+        "user_created_verify_email": "Benutzer erfolgreich erstellt. Bitte überprüfe deine E-Mail für einen 6-stelligen Verifizierungscode.",
         "user_creation_failed": "Benutzererstellung fehlgeschlagen",
         "user_not_found": "Benutzer nicht gefunden",
         "no_changes_made": "Keine Änderungen wurden vorgenommen",
@@ -35,26 +35,26 @@
         "password_updated_successfully": "Passwort erfolgreich aktualisiert",
         "password_update_failed": "Fehler beim Aktualisieren des Passworts: {error}",
         "no_password_provided": "Kein Passwort zum Aktualisieren angegeben",
-        "forgot_password_verified_successfully": "E-Mail erfolgreich verifiziert. Sie können nun Ihr Passwort zurücksetzen.",
+        "forgot_password_verified_successfully": "E-Mail erfolgreich verifiziert. Du kannst nun dein Passwort zurücksetzen.",
         "forgotten_password_updated_successfully": "Passwort erfolgreich aktualisiert"
       },
       "verification": {
         "no_verification_code": "Kein Verifizierungscode für diesen Benutzer gefunden",
         "invalid_verification_code": "Ungültiger Verifizierungscode",
         "verification_code_already_used": "Dieser Verifizierungscode wurde bereits verwendet",
-        "verification_code_expired": "Verifizierungscode ist abgelaufen. Bitte fordern Sie einen neuen an.",
-        "verification_code_resent": "Neuer Verifizierungscode wurde an Ihre E-Mail gesendet",
-        "resend_cooldown": "Bitte warten Sie eine Minute, bevor Sie einen neuen Verifizierungscode anfordern",
+        "verification_code_expired": "Verifizierungscode ist abgelaufen. Bitte fordere einen neuen an.",
+        "verification_code_resent": "Neuer Verifizierungscode wurde an deine E-Mail gesendet",
+        "resend_cooldown": "Bitte warte eine Minute, bevor du einen neuen Verifizierungscode anforderst",
         "email_already_verified": "E-Mail-Adresse ist bereits verifiziert"
       },
       "email_change": {
-        "email_change_verification_sent": "Verifizierungscode wurde an Ihre neue E-Mail-Adresse gesendet. Bitte überprüfen Sie Ihre E-Mail.",
+        "email_change_verification_sent": "Verifizierungscode wurde an deine neue E-Mail-Adresse gesendet. Bitte überprüfe deine E-Mail.",
         "email_change_verified_successfully": "E-Mail-Adresse erfolgreich aktualisiert",
         "email_change_failed": "Fehler beim Aktualisieren der E-Mail-Adresse: {error}",
         "invalid_email_change_code": "Ungültiger Verifizierungscode für E-Mail-Änderung"
       },
       "forgot_password": {
-        "forgot_password_verification_code_sent": "Passwort-Reset Verifizierungscode wurde an Ihre E-Mail-Adresse gesendet"
+        "forgot_password_verification_code_sent": "Passwort-Reset Verifizierungscode wurde an deine E-Mail-Adresse gesendet"
       }
     },
     "email": {
@@ -63,27 +63,27 @@
   },
   "email": {
     "shared_content": {
-      "support_message": "Fragen? Ich helfe gerne! Schreiben Sie mir an {contact_email} - ich lese und beantworte persönlich jede Nachricht.",
-      "personal_note": "Mit ❤️ von einem Solo-Entwickler erstellt, der sich wirklich um Ihre Erfahrung kümmert.",
-      "app_benefits": "Nach der Verifizierung schalten Sie alle leistungsstarken Funktionen frei, die Ihr Leben einfacher machen."
+      "support_message": "Fragen? Ich helfe gerne! Schreib mir an {contact_email} - ich lese und beantworte persönlich jede Nachricht.",
+      "personal_note": "Mit ❤️ von einem Solo-Entwickler erstellt, der sich wirklich um deine Erfahrung kümmert.",
+      "app_benefits": "Nach der Verifizierung schaltest du alle leistungsstarken Funktionen frei, die dein Leben einfacher machen."
     },
     "email_verification": {
       "subject": "Dein Code lautet {verification_code}",
-      "email_title": "🚀 Lassen Sie uns beginnen - E-Mail bestätigen",
+      "email_title": "🚀 Lass uns beginnen - E-Mail bestätigen",
       "content": {
         "welcome_title": "Willkommen bei {app_name}, {username}! 🎉",
-        "welcome_message": "Danke für dein Interesse an meiner App! Ich freue mich, dich an Bord zu haben. Bitte bestätige Deine E-Mail mit dem untenstehenden Code um all die tollen Funktionen freizuschalten.",
-        "expiration_message": "Dieser Code läuft in 24 Stunden ab. Keine Sorge - falls er abläuft, kannst Du jederzeit einen Neuen anfordern.",
+        "welcome_message": "Danke für dein Interesse an meiner App! Ich freue mich, dich an Bord zu haben. Bitte bestätige deine E-Mail mit dem untenstehenden Code um all die tollen Funktionen freizuschalten.",
+        "expiration_message": "Dieser Code läuft in 24 Stunden ab. Keine Sorge - falls er abläuft, kannst du jederzeit einen neuen anfordern.",
         "warning_title": "🔒 Sicherheitshinweis",
-        "warning_message": "Dieser Code ist nur für Deine Augen bestimmt. Ich werde niemals danach fragen und er wird nach der Bestätigung ungültig.",
+        "warning_message": "Dieser Code ist nur für deine Augen bestimmt. Ich werde niemals danach fragen und er wird nach der Bestätigung ungültig.",
         "next_steps_title": "Wie geht es weiter?",
-        "excitement_message": "Ich kann es kaum erwarten, dass Sie alles erkunden, was {app_name} zu bieten hat. Lassen Sie uns anfangen!",
+        "excitement_message": "Ich kann es kaum erwarten, dass du alles erkundest, was {app_name} zu bieten hat. Lass uns anfangen!",
         "cta_button_text": "E-Mail bestätigen",
         "didnt_signup_title": "Nicht angemeldet?",
-        "didnt_signup_message": "Falls Sie dieses Konto nicht erstellt haben, keine Sorge! Ignorieren Sie einfach diese E-Mail und nichts wird passieren.",
-        "feature_preview_title": "🎯 Was Sie erwartet:",
-        "feature_1": "✨ Leistungsstarke Tools für Ihren Erfolg",
-        "feature_2": "🔐 Banken-Level Sicherheit für Ihre Ruhe",
+        "didnt_signup_message": "Falls du dieses Konto nicht erstellt hast, keine Sorge! Ignoriere einfach diese E-Mail und nichts wird passieren.",
+        "feature_preview_title": "🎯 Was dich erwartet:",
+        "feature_1": "✨ Leistungsstarke Tools für deinen Erfolg",
+        "feature_2": "🔐 Banken-Level Sicherheit für deine Ruhe",
         "feature_3": "📱 Nahtlose Erfahrung auf allen Geräten",
         "feature_4": "🚀 Regelmäßige Updates mit neuen Funktionen"
       }
@@ -94,24 +94,24 @@
       "content": {
         "title": "Passwort-Reset Anfrage",
         "greeting": "Hallo {username},",
-        "main_message": "Wir haben eine Anfrage zur Zurücksetzung Ihres Passworts erhalten. Falls Sie diese Anfrage gestellt haben, verwenden Sie bitte den unten stehenden Verifizierungscode, um Ihr Passwort zurückzusetzen:",
-        "expiration_message": "Dieser Verifizierungscode läuft in 24 Stunden ab. Falls Sie keine Passwort-Zurücksetzung angefordert haben, ignorieren Sie bitte diese E-Mail - Ihr Passwort bleibt unverändert.",
+        "main_message": "Wir haben eine Anfrage zur Zurücksetzung deines Passworts erhalten. Falls du diese Anfrage gestellt hast, verwende bitte den unten stehenden Verifizierungscode, um dein Passwort zurückzusetzen:",
+        "expiration_message": "Dieser Verifizierungscode läuft in 24 Stunden ab. Falls du keine Passwort-Zurücksetzung angefordert hast, ignoriere bitte diese E-Mail - dein Passwort bleibt unverändert.",
         "security_title": "Sicherheitshinweis:",
-        "security_message": "Falls Sie diese Passwort-Zurücksetzung nicht angefordert haben, sollten Sie in Betracht ziehen, Ihr Passwort zu ändern und die Zwei-Faktor-Authentifizierung für bessere Sicherheit zu aktivieren.",
-        "support_message": "Falls Sie Bedenken bezüglich der Sicherheit Ihres Kontos haben, wenden Sie sich bitte umgehend an mich unter {contact_email}."
+        "security_message": "Falls du diese Passwort-Zurücksetzung nicht angefordert hast, solltest du in Betracht ziehen, dein Passwort zu ändern und die Zwei-Faktor-Authentifizierung für bessere Sicherheit zu aktivieren.",
+        "support_message": "Falls du Bedenken bezüglich der Sicherheit deines Kontos hast, wende dich bitte umgehend an mich unter {contact_email}."
       }
     },
     "email_change_verification": {
-      "subject": "Verifizieren Sie Ihre neue E-Mail-Adresse",
+      "subject": "Verifiziere deine neue E-Mail-Adresse",
       "email_title": "E-Mail-Änderung Verifizierung",
       "content": {
         "title": "E-Mail-Änderung Verifizierung",
         "greeting": "Hallo {username},",
-        "main_message": "Sie haben eine Änderung Ihrer E-Mail-Adresse angefordert. Bitte verwenden Sie den unten stehenden Verifizierungscode, um Ihre neue E-Mail-Adresse zu verifizieren:",
-        "expiration_message": "Dieser Verifizierungscode läuft in 24 Stunden ab. Falls Sie diese E-Mail-Änderung nicht angefordert haben, ignorieren Sie bitte diese E-Mail.",
+        "main_message": "Du hast eine Änderung deiner E-Mail-Adresse angefordert. Bitte verwende den unten stehenden Verifizierungscode, um deine neue E-Mail-Adresse zu verifizieren:",
+        "expiration_message": "Dieser Verifizierungscode läuft in 24 Stunden ab. Falls du diese E-Mail-Änderung nicht angefordert hast, ignoriere bitte diese E-Mail.",
         "security_title": "Sicherheitshinweis:",
-        "security_message": "Falls Sie diese E-Mail-Änderung nicht angefordert haben, sollten Sie in Betracht ziehen, Ihr Passwort zu ändern und die Zwei-Faktor-Authentifizierung für bessere Sicherheit zu aktivieren.",
-        "support_message": "Falls Sie Bedenken bezüglich der Sicherheit Ihres Kontos haben, wenden Sie sich bitte umgehend an mich unter {contact_email}."
+        "security_message": "Falls du diese E-Mail-Änderung nicht angefordert hast, solltest du in Betracht ziehen, dein Passwort zu ändern und die Zwei-Faktor-Authentifizierung für bessere Sicherheit zu aktivieren.",
+        "support_message": "Falls du Bedenken bezüglich der Sicherheit deines Kontos hast, wende dich bitte umgehend an mich unter {contact_email}."
       }
     },
     "email_verified": {
