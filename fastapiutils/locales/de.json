@@ -58,7 +58,8 @@
       }
     },
     "email": {
-      "email_sending_failed": "Fehler beim Senden der E-Mail: {error}"
+      "email_sending_failed": "Fehler beim Senden der E-Mail: {error}",
+      "email_verified_success": "E-Mail erfolgreich verifiziert!"
     }
   },
   "email": {
@@ -78,7 +79,6 @@
         "warning_message": "Dieser Code ist nur für deine Augen bestimmt. Ich werde niemals danach fragen und er wird nach der Bestätigung ungültig.",
         "next_steps_title": "Wie geht es weiter?",
         "excitement_message": "Ich kann es kaum erwarten, dass du alles erkundest, was {app_name} zu bieten hat. Lass uns anfangen!",
-        "cta_button_text": "E-Mail bestätigen",
         "didnt_signup_title": "Nicht angemeldet?",
         "didnt_signup_message": "Falls du dieses Konto nicht erstellt hast, keine Sorge! Ignoriere einfach diese E-Mail und nichts wird passieren.",
         "feature_preview_title": "🎯 Was dich erwartet:",
@@ -113,10 +113,6 @@
         "security_message": "Falls du diese E-Mail-Änderung nicht angefordert hast, solltest du in Betracht ziehen, dein Passwort zu ändern und die Zwei-Faktor-Authentifizierung für bessere Sicherheit zu aktivieren.",
         "support_message": "Falls du Bedenken bezüglich der Sicherheit deines Kontos hast, wende dich bitte umgehend an mich unter {contact_email}."
       }
-    },
-    "email_verified": {
-      "subject": "E-Mail erfolgreich verifiziert!",
-      "email_title": "E-Mail erfolgreich verifiziert"
     }
   }
 }

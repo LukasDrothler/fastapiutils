@@ -344,4 +344,3 @@ class MailService:
             locale=locale,
             i18n_service=i18n_service
         )
-            

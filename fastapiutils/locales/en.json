@@ -58,7 +58,8 @@
       }
     },
     "email": {
-      "email_sending_failed": "Failed to send email: {error}"
+      "email_sending_failed": "Failed to send email: {error}",
+      "email_verified_success": "Email verified successfully!"
     }
   },
   "email": {
@@ -78,7 +79,6 @@
         "warning_message": "This code is for your eyes only. I'll never ask for it and it will be invalidated after verification.",
         "next_steps_title": "What's next?",
         "excitement_message": "I can't wait for you to explore everything {app_name} has to offer. Let's get started!",
-        "cta_button_text": "Verify My Email",
         "didnt_signup_title": "Didn't sign up?",
         "didnt_signup_message": "If you didn't create this account, no worries! Just ignore this email and nothing will happen.",
         "feature_preview_title": "🎯 What awaits you:",
@@ -113,10 +113,6 @@
         "security_message": "If you didn't request this email change, please consider changing your password and enabling two-factor authentication for better security.",
         "support_message": "If you have any concerns about your account security, please contact me at {contact_email} immediately."
       }
-    },
-    "email_verified": {
-      "subject": "Email verified successfully!",
-      "email_title": "Email Verified Successfully"
     }
   }
 }
