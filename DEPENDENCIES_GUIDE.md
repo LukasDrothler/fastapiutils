@@ -96,8 +96,8 @@ def create_mail_service() -> MailService:
 
 #### I18n Service Factory
 ```python
-def create_i18n_service(custom_locales_dir: Optional[str] = None, default_locale: str = "en") -> I18nService:
-    return I18nService(custom_locales_dir=custom_locales_dir, default_locale=default_locale)
+def create_i18n_service(default_locale: str = "en") -> I18nService:
+    return I18nService()
 ```
 **What it does:** Creates an internationalization service with custom configuration
 **Parameters:** Allows customization of language files location and default language
@@ -126,8 +126,7 @@ def setup_dependencies(...):
     # Register factory functions
     container.register_factory("database_service", create_database_service)
     container.register_factory("mail_service", create_mail_service)
-    container.register_factory("i18n_service", 
-                              lambda: create_i18n_service(custom_locales_dir, default_locale))
+    container.register_factory("i18n_service", create_i18n_service)
     
     # Special factory for auth service
     def auth_service_factory():

@@ -10,7 +10,7 @@ pip install git+https://github.com/LukasDrothler/fastapiutils
 
 ### Database Setup
 
-You need a MySQL database with the following user table structure:
+You need a MySQL database with the following table structure. Use the provided `fastapiutils/requirements.sql` file:
 
 ```sql
 CREATE TABLE `user` (
@@ -66,13 +66,18 @@ DB_PASSWORD=your_password
 DB_NAME=your_database
 
 # RSA Keys path
-RSA_KEYS_PATH=./keys
+RSA_KEYS_DIR=./keys
 
 # Email configuration (REQUIRED for email verification)
 SMTP_SERVER=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USER=your_email@gmail.com
 SMTP_PASSWORD=your_app_password
+
+# Optional customization
+DEFAULT_LOCALE=en
+LOCALES_DIR=./custom_locales
+COLOR_CONFIG_FILE=./config/colors.json
 ```
 
 ## Basic Usage
@@ -92,7 +97,6 @@ app = FastAPI()
 
 # Setup dependency injection container
 setup_dependencies(
-    default_locale="en",            # Default language
     access_token_expire_minutes=30, # Token expiration
     refresh_token_expire_days=30,   # Refresh token expiration
     token_url="token"               # Token endpoint URL
@@ -110,8 +114,6 @@ from fastapiutils import setup_dependencies
 
 # Advanced configuration with custom settings
 setup_dependencies(
-    custom_locales_dir="./my_locales",    # Custom translation files
-    default_locale="de",                  # German as default
     access_token_expire_minutes=60,       # 1 hour access tokens
     refresh_token_expire_days=7,          # 1 week refresh tokens
     token_url="auth/token",               # Custom token endpoint
@@ -344,29 +346,22 @@ async def protected_route(
 
 ## Internationalization
 
-The package includes built-in English and German translations that are always loaded. You can add custom translations or override existing ones by providing a custom locales directory:
+The package includes built-in English and German translations that are automatically loaded. You can add custom translations or override existing ones by setting the `LOCALES_DIR` environment variable:
 
-```python
-from fastapiutils import setup_dependencies
-
-# Built-in translations (en, de) are automatically loaded
-# Custom translations can override or extend them
-setup_dependencies(
-    custom_locales_dir="./my_locales",  # Additional/override translations
-    default_locale="fr",                # French as default
-    # ... other parameters ...
-)
+```bash
+# Set custom locales directory
+LOCALES_DIR=./my_custom_locales
 ```
 
 ### How Translation Override Works
 
 1. **Built-in locales** (en.json, de.json) are always loaded first
-2. **Custom locales** from `custom_locales_dir` are loaded second and can:
+2. **Custom locales** from `LOCALES_DIR` are loaded second and can:
    - Override existing keys in built-in locales
    - Add new keys to existing locales  
    - Add completely new locales
 
-**Example custom locale file** (`./my_locales/en.json`):
+**Example custom locale file** (`./my_custom_locales/en.json`):
 ```json
 {
   "auth": {
@@ -386,8 +381,6 @@ This will override the built-in "incorrect_credentials" message and add new tran
 ### setup_dependencies() Parameters
 
 **All Parameters (with defaults):**
-- `custom_locales_dir`: Custom locales directory for additional/override translations (default: None)
-- `default_locale`: Default language (default: "en")
 - `access_token_expire_minutes`: Access token expiration (default: 30)
 - `refresh_token_expire_days`: Refresh token expiration (default: 30)
 - `token_url`: Token endpoint URL (default: "token")
@@ -402,11 +395,17 @@ This will override the built-in "incorrect_credentials" message and add new tran
 - `DB_USER`: Database user
 - `DB_PASSWORD`: Database password
 - `DB_NAME`: Database name
-- `RSA_KEYS_PATH`: Path to directory containing RSA key files
+- `RSA_KEYS_DIR`: Path to directory containing RSA key files
 - `SMTP_SERVER`: SMTP server address (required for email verification)
 - `SMTP_PORT`: SMTP server port (required for email verification)
 - `SMTP_USER`: SMTP username/email (required for email verification)
 - `SMTP_PASSWORD`: SMTP password/app password (required for email verification)
+
+**Optional Environment Variables:**
+- `DEFAULT_LOCALE`: Default language for i18n service (default: "en")
+- `LOCALES_DIR`: Path to custom translation files directory
+- `COLOR_CONFIG_FILE`: Path to custom color configuration for email templates
+- `ENVIRONMENT`: Set to "development" to disable some security features
 
 **Note**: Email configuration is mandatory as the system requires email verification for all new user registrations.
 
@@ -454,13 +453,18 @@ DB_USER=your-production-user
 DB_PASSWORD=your-secure-password
 DB_NAME=your-production-db
 
-RSA_KEYS_PATH=/etc/ssl/jwt-keys
+RSA_KEYS_DIR=/etc/ssl/jwt-keys
 
 # Email configuration (REQUIRED for email verification)
 SMTP_SERVER=smtp.your-domain.com
 SMTP_PORT=587
 SMTP_USER=noreply@your-domain.com
 SMTP_PASSWORD=your-secure-smtp-password
+
+# Optional production settings
+DEFAULT_LOCALE=en
+LOCALES_DIR=/opt/app/locales
+COLOR_CONFIG_FILE=/opt/app/config/colors.json
 ```
 
 ### Production App Structure

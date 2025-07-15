@@ -27,7 +27,7 @@ pip install git+https://github.com/LukasDrothler/fastapiutils
 Create a MySQL database and run the provided SQL file to create the required tables:
 
 ```sql
--- Use the provided user.sql file
+-- Use the provided requirements.sql file
 -- Creates user table and verification_code table for email verification
 
 CREATE TABLE `user` (
@@ -71,7 +71,7 @@ DB_PASSWORD=your_password
 DB_NAME=your_database
 
 # RSA Keys path
-RSA_KEYS_PATH=./keys
+RSA_KEYS_DIR=./keys
 
 # Email configuration (REQUIRED for email verification)
 SMTP_SERVER=smtp.gmail.com
@@ -91,8 +91,6 @@ app = FastAPI()
 
 # Setup dependency injection container
 setup_dependencies(
-    custom_locales_dir=None,        # Optional: path to custom translations
-    default_locale="en",            # Default language
     access_token_expire_minutes=30, # Token expiration
     refresh_token_expire_days=30,   # Refresh token expiration
     token_url="token",              # Token endpoint URL
@@ -112,8 +110,6 @@ app.include_router(user.router)
 Configure the dependency injection container with the following parameters:
 
 **Optional Parameters (with defaults):**
-- `custom_locales_dir`: Custom locales directory for additional/override translations (default: None)
-- `default_locale`: Default language (default: "en")
 - `access_token_expire_minutes`: Access token expiration in minutes (default: 30)
 - `refresh_token_expire_days`: Refresh token expiration in days (default: 30)
 - `token_url`: Token endpoint URL (default: "token")
@@ -128,11 +124,17 @@ Configure the dependency injection container with the following parameters:
 - `DB_USER`: Database username
 - `DB_PASSWORD`: Database password
 - `DB_NAME`: Database name
-- `RSA_KEYS_PATH`: Path to directory containing RSA key files. If no found, new are generated
+- `RSA_KEYS_DIR`: Path to directory containing RSA key files. If not found, new ones are generated
 - `SMTP_SERVER`: SMTP server address (required for email verification)
 - `SMTP_PORT`: SMTP server port (required for email verification)
 - `SMTP_USER`: SMTP username/email (required for email verification)
 - `SMTP_PASSWORD`: SMTP password/app password (required for email verification)
+
+**Optional Environment Variables:**
+- `DEFAULT_LOCALE`: Default language for i18n service (default: "en")
+- `LOCALES_DIR`: Path to custom translation files directory
+- `COLOR_CONFIG_FILE`: Path to custom color configuration for email templates
+- `ENVIRONMENT`: Set to "development" to disable some security features
 
 **Note**: Email configuration is now **required** as the system uses mandatory email verification with 6-digit codes sent to users upon registration.
 
@@ -140,8 +142,8 @@ Configure the dependency injection container with the following parameters:
 
 ### Authentication Router
 
-- `POST /token` - Login with username/password
-- `POST /token/refresh` - Refresh access token
+- `POST /token` - Login with username/password (supports optional `stay_logged_in` parameter)
+- `POST /token/refresh` - Refresh access token using refresh token
 
 ### User Router
 
@@ -173,8 +175,6 @@ from fastapiutils import setup_dependencies
 
 # Advanced configuration
 setup_dependencies(
-    custom_locales_dir="./my_locales",    # Custom translation files
-    default_locale="de",                  # German as default
     access_token_expire_minutes=60,       # 1 hour access tokens
     refresh_token_expire_days=7,          # 1 week refresh tokens
     token_url="auth/token",               # Custom token endpoint
@@ -205,6 +205,48 @@ The library implements a **mandatory email verification system** using 6-digit c
 4. **User Verification**: User enters code via API endpoint
 5. **Account Activation**: Email marked as verified, user can fully access platform
 6. **Resend Option**: If code expired or mail was not received, the user can re-send a new code
+
+## Email Templates
+
+The library includes beautifully designed HTML email templates for all verification scenarios:
+
+### Built-in Templates
+
+- **`email_verification.html`** - Welcome email with verification code for new users
+- **`forgot_password_verification.html`** - Password reset email with verification code  
+- **`email_change_verification.html`** - Email change verification with code for new address
+
+### Template Features
+
+- **Responsive Design**: Works on all devices and email clients
+- **Localized Content**: All text is automatically translated based on user locale
+- **Customizable Colors**: Colors can be customized via `COLOR_CONFIG_FILE` environment variable
+- **Brand Integration**: Supports custom app name, logo, and contact information
+- **Security Focused**: Clear security warnings and expiration information
+
+### Color Customization
+
+Create a JSON file with custom colors and set the `COLOR_CONFIG_FILE` environment variable:
+
+```json
+{
+  "primary_color": "#4f46e5",
+  "secondary_color": "#7c3aed",
+  "background_color": "#ffffff",
+  "text_color": "#1f2937",
+  "button_text_color": "#ffffff",
+  "border_color": "#e5e7eb"
+}
+```
+
+### Template Variables
+
+All templates support these variables:
+- `{app_name}` - Your application name
+- `{app_owner}` - Your name/company
+- `{contact_email}` - Support email address
+- `{logo_url}` - Logo URL for branding
+- Plus all localized content from translation files
 
 ## Password Reset Workflow
 
@@ -302,14 +344,27 @@ response = requests.post("http://localhost:8000/user/me/email/verify",
 
 The email verification content is automatically translated based on the user's locale. The following translation keys are used:
 
-- `auth.verification_email_subject`: Email subject line for verification
-- `auth.verification_email_content`: Email body content for verification (supports `{code}` parameter)
-- `auth.verification_code_expired`: Error message when verification code is expired
-- `auth.verification_code_invalid`: Error message when verification code is invalid
-- `auth.verification_code_already_verified`: Error message when email is already verified
-- `auth.verification_resend_cooldown`: Error message when trying to resend too soon
-- `auth.verification_resent`: Success message when verification code is resent
-- `auth.email_sending_failed`: Error message when email sending fails
+**Email Verification:**
+- `email.email_verification.subject`: Email subject line for verification
+- `email.email_verification.email_title`: Email title for verification 
+- `email.email_verification.content.*`: Various email content fields (supports parameter interpolation)
+- `api.auth.verification.verification_code_expired`: Error message when verification code is expired
+- `api.auth.verification.invalid_verification_code`: Error message when verification code is invalid
+- `api.auth.verification.verification_code_already_used`: Error message when code already used
+- `api.auth.verification.resend_cooldown`: Error message when trying to resend too soon
+- `api.auth.verification.verification_code_resent`: Success message when verification code is resent
+- `api.email.email_sending_failed`: Error message when email sending fails
+
+**Password Reset:**
+- `email.forgot_password_verification.subject`: Subject for password reset emails
+- `email.forgot_password_verification.content.*`: Password reset email content
+- `api.auth.forgot_password.forgot_password_verification_code_sent`: Confirmation message
+
+**Email Change:**
+- `email.email_change_verification.subject`: Subject for email change verification
+- `email.email_change_verification.content.*`: Email change email content
+- `api.auth.email_change.email_change_verification_sent`: Confirmation message
+- `api.auth.email_change.email_change_verified_successfully`: Success message
 
 ## Custom Routers
 
@@ -445,21 +500,27 @@ The i18n system gracefully handles missing parameters and formatting errors:
 
 ### Custom Locales
 
-You can override or extend the built-in translations by providing a custom locales directory:
+You can override or extend the built-in translations by setting the `LOCALES_DIR` environment variable:
 
-```python
-from fastapiutils import setup_dependencies
-
-setup_dependencies(
-    custom_locales_dir="/path/to/your/custom/locales",
-    # ... other parameters ...
-)
+```bash
+# Set custom locales directory
+LOCALES_DIR=./my_custom_locales
 ```
 
 Custom locale files will be merged with built-in translations, allowing you to:
 - Override existing translations
 - Add new translation keys
 - Support additional languages
+
+Example custom locale file (`./my_custom_locales/en.json`):
+```json
+{
+  "pet": {
+    "name_too_long": "Pet name must be {max_length} characters or less (current: {current_length})",
+    "species_invalid": "Pet species must be one of: {valid_species} (current: {current_species})"
+  }
+}
+```
 
 ## Complete Example
 
@@ -481,11 +542,27 @@ To run the example:
 For easier configuration management, use a `.env` file:
 
 ```bash
-# Copy the example file
-cp .env.example .env
+# Database configuration
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=your_password
+DB_NAME=your_database
 
-# Edit the .env file with your configuration
-# Then in your Python code:
+# RSA Keys
+RSA_KEYS_DIR=./keys
+
+# Email configuration (required)
+SMTP_SERVER=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your_email@gmail.com
+SMTP_PASSWORD=your_app_password
+
+# Optional customization
+DEFAULT_LOCALE=en
+LOCALES_DIR=./custom_locales
+COLOR_CONFIG_FILE=./config/colors.json
+ENVIRONMENT=development
 ```
 
 ```python
@@ -493,6 +570,39 @@ from dotenv import load_dotenv
 
 load_dotenv()  # This loads the .env file automatically
 ```
+
+## Module Structure
+
+The library is organized into specialized modules for better maintainability:
+
+### Core Modules
+
+- **`auth_service.py`** - Authentication and JWT token management
+- **`database_service.py`** - Database connection and query execution
+- **`mail_service.py`** - Email sending with HTML template support
+- **`i18n_service.py`** - Internationalization and translation management
+- **`dependencies.py`** - Dependency injection container and service factories
+
+### Data and Validation Modules
+
+- **`models.py`** - Pydantic models for requests and responses
+- **`user_queries.py`** - Database queries for user operations
+- **`user_validators.py`** - User data validation functions
+- **`verification_queries.py`** - Database queries for verification codes
+
+### Feature Modules
+
+- **`email_verification.py`** - Email verification workflow functions
+- **`routers/`** - FastAPI router modules
+  - `auth.py` - Authentication endpoints
+  - `user.py` - User management endpoints
+
+### Resources
+
+- **`locales/`** - Translation files (en.json, de.json)
+- **`templates/`** - HTML email templates
+- **`config/`** - Default color configuration
+- **`requirements.sql`** - Database schema
 
 ## Available Dependencies
 
