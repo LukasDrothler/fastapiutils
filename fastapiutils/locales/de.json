@@ -62,37 +62,21 @@
     }
   },
   "email": {
-    "subjects": {
-      "welcome": "Willkommen auf unserer Plattform!",
-      "email_verification": "Ihr Verifizierungscode",
-      "email_verified": "E-Mail erfolgreich verifiziert!",
-      "email_change_verification": "Verifizieren Sie Ihre neue E-Mail-Adresse",
-      "forgot_password_verification": "Passwort-Reset Verifizierungscode"
-    },
-    "fallback_content": {
-      "email_verification": "Hallo {username},\n\nVielen Dank für Ihre Registrierung! Bitte verwenden Sie den folgenden 6-stelligen Code, um Ihre E-Mail-Adresse zu verifizieren:\n\n{verification_code}\n\nDieser Code läuft in 24 Stunden ab.\n\nFalls Sie dieses Konto nicht erstellt haben, ignorieren Sie bitte diese E-Mail.\n\nMit freundlichen Grüßen,\nIhr Team",
-      "email_verified": "Ihre E-Mail-Adresse wurde erfolgreich verifiziert. Sie können nun alle Funktionen unserer Plattform nutzen.\n\nMit freundlichen Grüßen,\nIhr Team",
-      "email_change_verification": "Hallo {username},\n\nSie haben eine Änderung Ihrer E-Mail-Adresse angefordert. Bitte verwenden Sie den folgenden 6-stelligen Code, um Ihre neue E-Mail-Adresse zu verifizieren:\n\n{verification_code}\n\nDieser Code läuft in 24 Stunden ab.\n\nFalls Sie diese Änderung nicht angefordert haben, ignorieren Sie bitte diese E-Mail.\n\nMit freundlichen Grüßen,\nIhr Team",
-      "forgot_password_verification": "Hallo {username},\n\nSie haben eine Passwort-Zurücksetzung angefordert. Bitte verwenden Sie den folgenden 6-stelligen Verifizierungscode, um den Passwort-Reset-Prozess abzuschließen:\n\n{verification_code}\n\nDieser Code läuft in 24 Stunden ab. Falls Sie diese Passwort-Zurücksetzung nicht angefordert haben, ignorieren Sie bitte diese E-Mail.\n\nMit freundlichen Grüßen,\nIhr Team"
-    }
-  },
-  "email_templates": {
     "shared_content": {
       "support_message": "Fragen? Ich helfe gerne! Schreiben Sie mir an {contact_email} - ich lese und beantworte persönlich jede Nachricht.",
       "personal_note": "Mit ❤️ von einem Solo-Entwickler erstellt, der sich wirklich um Ihre Erfahrung kümmert.",
-      "app_benefits": "Nach der Verifizierung schalten Sie alle leistungsstarken Funktionen frei, die Ihr Leben einfacher machen.",
-      "security_footer": "Ihre Sicherheit ist meine oberste Priorität. Diese E-Mail wurde von einem sicheren Server gesendet."
+      "app_benefits": "Nach der Verifizierung schalten Sie alle leistungsstarken Funktionen frei, die Ihr Leben einfacher machen."
     },
     "email_verification": {
+      "subject": "Dein Code lautet {verification_code}",
       "email_title": "🚀 Lassen Sie uns beginnen - E-Mail bestätigen",
       "content": {
         "welcome_title": "Willkommen bei {app_name}, {username}! 🎉",
-        "welcome_message": "Vielen Dank, dass Sie unserer Community beigetreten sind! Ich freue mich, Sie an Bord zu haben. Um alle fantastischen Funktionen freizuschalten, die auf Sie warten, bestätigen Sie bitte Ihre E-Mail-Adresse mit dem untenstehenden Code:",
-        "expiration_message": "Dieser Verifizierungscode läuft in 24 Stunden ab. Keine Sorge - falls er abläuft, können Sie jederzeit einen neuen anfordern.",
-        "warning_title": "🔒 Sicherheit zuerst:",
-        "warning_message": "Dieser Code ist nur für Ihre Augen bestimmt. Ich werde niemals telefonisch oder per E-Mail danach fragen. Bewahren Sie ihn sicher auf!",
+        "welcome_message": "Danke für dein Interesse an meiner App! Ich freue mich, dich an Bord zu haben. Bitte bestätige Deine E-Mail mit dem untenstehenden Code um all die tollen Funktionen freizuschalten.",
+        "expiration_message": "Dieser Code läuft in 24 Stunden ab. Keine Sorge - falls er abläuft, kannst Du jederzeit einen Neuen anfordern.",
+        "warning_title": "🔒 Sicherheitshinweis",
+        "warning_message": "Dieser Code ist nur für Deine Augen bestimmt. Ich werde niemals danach fragen und er wird nach der Bestätigung ungültig.",
         "next_steps_title": "Wie geht es weiter?",
-        "next_steps_message": "Nach der Verifizierung haben Sie sofortigen Zugang zu allen Premium-Funktionen. Machen Sie sich bereit für etwas Fantastisches!",
         "excitement_message": "Ich kann es kaum erwarten, dass Sie alles erkunden, was {app_name} zu bieten hat. Lassen Sie uns anfangen!",
         "cta_button_text": "E-Mail bestätigen",
         "didnt_signup_title": "Nicht angemeldet?",
@@ -105,6 +89,7 @@
       }
     },
     "forgot_password_verification": {
+      "subject": "Passwort-Reset Verifizierungscode",
       "email_title": "Passwort-Reset Anfrage",
       "content": {
         "title": "Passwort-Reset Anfrage",
@@ -117,6 +102,7 @@
       }
     },
     "email_change_verification": {
+      "subject": "Verifizieren Sie Ihre neue E-Mail-Adresse",
       "email_title": "E-Mail-Änderung Verifizierung",
       "content": {
         "title": "E-Mail-Änderung Verifizierung",
@@ -129,6 +115,7 @@
       }
     },
     "email_verified": {
+      "subject": "E-Mail erfolgreich verifiziert!",
       "email_title": "E-Mail erfolgreich verifiziert"
     }
   }

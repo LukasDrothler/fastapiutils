@@ -169,7 +169,7 @@ class MailService:
             i18n_service: I18nService, template_name: str = None, locale: str = "en"
             ) -> str:
         """Render template with variables and configuration"""
-        email_templates = i18n_service._translations[locale]["email_templates"]
+        email_templates = i18n_service._translations[locale]["email"]
         app_config = i18n_service._translations[locale]["app_config"]
 
         # Add flattened colors from color configuration (new nested format)
@@ -185,7 +185,6 @@ class MailService:
             "text_color": self.colors["text"]["primary"],
             "text_secondary_color": self.colors["text"]["secondary"],
             "border_color": self.colors["border"],
-            "code_text_color": self.colors["text"]["code"],
             "button_text_color": self.colors["button"]["text"],
             "button_hover_color": self.colors["button"]["hover"],
             "footer_text_color": self.colors["footer"]["text"],
@@ -240,57 +239,40 @@ class MailService:
                         subject: str,
                         recipient: str,
                         i18n_service: I18nService,
-                        locale: str = "en",
-                        plain_text_content: str = None,
+                        locale: str = "en"
                         ) -> None:
         """Send email using template system with automatic fallback to plain text"""
         
         # Try HTML template first
         template_content = self._load_template(template_name, locale)
-        if template_content:
-            html_content = self._render_template(
-                template_content=template_content,
-                variables=variables,
-                i18n_service=i18n_service,
-                template_name=template_name,
-                locale=locale
+        if not template_content:
+            raise ValueError(f"Template '{template_name}' not found for locale '{locale}'")
+
+        html_content = self._render_template(
+            template_content=template_content,
+            variables=variables,
+            i18n_service=i18n_service,
+            template_name=template_name,
+            locale=locale
+        )
+        
+        # Create multipart message
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = subject
+        msg['From'] = self.user
+        msg['To'] = recipient
+        
+        # Add HTML version
+        html_part = MIMEText(html_content, 'html', 'utf-8')
+        msg.attach(html_part)
+        
+        self._send_message(
+            msg=msg,
+            recipient=recipient,
+            i18n_service=i18n_service,
+            locale=locale
             )
-            
-            # Create multipart message
-            msg = MIMEMultipart('alternative')
-            msg['Subject'] = subject
-            msg['From'] = self.user
-            msg['To'] = recipient
-            
-            # Add plain text version if provided
-            if plain_text_content:
-                text_part = MIMEText(plain_text_content, 'plain', 'utf-8')
-                msg.attach(text_part)
-            
-            # Add HTML version
-            html_part = MIMEText(html_content, 'html', 'utf-8')
-            msg.attach(html_part)
-            
-            self._send_message(
-                msg=msg,
-                recipient=recipient,
-                i18n_service=i18n_service,
-                locale=locale
-                )
-            return None
-            
-        else:
-            # Fall back to plain text
-            if not plain_text_content:
-                logger.error(f"No template or plain text content provided for '{template_name}'")
-                raise ValueError(f"No template or plain text content provided for '{template_name}'")
-            self.send_email_plain_text(
-                content=plain_text_content,
-                subject=subject,
-                recipient=recipient,
-                i18n_service=i18n_service,
-                locale=locale
-                )
+        return None
 
     def _send_message(
             self, msg, recipient: str,
@@ -353,12 +335,13 @@ class MailService:
                 "username": username,
                 "verification_code": verification_code
             },
-            subject=i18n_service.t("email.subjects.email_verification", locale),
+            subject=i18n_service.t(
+                key="email.email_verification.subject", 
+                locale=locale,
+                verification_code=verification_code
+                ),
             recipient=recipient,
             locale=locale,
-            plain_text_content=i18n_service.t("email.fallback_content.email_verification", locale, 
-                                            username=username, 
-                                            verification_code=verification_code),
             i18n_service=i18n_service
         )
             
