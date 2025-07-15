@@ -64,9 +64,9 @@ def create_mail_service() -> MailService:
     return MailService()
 
 
-def create_i18n_service(custom_locales_dir: Optional[str] = None, default_locale: str = "en") -> I18nService:
+def create_i18n_service() -> I18nService:
     """Factory function to create I18nService instance"""
-    return I18nService(custom_locales_dir=custom_locales_dir, default_locale=default_locale)
+    return I18nService()
 
 
 def create_auth_service(
@@ -88,8 +88,6 @@ def create_auth_service(
 
 
 def setup_dependencies(
-    custom_locales_dir: Optional[str] = None,
-    default_locale: str = "en",
     access_token_expire_minutes: int = 30,
     refresh_token_expire_days: int = 30,
     token_url: str = "token",
@@ -102,8 +100,7 @@ def setup_dependencies(
     # Register factory functions
     container.register_factory("database_service", create_database_service)
     container.register_factory("mail_service", create_mail_service)
-    container.register_factory("i18n_service", 
-                              lambda: create_i18n_service(custom_locales_dir, default_locale))
+    container.register_factory("i18n_service", create_i18n_service)
     
     # Register auth service factory that depends on other services
     def auth_service_factory():
