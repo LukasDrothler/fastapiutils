@@ -24,7 +24,7 @@
 
             <!-- Verification code -->
             <div style="text-align: center; margin: 35px 0;">
-                <p style="margin: 0 0 15px 0; color: {{text_color}}; font-size: 16px; font-weight: 600;">Your verification code:</p>
+                <p style="margin: 0 0 15px 0; color: {{text_color}}; font-size: 16px; font-weight: 600;">{{verification_code_label}}</p>
                 <div style="background-color: {{primary_color}}; background: linear-gradient(135deg, {{primary_color}} 0%, {{secondary_color}} 100%); color: {{button_text_color}}; padding: 20px 40px; border-radius: 12px; font-size: 32px; font-weight: 800; text-align: center; margin: 0 auto; letter-spacing: 8px; max-width: 280px; box-shadow: 0 8px 25px rgba(79, 70, 229, 0.3); border: 2px solid rgba(255,255,255,0.1);">
                     {{verification_code}}
                 </div>
@@ -32,19 +32,22 @@
 
             <p style="margin: 20px 0; color: {{text_secondary_color}}; font-size: 14px; text-align: center;">{{expiration_message}}</p>
 
-            <!-- Security notice -->
+            <!-- Security warning -->
             <div style="background-color: {{warning_background}}; color: {{warning_text_color}}; padding: 20px; border-radius: 10px; margin: 25px 0; border-left: 4px solid {{warning_border_color}}; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                <strong style="color: {{warning_title_color}}; font-size: 16px;">{{security_title}}</strong>
-                <p style="margin: 8px 0 0 0; font-size: 14px; line-height: 1.5;">{{security_message}}</p>
+                <strong style="color: {{warning_title_color}}; font-size: 16px;">{{warning_title}}</strong>
+                <p style="margin: 8px 0 0 0; font-size: 14px; line-height: 1.5;">{{warning_message}}</p>
+            </div>
+
+            <!-- This wasn't you section -->
+            <div style="background-color: {{info_background}}; color: {{info_text_color}}; padding: 20px; border-radius: 10px; margin: 25px 0; border-left: 4px solid {{info_border_color}};">
+                <strong style="font-size: 16px;">{{wasnt_you_title}}</strong>
+                <p style="margin: 8px 0 0 0; font-size: 14px; line-height: 1.5;">{{wasnt_you_message}}</p>
             </div>
 
             <!-- Support message -->
             <div style="text-align: center; margin: 35px 0;">
                 <p style="margin: 15px 0; color: {{text_color}}; font-size: 16px;">{{support_message}}</p>
             </div>
-
-            <p style="margin: 25px 0; color: {{text_color}}; font-size: 15px; text-align: center;">{{closing_message}}</p>
-            <p style="margin: 10px 0; color: {{text_color}}; font-size: 15px; text-align: center; font-weight: 600;">{{team_signature}}</p>
         </div>
         
         <!-- Footer -->

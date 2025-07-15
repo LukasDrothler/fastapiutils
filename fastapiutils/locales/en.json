@@ -66,7 +66,12 @@
     "shared_content": {
       "support_message": "Questions? I'm here to help! Drop me a line at {contact_email} - I personally read and respond to every message.",
       "personal_note": "Built with ❤️ by a solo developer who truly cares about your experience.",
-      "app_benefits": "Once verified, you'll unlock all the powerful features designed to make your life easier."
+      "app_benefits": "Once verified, you'll unlock all the powerful features designed to make your life easier.",
+      "wasnt_you_title": "This wasn't you?",
+      "verification_code_label": "Your verification code:",
+      "expiration_message": "This verification code will expire in 24 hours. Don't worry - if it expires, you can always request a new one.",
+      "warning_title": "🔒 Security Notice",
+      "warning_message": "This code is for your eyes only. Never share it with anyone and it will be invalidated after use."
     },
     "email_verification": {
       "subject": "Your verification code is {verification_code}",
@@ -74,9 +79,6 @@
       "content": {
         "welcome_title": "Welcome {username}! 🎉",
         "welcome_message": "Thanks for your interest in my app! I'm excited to have you on board. Please verify your email with the code below to unlock all the amazing features.",
-        "expiration_message": "This verification code expires in 24 hours. Don't worry - if it expires, you can always request a new one.",
-        "warning_title": "🔒 Security",
-        "warning_message": "This code is for your eyes only. I'll never ask for it and it will be invalidated after verification.",
         "next_steps_title": "What's next?",
         "excitement_message": "I can't wait for you to explore everything {app_name} has to offer. Let's get started!",
         "didnt_signup_title": "Didn't sign up?",
@@ -94,11 +96,8 @@
       "content": {
         "title": "Password Reset Request",
         "greeting": "Hello {username},",
-        "main_message": "We received a request to reset your password. If you made this request, please use the verification code below to reset your password:",
-        "expiration_message": "This verification code will expire in 24 hours. If you didn't request a password reset, please ignore this email - your password will remain unchanged.",
-        "security_title": "Security Notice:",
-        "security_message": "If you didn't request this password reset, please consider changing your password and enabling two-factor authentication for better security.",
-        "support_message": "If you have any concerns about your account security, please contact me at {contact_email} immediately."
+        "main_message": "We received a request to reset your password. Please use the verification code below to proceed:",
+        "wasnt_you_message": "If you didn't request this password reset, just ignore this email and your password remains unchanged."
       }
     },
     "email_change_verification": {
@@ -107,11 +106,8 @@
       "content": {
         "title": "Email Change Verification",
         "greeting": "Hello {username},",
-        "main_message": "You have requested to change your email address. Please use the verification code below to verify your new email address:",
-        "expiration_message": "This verification code will expire in 24 hours. If you didn't request this email change, please ignore this email.",
-        "security_title": "Security Notice:",
-        "security_message": "If you didn't request this email change, please consider changing your password and enabling two-factor authentication for better security.",
-        "support_message": "If you have any concerns about your account security, please contact me at {contact_email} immediately."
+        "main_message": "You requested to change your email address. Please use the verification code below to confirm your new email:",
+        "wasnt_you_message": "If you didn't request this email change, please consider changing your password immediately."
       }
     }
   }

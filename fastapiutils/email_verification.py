@@ -141,27 +141,24 @@ def send_forgot_password_verification(
         i18n_service=i18n_service
         )
 
-    # try:
-    #     # TODO: Fix template
-    #     # Use template system for forgot password verification
-    #     mail_service.send_email_html(
-    #         template_name="forgot_password_verification",
-    #         variables={
-    #             "username": user.username,
-    #             "verification_code": verification_code,
-    #             "app_name": app_name,
-    #             "contact_email": contact_email
-    #         },
-    #         subject=i18n_service.t("email.forgot_password_verification.subject", locale),
-    #         recipient=email,
-    #         locale=locale,
-    #         i18n_service=i18n_service
-    #     )
-    # except Exception as e:
-    #     raise HTTPException(
-    #         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-    #         detail=i18n_service.t("api.email.email_sending_failed", locale, error=str(e))
-    #     )
+    try:
+        # Use template system for forgot password verification
+        mail_service.send_email_html(
+            template_name="forgot_password_verification",
+            variables={
+                "username": user.username,
+                "verification_code": verification_code,
+            },
+            subject=i18n_service.t("email.forgot_password_verification.subject", locale),
+            recipient=email,
+            locale=locale,
+            i18n_service=i18n_service
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=i18n_service.t("api.email.email_sending_failed", locale, error=str(e))
+        )
 
     return {"msg": i18n_service.t("api.auth.forgot_password.forgot_password_verification_code_sent", locale)}
 
@@ -198,28 +195,24 @@ def send_email_change_verification(
         i18n_service=i18n_service
     )
     
-    # Send verification email to new email address
-    # try:
-    #     # TODO: Fix template
-    #     # Use template system for email change verification
-    #     mail_service.send_email_html(
-    #         template_name="email_change_verification",
-    #         variables={
-    #             "username": user.username,
-    #             "verification_code": verification_code,
-    #             "app_name": app_name,
-    #             "contact_email": contact_email
-    #         },
-    #         subject=i18n_service.t("email.email_change_verification.subject", locale),
-    #         recipient=new_email,
-    #         locale=locale,
-    #         i18n_service=i18n_service
-    #     )
-    # except Exception as e:
-    #     raise HTTPException(
-    #         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-    #         detail=i18n_service.t("api.email.email_sending_failed", locale, error=str(e))
-    #     )
+    try:
+        # Use template system for email change verification
+        mail_service.send_email_html(
+            template_name="email_change_verification",
+            variables={
+                "username": user.username,
+                "verification_code": verification_code,
+            },
+            subject=i18n_service.t("email.email_change_verification.subject", locale),
+            recipient=new_email,
+            locale=locale,
+            i18n_service=i18n_service
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=i18n_service.t("api.email.email_sending_failed", locale, error=str(e))
+        )
     
     return {"msg": i18n_service.t("api.auth.email_change.email_change_verification_sent", locale)}
 

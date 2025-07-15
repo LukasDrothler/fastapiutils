@@ -11,6 +11,7 @@ from .database_service import DatabaseService
 from datetime import datetime, timezone, timedelta
 from typing import Optional
 import random
+import os
 
 
 class VerificationQueries:
@@ -107,14 +108,14 @@ class VerificationQueries:
         
         created_at = existing_code['created_at']
         
-        
-        # Check if 1 minute has passed since last code generation
-        time_diff = datetime.now(timezone.utc) - created_at.replace(tzinfo=timezone.utc)
-        if time_diff <= timedelta(minutes=1):
-            raise HTTPException(
-                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-                detail=i18n_service.t("api.auth.verification.resend_cooldown", locale),
-            )
+        if not "ENVIRONMENT" in os.environ or not os.environ["ENVIRONMENT"] == "development":
+            # Check if 1 minute has passed since last code generation
+            time_diff = datetime.now(timezone.utc) - created_at.replace(tzinfo=timezone.utc)
+            if time_diff <= timedelta(minutes=1):
+                raise HTTPException(
+                    status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                    detail=i18n_service.t("api.auth.verification.resend_cooldown", locale),
+                )
         return None
     
     @staticmethod

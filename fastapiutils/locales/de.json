@@ -66,7 +66,12 @@
     "shared_content": {
       "support_message": "Fragen? Ich helfe gerne! Schreib mir an {contact_email} - ich lese und beantworte persönlich jede Nachricht.",
       "personal_note": "Mit ❤️ von einem Solo-Entwickler erstellt, der sich wirklich um deine Erfahrung kümmert.",
-      "app_benefits": "Nach der Verifizierung schaltest du alle leistungsstarken Funktionen frei, die dein Leben einfacher machen."
+      "app_benefits": "Nach der Verifizierung schaltest du alle leistungsstarken Funktionen frei, die dein Leben einfacher machen.",
+      "wasnt_you_title": "Das warst nicht du?",
+      "verification_code_label": "Dein Verifizierungscode:",
+      "expiration_message": "Dieser Verifizierungscode läuft in 24 Stunden ab. Keine Sorge - falls er abläuft, kannst du jederzeit einen neuen anfordern.",
+      "warning_title": "🔒 Sicherheitshinweis",
+      "warning_message": "Dieser Code ist nur für deine Augen bestimmt. Teile ihn niemals mit anderen und er wird nach der Verwendung ungültig."
     },
     "email_verification": {
       "subject": "Dein Code lautet {verification_code}",
@@ -74,9 +79,6 @@
       "content": {
         "welcome_title": "Willkommen bei {app_name}, {username}! 🎉",
         "welcome_message": "Danke für dein Interesse an meiner App! Ich freue mich, dich an Bord zu haben. Bitte bestätige deine E-Mail mit dem untenstehenden Code um all die tollen Funktionen freizuschalten.",
-        "expiration_message": "Dieser Code läuft in 24 Stunden ab. Keine Sorge - falls er abläuft, kannst du jederzeit einen neuen anfordern.",
-        "warning_title": "🔒 Sicherheitshinweis",
-        "warning_message": "Dieser Code ist nur für deine Augen bestimmt. Ich werde niemals danach fragen und er wird nach der Bestätigung ungültig.",
         "next_steps_title": "Wie geht es weiter?",
         "excitement_message": "Ich kann es kaum erwarten, dass du alles erkundest, was {app_name} zu bieten hat. Lass uns anfangen!",
         "didnt_signup_title": "Nicht angemeldet?",
@@ -94,11 +96,8 @@
       "content": {
         "title": "Passwort-Reset Anfrage",
         "greeting": "Hallo {username},",
-        "main_message": "Wir haben eine Anfrage zur Zurücksetzung deines Passworts erhalten. Falls du diese Anfrage gestellt hast, verwende bitte den unten stehenden Verifizierungscode, um dein Passwort zurückzusetzen:",
-        "expiration_message": "Dieser Verifizierungscode läuft in 24 Stunden ab. Falls du keine Passwort-Zurücksetzung angefordert hast, ignoriere bitte diese E-Mail - dein Passwort bleibt unverändert.",
-        "security_title": "Sicherheitshinweis:",
-        "security_message": "Falls du diese Passwort-Zurücksetzung nicht angefordert hast, solltest du in Betracht ziehen, dein Passwort zu ändern und die Zwei-Faktor-Authentifizierung für bessere Sicherheit zu aktivieren.",
-        "support_message": "Falls du Bedenken bezüglich der Sicherheit deines Kontos hast, wende dich bitte umgehend an mich unter {contact_email}."
+        "main_message": "Wir haben eine Anfrage zur Zurücksetzung deines Passworts erhalten. Bitte verwende den unten stehenden Verifizierungscode:",
+        "wasnt_you_message": "Falls du diese Passwort-Zurücksetzung nicht angefordert hast, solltest du dein Passwort sofort ändern."
       }
     },
     "email_change_verification": {
@@ -107,11 +106,8 @@
       "content": {
         "title": "E-Mail-Änderung Verifizierung",
         "greeting": "Hallo {username},",
-        "main_message": "Du hast eine Änderung deiner E-Mail-Adresse angefordert. Bitte verwende den unten stehenden Verifizierungscode, um deine neue E-Mail-Adresse zu verifizieren:",
-        "expiration_message": "Dieser Verifizierungscode läuft in 24 Stunden ab. Falls du diese E-Mail-Änderung nicht angefordert hast, ignoriere bitte diese E-Mail.",
-        "security_title": "Sicherheitshinweis:",
-        "security_message": "Falls du diese E-Mail-Änderung nicht angefordert hast, solltest du in Betracht ziehen, dein Passwort zu ändern und die Zwei-Faktor-Authentifizierung für bessere Sicherheit zu aktivieren.",
-        "support_message": "Falls du Bedenken bezüglich der Sicherheit deines Kontos hast, wende dich bitte umgehend an mich unter {contact_email}."
+        "main_message": "Du hast eine Änderung deiner E-Mail-Adresse angefordert. Bitte verwende den unten stehenden Verifizierungscode zur Bestätigung:",
+        "wasnt_you_message": "Falls du diese E-Mail-Änderung nicht angefordert hast, solltest du dein Passwort sofort ändern."
       }
     }
   }
