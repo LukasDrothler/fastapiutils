@@ -4,13 +4,15 @@ from .database_service import DatabaseService
 from .mail_service import MailService
 from .i18n_service import I18nService
 from .dependencies import (
+    CurrentAdminUser,
     setup_dependencies, 
     get_auth_service, 
     get_database_service, 
     get_mail_service, 
     get_i18n_service,
     CurrentUser, 
-    CurrentActiveUser
+    CurrentActiveUser,
+    CurrentAdminUser
 )
 
 __version__ = "0.3.0"
@@ -35,4 +37,5 @@ __all__ = [
     "get_i18n_service",
     "CurrentUser",
     "CurrentActiveUser",
+    "CurrentAdminUser"
 ]

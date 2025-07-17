@@ -202,6 +202,16 @@ class AuthService:
         return current_user
 
 
+    def get_current_admin_user(self, current_user: UserInDB, i18n_service: I18nService) -> UserInDB:
+        """Get current admin user"""
+        if not current_user.is_admin:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=i18n_service.t("api.auth.credentials.admin_required", "en")
+            )
+        return current_user
+
+
     def update_user(
             self,
             user_id: str,

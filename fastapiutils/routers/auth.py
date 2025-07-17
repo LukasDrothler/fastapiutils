@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
-from typing import Optional, Annotated
+from typing import Annotated
 from jwt.exceptions import InvalidTokenError
 import jwt
 

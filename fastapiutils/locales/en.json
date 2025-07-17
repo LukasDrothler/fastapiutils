@@ -10,7 +10,8 @@
       "credentials": {
         "incorrect_credentials": "Incorrect username or password",
         "could_not_validate_credentials": "Could not validate credentials",
-        "inactive_user": "Inactive user"
+        "inactive_user": "Inactive user",
+        "admin_required": "Admin privileges required"
       },
       "validation": {
         "username_invalid": "Username must contain only letters, numbers, and underscores and be at least 3 characters long",
@@ -56,6 +57,18 @@
       "forgot_password": {
         "forgot_password_verification_code_sent": "Password reset verification code has been sent to your email address"
       }
+    },
+    "customer_form": {
+      "cancellation_created": "Cancellation created successfully",
+      "cancellation_creation_failed": "Failed to create cancellation: {error}",
+      "feedback_created": "Feedback created successfully",
+      "feedback_creation_failed": "Failed to create feedback: {error}",
+      "cancellation_archived": "Cancellation archived successfully",
+      "cancellation_archival_failed": "Failed to archive cancellation: {error}",
+      "feedback_archived": "Feedback archived successfully",
+      "feedback_archival_failed": "Failed to archive feedback: {error}",
+      "feedback_retrieval_failed": "Failed to retrieve feedback: {error}",
+      "cancellation_retrieval_failed": "Failed to retrieve cancellations: {error}"
     },
     "email": {
       "email_sending_failed": "Failed to send email: {error}",

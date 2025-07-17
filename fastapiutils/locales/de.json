@@ -10,7 +10,8 @@
       "credentials": {
         "incorrect_credentials": "Falscher Benutzername oder Passwort",
         "could_not_validate_credentials": "Anmeldedaten konnten nicht validiert werden",
-        "inactive_user": "Inaktiver Benutzer"
+        "inactive_user": "Inaktiver Benutzer",
+        "admin_required": "Admin-Rechte erforderlich"
       },
       "validation": {
         "username_invalid": "Benutzername muss nur Buchstaben, Zahlen und Unterstriche enthalten und mindestens 3 Zeichen lang sein",
@@ -56,6 +57,18 @@
       "forgot_password": {
         "forgot_password_verification_code_sent": "Passwort-Reset Verifizierungscode wurde an deine E-Mail-Adresse gesendet"
       }
+    },
+    "customer_form": {
+      "cancellation_created": "Kündigung erfolgreich erstellt",
+      "cancellation_creation_failed": "Fehler beim Erstellen der Kündigung: {error}",
+      "feedback_created": "Feedback erfolgreich erstellt",
+      "feedback_creation_failed": "Fehler beim Erstellen des Feedbacks: {error}",
+      "cancellation_archived": "Kündigung erfolgreich archiviert",
+      "cancellation_archival_failed": "Fehler beim Archivieren der Kündigung: {error}",
+      "feedback_archived": "Feedback erfolgreich archiviert",
+      "feedback_archival_failed": "Fehler beim Archivieren des Feedbacks: {error}",
+      "feedback_retrieval_failed": "Fehler beim Abrufen des Feedbacks: {error}",
+      "cancellation_retrieval_failed": "Fehler beim Abrufen der Kündigungen: {error}"
     },
     "email": {
       "email_sending_failed": "Fehler beim Senden der E-Mail: {error}",

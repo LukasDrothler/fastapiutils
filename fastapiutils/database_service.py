@@ -47,6 +47,34 @@ class DatabaseService:
             logger.error("Environment variable DB_NAME not set, cannot connect to database")
             raise ValueError("DB_NAME environment variable is required")
 
+        logger.info("DatabaseService initialized. Executing requirements.sql...")
+        self.execute_requirements_sql()
+
+
+    def execute_requirements_sql(self):
+        """Execute the requirements.sql file to set up the database schema"""
+        requirements_file = os.path.join(os.path.dirname(__file__), 'requirements.sql')
+        if not os.path.exists(requirements_file):
+            logger.error(f"Requirements file '{requirements_file}' does not exist")
+            raise FileNotFoundError(f"Requirements file '{requirements_file}' not found")
+        
+        with open(requirements_file, 'r') as file:
+            sql_script = file.read()
+        
+        connection = self.create_connection()
+        try:
+            cursor = connection.cursor()
+            for statement in sql_script.split(';'):
+                if statement.strip():
+                    cursor.execute(statement)
+            connection.commit()
+            logger.info("Database schema updated successfully")
+        except mysql.connector.Error as err:
+            logger.error(f"Error executing requirements.sql: {err}")
+            raise
+        finally:
+            cursor.close()
+            connection.close()
 
     def create_connection(self):
         """Creates and returns a connection to the database"""

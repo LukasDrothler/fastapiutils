@@ -81,3 +81,28 @@ class UpdateForgottenPassword(BaseModel):
     email: str
     new_password: str
     verification_code: str
+
+
+class CreateCancellation(BaseModel):
+    email: str
+    name: str
+    last_name: str
+    address: str
+    town: str
+    town_number: str
+    is_unordinary: int=0
+    reason: Optional[str]=None
+    last_invoice_number: str
+    termination_date: datetime
+
+class Cancellation(CreateCancellation):
+    id: int
+    is_archived: int=0
+
+
+class CreateFeedback(BaseModel):
+    email: Optional[str] = None
+    text: str
+
+class Feedback(CreateFeedback):
+    id: Optional[int]=None

@@ -1,17 +1,19 @@
 """
 Dependency injection container for FastAPI Utils
 """
-from typing import Annotated, Optional, Any, Dict, Callable
+from typing import Annotated, Any, Dict, Callable
 from functools import lru_cache
 
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
+
 
 from .models import UserInDB
 from .auth_service import AuthService
 from .database_service import DatabaseService
 from .mail_service import MailService
 from .i18n_service import I18nService
+from .customer_form_service import CustomerFormService
 
 
 class DependencyContainer:
@@ -59,6 +61,11 @@ def create_database_service() -> DatabaseService:
     return DatabaseService()
 
 
+def create_customer_form_service() -> CustomerFormService:
+    """Factory function to create CustomerFormService instance"""
+    return CustomerFormService()
+
+
 def create_mail_service() -> MailService:
     """Factory function to create MailService instance"""
     return MailService()
@@ -101,6 +108,7 @@ def setup_dependencies(
     container.register_factory("database_service", create_database_service)
     container.register_factory("mail_service", create_mail_service)
     container.register_factory("i18n_service", create_i18n_service)
+    container.register_factory("customer_form_service", create_customer_form_service)
     
     # Register auth service factory that depends on other services
     def auth_service_factory():
@@ -138,6 +146,12 @@ def get_i18n_service() -> I18nService:
     """FastAPI dependency function to get I18nService instance"""
     return container.get("i18n_service")
 
+
+@lru_cache()
+def get_customer_form_service() -> CustomerFormService:
+    """FastAPI dependency function to get CustomerFormService instance"""
+    return container.get("customer_form_service")
+
 # Create OAuth2 scheme with correct token URL
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
@@ -160,7 +174,16 @@ def get_current_active_user(
     """Dependency to get current active user"""
     return auth_service.get_current_active_user(current_user, i18n_service=i18n_service)
 
+def get_current_admin_user(
+    current_user: Annotated[UserInDB, Depends(get_current_active_user)],
+    auth_service = Depends(get_auth_service),
+    i18n_service: I18nService = Depends(get_i18n_service)
+) -> UserInDB:
+    """Dependency to get current admin user"""
+    return auth_service.get_current_admin_user(current_user, i18n_service=i18n_service)
+
 
 # Convenience type annotations for use in route handlers
 CurrentUser = Annotated[UserInDB, Depends(get_current_user)]
 CurrentActiveUser = Annotated[UserInDB, Depends(get_current_active_user)]
+CurrentAdminUser = Annotated[UserInDB, Depends(get_current_admin_user)]
