@@ -10,7 +10,11 @@ pip install git+https://github.com/LukasDrothler/fastapiutils
 
 ### Database Setup
 
-You need a MySQL database with the following table structure. Use the provided `fastapiutils/requirements.sql` file:
+You need a MySQL database with the following table structure. **Important**: The database schema is now **automatically initialized** when the `DatabaseService` starts up. The library will execute the `requirements.sql` file to create all necessary tables.
+
+You only need to create an empty MySQL database - all tables will be created automatically when the application starts.
+
+**Tables created automatically:**
 
 ```sql
 CREATE TABLE `user` (
@@ -37,6 +41,33 @@ CREATE TABLE `verification_code` (
   `verified_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`user_id`),
   FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- Customer form tables
+CREATE TABLE `cancellation` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `email` varchar(255) NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `last_name` varchar(100) NOT NULL,
+  `address` varchar(255) NOT NULL,
+  `town` varchar(100) NOT NULL,
+  `town_number` varchar(10) NOT NULL,
+  `is_unordinary` tinyint DEFAULT '0',
+  `reason` varchar(255) DEFAULT NULL,
+  `last_invoice_number` varchar(50) NOT NULL,
+  `termination_date` date NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `is_archived` tinyint DEFAULT '0',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `feedback` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `email` varchar(255) DEFAULT NULL,
+  `text` varchar(500) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `is_archived` tinyint DEFAULT '0',
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 ```
 
@@ -87,7 +118,7 @@ COLOR_CONFIG_FILE=./config/colors.json
 ```python
 from fastapi import FastAPI
 from fastapiutils import setup_dependencies
-from fastapiutils.routers import auth, user
+from fastapiutils.routers import auth, user, customer
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -105,6 +136,7 @@ setup_dependencies(
 # Include built-in routers
 app.include_router(auth.router)
 app.include_router(user.router)
+app.include_router(customer.router)  # Customer forms management
 ```
 
 ### Advanced Configuration
@@ -268,6 +300,166 @@ response = requests.put("http://localhost:8000/user/me/password",
 - `POST /user/forgot-password/change` - Change password using verified reset code
 
 **Note**: Email verification is mandatory. Users must verify their email with a 6-digit code sent via email before they can access protected endpoints.
+
+### Customer Form Endpoints
+
+Customer forms allow you to collect cancellation requests and feedback from users. These endpoints have two access levels:
+
+#### Public Endpoints (no authentication required)
+- `POST /customer/cancellation` - Submit cancellation request
+- `POST /customer/feedback` - Submit feedback
+
+#### Admin-Only Endpoints (require CurrentAdminUser)
+- `GET /customer/cancellations` - Get all cancellation requests (admin only)
+- `GET /customer/feedback` - Get all feedback submissions (admin only)
+- `PATCH /customer/cancellation/{id}/archive` - Archive cancellation request (admin only)
+- `PATCH /customer/feedback/{id}/archive` - Archive feedback submission (admin only)
+
+## Customer Forms Management
+
+### Setting Up Admin Access
+
+To use admin endpoints, you need to create an admin user. First, register a regular user:
+
+```python
+import requests
+
+# Register admin user
+response = requests.post("http://localhost:8000/user/register", json={
+    "username": "admin",
+    "email": "admin@yourcompany.com",
+    "password": "SecureAdminPass123"
+})
+
+# Verify email (check email for 6-digit code)
+response = requests.post("http://localhost:8000/user/verify-email", json={
+    "email": "admin@yourcompany.com",
+    "code": "123456"
+})
+```
+
+Then manually update the database to make them an admin:
+
+```sql
+-- Make user an admin
+UPDATE user SET is_admin = 1 WHERE email = 'admin@yourcompany.com';
+```
+
+### Public Customer Forms
+
+Anyone can submit cancellation requests or feedback without authentication:
+
+```python
+import requests
+
+# Submit cancellation request
+response = requests.post("http://localhost:8000/customer/cancellation", json={
+    "email": "customer@example.com",
+    "name": "John",
+    "last_name": "Doe", 
+    "address": "123 Main St",
+    "town": "Springfield",
+    "town_number": "12345",
+    "is_unordinary": False,
+    "reason": None,  # Optional, only for unordinary cancellations
+    "last_invoice_number": "INV-2024-001",
+    "termination_date": "2024-12-31"
+})
+# Returns: {"id": 1, "msg": "Cancellation request submitted successfully"}
+
+# Submit feedback
+response = requests.post("http://localhost:8000/customer/feedback", json={
+    "email": "customer@example.com",  # Optional
+    "text": "Great service, very satisfied!"
+})
+# Returns: {"id": 1, "msg": "Feedback submitted successfully"}
+```
+
+### Admin Customer Forms Management
+
+Admin users can view and manage all submissions:
+
+```python
+import requests
+
+# Get admin token
+response = requests.post("http://localhost:8000/token", data={
+    "username": "admin",
+    "password": "SecureAdminPass123"
+})
+admin_token = response.json()["access_token"]
+headers = {"Authorization": f"Bearer {admin_token}"}
+
+# Get all cancellation requests
+response = requests.get("http://localhost:8000/customer/cancellations", headers=headers)
+cancellations = response.json()
+# Returns: [{"id": 1, "email": "customer@example.com", "name": "John", ...}, ...]
+
+# Get all feedback submissions
+response = requests.get("http://localhost:8000/customer/feedback", headers=headers)
+feedback_list = response.json()
+# Returns: [{"id": 1, "email": "customer@example.com", "text": "Great service!", ...}, ...]
+
+# Archive a cancellation request (hide from main list)
+response = requests.patch("http://localhost:8000/customer/cancellation/1/archive", headers=headers)
+# Returns: {"msg": "Cancellation archived successfully"}
+
+# Archive feedback
+response = requests.patch("http://localhost:8000/customer/feedback/1/archive", headers=headers)
+# Returns: {"msg": "Feedback archived successfully"}
+```
+
+### Customer Form Models
+
+The package provides Pydantic models for customer forms:
+
+#### Cancellation Models
+- `CreateCancellation` - Request model for submitting cancellation
+  - `email: str` - Customer email
+  - `name: str` - Customer first name
+  - `last_name: str` - Customer last name
+  - `address: str` - Customer address
+  - `town: str` - Customer town
+  - `town_number: str` - Town/postal code
+  - `is_unordinary: bool` - Whether cancellation is unordinary
+  - `reason: Optional[str]` - Reason (required if is_unordinary is True)
+  - `last_invoice_number: str` - Last invoice number
+  - `termination_date: date` - Desired termination date
+
+- `Cancellation` - Response model with additional fields
+  - All CreateCancellation fields plus:
+  - `id: int` - Unique cancellation ID
+  - `created_at: datetime` - Submission timestamp
+  - `is_archived: bool` - Archive status
+
+#### Feedback Models
+- `CreateFeedback` - Request model for submitting feedback
+  - `email: Optional[str]` - Customer email (optional)
+  - `text: Optional[str]` - Feedback text (optional)
+
+- `Feedback` - Response model with additional fields
+  - All CreateFeedback fields plus:
+  - `id: int` - Unique feedback ID
+  - `created_at: datetime` - Submission timestamp
+  - `is_archived: bool` - Archive status
+
+### Using Customer Forms in Your App
+
+Include the customer router in your FastAPI application:
+
+```python
+from fastapi import FastAPI
+from fastapiutils.routers import auth, user, customer
+
+app = FastAPI()
+
+# Include routers
+app.include_router(auth.router)
+app.include_router(user.router)
+app.include_router(customer.router)  # Add customer forms
+```
+
+The customer forms are automatically integrated with your database and follow the same patterns as the user management system.
 
 ## Request/Response Models
 

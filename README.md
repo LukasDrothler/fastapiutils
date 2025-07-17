@@ -6,13 +6,15 @@ A reusable FastAPI utilities package for authentication, user management, and da
 
 - JWT-based authentication with RSA256 encryption
 - User registration with **mandatory email verification** (6-digit codes)
-- Database utilities for MySQL
+- Database utilities for MySQL with **automatic schema initialization**
 - Email verification system with resend functionality
+- **Customer forms management** (cancellations and feedback)
 - Internationalization support (English and German built-in)
 - Environment variable-based configuration
 - Dependency injection architecture
 - Refresh token support
 - Premium user levels
+- **Admin user role management**
 
 ## Installation
 
@@ -26,9 +28,11 @@ pip install git+https://github.com/LukasDrothler/fastapiutils
 
 Create a MySQL database and run the provided SQL file to create the required tables:
 
+**Important**: The database schema is now **automatically initialized** when the `DatabaseService` starts up. The library will execute the `requirements.sql` file to create all necessary tables including:
+
 ```sql
 -- Use the provided requirements.sql file
--- Creates user table and verification_code table for email verification
+-- Creates user table, verification_code table, and customer form tables
 
 CREATE TABLE `user` (
   `id` varchar(36) NOT NULL,
@@ -55,7 +59,36 @@ CREATE TABLE `verification_code` (
   PRIMARY KEY (`user_id`),
   FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- Customer form tables
+CREATE TABLE `cancellation` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `email` varchar(255) NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `last_name` varchar(100) NOT NULL,
+  `address` varchar(255) NOT NULL,
+  `town` varchar(100) NOT NULL,
+  `town_number` varchar(10) NOT NULL,
+  `is_unordinary` tinyint DEFAULT '0',
+  `reason` varchar(255) DEFAULT NULL,
+  `last_invoice_number` varchar(50) NOT NULL,
+  `termination_date` date NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `is_archived` tinyint DEFAULT '0',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `feedback` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `email` varchar(255) DEFAULT NULL,
+  `text` varchar(500) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `is_archived` tinyint DEFAULT '0',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 ```
+
+**Note**: You only need to create an empty MySQL database - all tables will be created automatically when the application starts.
 
 ### Environment Variables
 
@@ -85,7 +118,7 @@ SMTP_PASSWORD=your_app_password
 ```python
 from fastapi import FastAPI
 from fastapiutils import setup_dependencies
-from fastapiutils.routers import auth, user
+from fastapiutils.routers import auth, user, customer
 
 app = FastAPI()
 
@@ -101,6 +134,7 @@ setup_dependencies(
 # Include built-in routers
 app.include_router(auth.router)
 app.include_router(user.router)
+app.include_router(customer.router)  # Customer forms management
 ```
 
 ## Configuration
@@ -165,6 +199,18 @@ Configure the dependency injection container with the following parameters:
 - `POST /user/forgot-password/request` - Request password reset (sends verification code to email)
 - `POST /user/forgot-password/verify` - Verify password reset code
 - `POST /user/forgot-password/change` - Change password using verified reset code
+
+### Customer Forms Router (Admin Only)
+
+#### Cancellation Management
+- `GET /forms/cancellation` - Get all cancellations (admin only)
+- `POST /forms/cancellation` - Submit new cancellation request
+- `PATCH /forms/cancellation/{cancellation_id}/archive` - Archive cancellation (admin only)
+
+#### Feedback Management
+- `GET /forms/feedback` - Get all feedback entries (admin only)
+- `POST /forms/feedback` - Submit new feedback
+- `PATCH /forms/feedback/{feedback_id}/archive` - Archive feedback (admin only)
 
 ## Advanced Configuration
 
@@ -578,10 +624,11 @@ The library is organized into specialized modules for better maintainability:
 ### Core Modules
 
 - **`auth_service.py`** - Authentication and JWT token management
-- **`database_service.py`** - Database connection and query execution
+- **`database_service.py`** - Database connection and query execution with automatic schema initialization
 - **`mail_service.py`** - Email sending with HTML template support
 - **`i18n_service.py`** - Internationalization and translation management
 - **`dependencies.py`** - Dependency injection container and service factories
+- **`customer_form_service.py`** - Customer forms management (cancellations and feedback)
 
 ### Data and Validation Modules
 
@@ -596,6 +643,7 @@ The library is organized into specialized modules for better maintainability:
 - **`routers/`** - FastAPI router modules
   - `auth.py` - Authentication endpoints
   - `user.py` - User management endpoints
+  - `customer.py` - Customer forms management endpoints (admin-only access)
 
 ### Resources
 
@@ -613,18 +661,22 @@ The following dependency functions are available for injection into your route h
 - `get_database_service()` - Returns the DatabaseService instance  
 - `get_mail_service()` - Returns the MailService instance
 - `get_i18n_service()` - Returns the I18nService instance
+- `get_customer_form_service()` - Returns the CustomerFormService instance
 
 ### User Authentication Dependencies
 - `CurrentUser` - Type annotation for getting the current authenticated user
 - `CurrentActiveUser` - Type annotation for getting the current active (non-disabled) user
+- `CurrentAdminUser` - Type annotation for getting the current admin user (requires is_admin=True)
 
 Example using service dependencies:
 
 ```python
 from fastapi import Depends, APIRouter
-from fastapiutils.dependencies import get_database_service, get_i18n_service
+from fastapiutils.dependencies import get_database_service, get_i18n_service, get_customer_form_service
 from fastapiutils.database_service import DatabaseService
 from fastapiutils.i18n_service import I18nService
+from fastapiutils.customer_form_service import CustomerFormService
+from fastapiutils import CurrentAdminUser
 
 router = APIRouter()
 
@@ -637,4 +689,19 @@ async def custom_endpoint(
     result = db_service.execute_query("SELECT * FROM some_table")
     message = i18n_service.t("some.translation.key", "en")
     return {"data": result, "message": message}
+
+@router.get("/admin-only-endpoint")
+async def admin_endpoint(
+    current_admin: CurrentAdminUser,
+    customer_service: CustomerFormService = Depends(get_customer_form_service),
+    db_service: DatabaseService = Depends(get_database_service),
+    i18n_service: I18nService = Depends(get_i18n_service)
+):
+    # Admin-only endpoint example
+    cancellations = customer_service.get_cancellations(
+        db_service=db_service,
+        i18n_service=i18n_service,
+        locale="en"
+    )
+    return {"cancellations": cancellations}
 ```
