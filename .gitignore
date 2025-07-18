@@ -124,3 +124,4 @@ keys/public_key.pem
 email_templates/
 custom_colors.json
 example_locales/
+config/custom_stripe.json
