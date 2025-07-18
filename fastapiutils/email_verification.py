@@ -87,7 +87,7 @@ def verify_user_email_with_code(
     VerificationQueries.mark_verification_code_as_used(user_id=user.id, db_service=db_service)
     VerificationQueries.update_user_email_verified_status(user_id=user.id, verified=True, db_service=db_service)
     
-    return {"msg": i18n_service.t("api.email.email_verified_success", locale)}
+    return {"detail": i18n_service.t("api.email.email_verified_success", locale)}
 
 
 def resend_verification_code(
@@ -121,7 +121,7 @@ def resend_verification_code(
             locale=locale
         )
 
-    return {"msg": i18n_service.t("api.auth.verification.verification_code_resent", locale)}
+    return {"detail": i18n_service.t("api.auth.verification.verification_code_resent", locale)}
 
 
 def send_forgot_password_verification(
@@ -160,7 +160,7 @@ def send_forgot_password_verification(
             detail=i18n_service.t("api.email.email_sending_failed", locale, error=str(e))
         )
 
-    return {"msg": i18n_service.t("api.auth.forgot_password.forgot_password_verification_code_sent", locale)}
+    return {"detail": i18n_service.t("api.auth.forgot_password.forgot_password_verification_code_sent", locale)}
 
 
 def send_email_change_verification(
@@ -214,7 +214,7 @@ def send_email_change_verification(
             detail=i18n_service.t("api.email.email_sending_failed", locale, error=str(e))
         )
     
-    return {"msg": i18n_service.t("api.auth.email_change.email_change_verification_sent", locale)}
+    return {"detail": i18n_service.t("api.auth.email_change.email_change_verification_sent", locale)}
 
 
 def verify_user_email_change(
@@ -244,7 +244,7 @@ def verify_user_email_change(
     VerificationQueries.update_user_email(user_id=user.id, new_email=verify_request.email, db_service=db_service)
     VerificationQueries.mark_verification_code_as_used(user_id=user.id, db_service=db_service)
     
-    return {"msg": i18n_service.t("api.auth.email_change.email_change_verified_successfully", locale)}
+    return {"detail": i18n_service.t("api.auth.email_change.email_change_verified_successfully", locale)}
 
 
 def verify_forgot_password_with_code(
@@ -266,7 +266,7 @@ def verify_forgot_password_with_code(
 
     VerificationQueries.mark_verification_code_as_used(user_id=user.id, db_service=db_service)
     
-    return {"msg": i18n_service.t("api.auth.password_management.forgot_password_verified_successfully", locale)}
+    return {"detail": i18n_service.t("api.auth.password_management.forgot_password_verified_successfully", locale)}
 
 
 def update_forgotten_password_with_code(
@@ -296,4 +296,4 @@ def update_forgotten_password_with_code(
         locale=locale
     )
     
-    return {"msg": i18n_service.t("api.auth.password_management.forgotten_password_updated_successfully", locale)}
+    return {"detail": i18n_service.t("api.auth.password_management.forgotten_password_updated_successfully", locale)}

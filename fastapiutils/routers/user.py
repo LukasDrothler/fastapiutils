@@ -1,12 +1,13 @@
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 
+from ..user_queries import UserQueries
 from ..auth_service import AuthService
 from ..i18n_service import I18nService
 from ..database_service import DatabaseService
 from ..email_verification import resend_verification_code, send_email_change_verification, send_forgot_password_verification, update_forgotten_password_with_code, verify_forgot_password_with_code, verify_user_email_change, verify_user_email_with_code
 from ..mail_service import MailService
-from ..models import CreateUser, SendVerificationRequest, UpdateForgottenPassword, User, VerifyEmailRequest, UpdateUser, UpdatePassword, VerifyEmailRequest
-from ..dependencies import get_auth_service, get_database_service, get_mail_service, get_i18n_service, CurrentActiveUser
+from ..models import CreateUser, SendVerificationRequest, UpdateForgottenPassword, User, UserInDBNoPassword, VerifyEmailRequest, UpdateUser, UpdatePassword, VerifyEmailRequest
+from ..dependencies import CurrentAdminUser, get_auth_service, get_database_service, get_mail_service, get_i18n_service, CurrentActiveUser
 
 import logging
 
@@ -191,6 +192,7 @@ async def forgot_password_verification(
         i18n_service=i18n_service
         )
 
+
 @router.post("/user/forgot-password/change", status_code=200, tags=["users"])
 async def change_forgotten_password(
     update_forgotten_password: UpdateForgottenPassword,
@@ -208,3 +210,59 @@ async def change_forgotten_password(
         db_service=db_service,
         i18n_service=i18n_service
         )
+
+
+@router.post("/user/id-to-name-map", response_model=dict, tags=["users"])
+async def get_user_ids_to_names(
+    user_ids: list[str],
+    request: Request,
+    db_service: DatabaseService = Depends(get_database_service),
+    i18n_service: I18nService = Depends(get_i18n_service),
+):
+    """Get user names by their IDs"""
+    locale = i18n_service.extract_locale_from_header(request.headers.get("accept-language"))
+    return UserQueries.get_user_ids_to_names(
+        user_ids=user_ids,
+        db_service=db_service,
+        i18n_service=i18n_service,
+        locale=locale
+    )
+
+
+@router.get("/user/all", response_model=list[UserInDBNoPassword], tags=["users"])
+async def get_all_users(
+    current_admin: CurrentAdminUser,
+    request: Request,
+    db_service: DatabaseService = Depends(get_database_service),
+    i18n_service: I18nService = Depends(get_i18n_service),
+):
+    """Get all users from the database"""
+    locale = i18n_service.extract_locale_from_header(request.headers.get("accept-language"))
+    if not current_admin.is_admin:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+    return UserQueries.get_all_users(
+        db_service=db_service,
+        i18n_service=i18n_service,
+        locale=locale
+    )
+
+
+@router.delete("/user/{user_id}", status_code=200, tags=["users"])
+async def delete_user(
+    user_id: str,
+    current_admin: CurrentAdminUser,
+    request: Request,
+    db_service: DatabaseService = Depends(get_database_service),
+    i18n_service: I18nService = Depends(get_i18n_service),
+):
+    """Delete a user by ID"""
+    locale = i18n_service.extract_locale_from_header(request.headers.get("accept-language"))
+    if not current_admin.is_admin:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+    
+    return UserQueries.delete_user(
+        user_id=user_id,
+        db_service=db_service,
+        i18n_service=i18n_service,
+        locale=locale
+    )

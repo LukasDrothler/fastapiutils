@@ -3,7 +3,7 @@ Authentication database queries
 """
 from fastapi import HTTPException, status
 from .i18n_service import I18nService
-from .models import UserInDB, UpdateUser
+from .models import UserInDBNoPassword, UserInDB, UpdateUser
 from .database_service import DatabaseService
 
 from datetime import datetime, timezone
@@ -119,3 +119,85 @@ class UserQueries:
     def generate_user_uuid(db_service: DatabaseService) -> Optional[str]:
         """Generate a new UUID for a user"""
         return db_service.generate_uuid("user")
+    
+    @staticmethod
+    def get_user_ids_to_names(
+        user_ids: list[str],
+        db_service: DatabaseService,
+        i18n_service: I18nService,
+        locale: str = "en"
+        ) -> dict[str, str]:
+        """Get user names by their IDs"""
+        if not user_ids:
+            return {}
+        
+        placeholders = ', '.join(['%s'] * len(user_ids))
+        try:
+            results = db_service.execute_query(
+                sql = f"SELECT id, username FROM user WHERE id IN ({placeholders})",
+                params=tuple(user_ids)
+                )
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=i18n_service.t(
+                    "api.auth.user_management.user_ids_to_names_failed",
+                    locale=locale,
+                    error=str(e)
+                    ),
+            )
+
+        return {result['id']: result['username'] for result in results} if results else {}
+
+
+    @staticmethod
+    def get_all_users(
+        db_service: DatabaseService,
+        i18n_service: I18nService,
+        locale: str = "en"
+        ) -> list[UserInDBNoPassword]:
+        """Get all users from the database"""
+        try:
+            results = db_service.execute_query("SELECT * FROM user")
+            return [UserInDBNoPassword(**result) for result in results] if results else []
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=i18n_service.t(
+                    "api.auth.user_management.get_all_users_failed",
+                    locale=locale,
+                    error=str(e)
+                ),
+            )
+        
+    @staticmethod
+    def delete_user(
+        user_id: str,
+        db_service: DatabaseService,
+        i18n_service: I18nService,
+        locale: str = "en"
+        ) -> dict:
+        """Delete a user by ID"""
+        # First check if user exists
+        existing_user = UserQueries.get_user_by_id(user_id, db_service)
+        if not existing_user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=i18n_service.t("api.auth.user_management.user_not_found", locale),
+            )
+        
+        try:
+            db_service.execute_modification_query(
+                sql="DELETE FROM user WHERE id = %s",
+                params=(user_id,)
+            )
+            return {"detail": i18n_service.t("api.auth.user_management.user_deleted_successfully", locale=locale)}
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=i18n_service.t(
+                    "api.auth.user_management.user_deletion_failed",
+                    locale=locale,
+                    error=str(e)
+                ),
+            )

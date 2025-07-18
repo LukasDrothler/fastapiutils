@@ -182,14 +182,14 @@ response = requests.post("http://localhost:8000/user/register", json={
     "email": "john@example.com", 
     "password": "SecurePass123"
 })
-# Returns: {"msg": "User created successfully. Please check your email for a 6-digit verification code."}
+# Returns: {"detail": "User created successfully. Please check your email for a 6-digit verification code."}
 
 # 2. Verify email with 6-digit code (received via email)
 response = requests.post("http://localhost:8000/user/verify-email", json={
     "email": "john@example.com",
     "code": "123456"
 })
-# Returns: {"msg": "Email verified successfully!"}
+# Returns: {"detail": "Email verified successfully!"}
 
 # 3. User can now login and access protected endpoints
 response = requests.post("http://localhost:8000/token", data={
@@ -208,14 +208,14 @@ import requests
 response = requests.post("http://localhost:8000/user/forgot-password/request", json={
     "email": "john@example.com"
 })
-# Returns: {"msg": "Password reset verification code has been sent to your email address"}
+# Returns: {"detail": "Password reset verification code has been sent to your email address"}
 
 # 2. Verify reset code (user receives 6-digit code via email)
 response = requests.post("http://localhost:8000/user/forgot-password/verify", json={
     "email": "john@example.com",
     "code": "654321"
 })
-# Returns: {"msg": "Verification code verified successfully"}
+# Returns: {"detail": "Verification code verified successfully"}
 
 # 3. Change password using verified code
 response = requests.post("http://localhost:8000/user/forgot-password/change", json={
@@ -223,7 +223,7 @@ response = requests.post("http://localhost:8000/user/forgot-password/change", js
     "verification_code": "654321",
     "new_password": "NewSecurePass456"
 })
-# Returns: {"msg": "Password updated successfully"}
+# Returns: {"detail": "Password updated successfully"}
 ```
 
 ### Email Change Workflow
@@ -239,7 +239,7 @@ response = requests.post("http://localhost:8000/user/me/email/change",
     headers=headers,
     json={"email": "newemail@example.com"}
 )
-# Returns: {"msg": "Verification code sent to your new email address. Please check your email."}
+# Returns: {"detail": "Verification code sent to your new email address. Please check your email."}
 
 # 2. Verify new email with 6-digit code (sent to new email address)
 response = requests.post("http://localhost:8000/user/me/email/verify",
@@ -249,7 +249,7 @@ response = requests.post("http://localhost:8000/user/me/email/verify",
         "code": "789012"
     }
 )
-# Returns: {"msg": "Email address updated successfully"}
+# Returns: {"detail": "Email address updated successfully"}
 ```
 
 ### Password Change (Authenticated)
@@ -268,7 +268,7 @@ response = requests.put("http://localhost:8000/user/me/password",
         "new_password": "NewPassword456"
     }
 )
-# Returns: {"msg": "Password updated successfully"}
+# Returns: {"detail": "Password updated successfully"}
 ```
 
 ## API Endpoints
@@ -298,6 +298,11 @@ response = requests.put("http://localhost:8000/user/me/password",
 - `POST /user/forgot-password/request` - Request password reset (sends verification code to email)
 - `POST /user/forgot-password/verify` - Verify password reset code  
 - `POST /user/forgot-password/change` - Change password using verified reset code
+
+#### Admin User Management
+- `GET /user/all` - Get all users (admin only)
+- `DELETE /user/{user_id}` - Delete user by ID (admin only)
+- `POST /user/id-to-name-map` - Get username mapping for user IDs
 
 **Note**: Email verification is mandatory. Users must verify their email with a 6-digit code sent via email before they can access protected endpoints.
 
@@ -365,14 +370,14 @@ response = requests.post("http://localhost:8000/customer/cancellation", json={
     "last_invoice_number": "INV-2024-001",
     "termination_date": "2024-12-31"
 })
-# Returns: {"id": 1, "msg": "Cancellation request submitted successfully"}
+# Returns: {"id": 1, "detail": "Cancellation request submitted successfully"}
 
 # Submit feedback
 response = requests.post("http://localhost:8000/customer/feedback", json={
     "email": "customer@example.com",  # Optional
     "text": "Great service, very satisfied!"
 })
-# Returns: {"id": 1, "msg": "Feedback submitted successfully"}
+# Returns: {"id": 1, "detail": "Feedback submitted successfully"}
 ```
 
 ### Admin Customer Forms Management
@@ -402,11 +407,11 @@ feedback_list = response.json()
 
 # Archive a cancellation request (hide from main list)
 response = requests.patch("http://localhost:8000/customer/cancellation/1/archive", headers=headers)
-# Returns: {"msg": "Cancellation archived successfully"}
+# Returns: {"detail": "Cancellation archived successfully"}
 
 # Archive feedback
 response = requests.patch("http://localhost:8000/customer/feedback/1/archive", headers=headers)
-# Returns: {"msg": "Feedback archived successfully"}
+# Returns: {"detail": "Feedback archived successfully"}
 ```
 
 ### Customer Form Models
@@ -460,6 +465,58 @@ app.include_router(customer.router)  # Add customer forms
 ```
 
 The customer forms are automatically integrated with your database and follow the same patterns as the user management system.
+
+## Admin User Management
+
+Admin users can manage other users in the system. These endpoints require admin privileges:
+
+### Get All Users
+
+```python
+import requests
+
+# Get admin token
+response = requests.post("http://localhost:8000/token", data={
+    "username": "admin",
+    "password": "SecureAdminPass123"
+})
+admin_token = response.json()["access_token"]
+headers = {"Authorization": f"Bearer {admin_token}"}
+
+# Get all users
+response = requests.get("http://localhost:8000/user/all", headers=headers)
+users = response.json()
+# Returns: [{"id": "...", "username": "user1", "email": "user1@example.com", ...}, ...]
+```
+
+### Delete User
+
+```python
+import requests
+
+# Delete a user by ID
+user_id = "8a892fe3-8133-42ed-9f6f-d66258d4c792"
+response = requests.delete(f"http://localhost:8000/user/{user_id}", headers=headers)
+# Returns: {"detail": "User deleted successfully"}
+
+# If user doesn't exist, returns 404:
+# {"detail": "User not found"}
+```
+
+### Get User ID to Name Mapping
+
+```python
+import requests
+
+# Get usernames for a list of user IDs
+user_ids = ["user-id-1", "user-id-2", "user-id-3"]
+response = requests.post("http://localhost:8000/user/id-to-name-map", 
+    json=user_ids,
+    headers=headers
+)
+mapping = response.json()
+# Returns: {"user-id-1": "username1", "user-id-2": "username2", ...}
+```
 
 ## Request/Response Models
 

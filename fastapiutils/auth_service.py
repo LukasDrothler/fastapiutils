@@ -100,6 +100,7 @@ class AuthService:
             "email_verified": user.email_verified,
             "premium_level": user.premium_level,
             "is_admin": user.is_admin,
+            "stripe_customer_id": user.stripe_customer_id,
             "disabled": user.disabled,
             "last_seen": user.last_seen.isoformat() if user.last_seen else None,
             "created_at": user.created_at.isoformat() if user.created_at else None
@@ -167,7 +168,7 @@ class AuthService:
             locale=locale
         )  
 
-        return {"msg": i18n_service.t("api.auth.user_management.user_created_verify_email", locale)}
+        return {"detail": i18n_service.t("api.auth.user_management.user_created_verify_email", locale)}
 
 
     def get_current_user(self, token: str, db_service: DatabaseService, i18n_service: I18nService) -> UserInDB:
@@ -233,10 +234,10 @@ class AuthService:
         fields_updated = UserQueries.update_user_fields(user_id, user_update, db_service=db_service)
         
         if not fields_updated:
-            return {"msg": i18n_service.t("api.auth.user_management.no_changes_made", locale)}
+            return {"detail": i18n_service.t("api.auth.user_management.no_changes_made", locale)}
         
         try:
-            return {"msg": i18n_service.t("api.auth.user_management.user_updated_successfully", locale)}
+            return {"detail": i18n_service.t("api.auth.user_management.user_updated_successfully", locale)}
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -287,7 +288,7 @@ class AuthService:
                 user_id=user_id, 
                 hashed_password=new_hashed_password, 
                 db_service=db_service)
-            return {"msg": i18n_service.t("api.auth.password_management.password_updated_successfully", locale)}
+            return {"detail": i18n_service.t("api.auth.password_management.password_updated_successfully", locale)}
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

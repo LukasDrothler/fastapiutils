@@ -15,11 +15,15 @@ class User(BaseModel):
     disabled: bool = False
 
 
-class UserInDB(User):
+class UserInDBNoPassword(User):
+    """User model for admin views - can be extended in your project"""
+    created_at: Optional[datetime] = None
+    last_seen: Optional[datetime] = None
+
+
+class UserInDB(UserInDBNoPassword):
     """User model with database fields - can be extended in your project"""
     hashed_password: str
-    created_at: Optional[datetime] = None 
-    last_seen: Optional[datetime] = None
 
 
 class CreateUser(BaseModel):

@@ -28,7 +28,11 @@
         "user_not_found": "User not found",
         "no_changes_made": "No changes were made",
         "user_updated_successfully": "User information updated successfully",
-        "user_update_failed": "Failed to update user information: {error}"
+        "user_update_failed": "Failed to update user information: {error}",
+        "user_ids_to_names_failed": "Failed to retrieve usernames: {error}",
+        "user_deleted_successfully": "User deleted successfully",
+        "user_deletion_failed": "Failed to delete user: {error}",
+        "get_all_users_failed": "Failed to retrieve all users: {error}"
       },
       "password_management": {
         "current_password_incorrect": "Current password is incorrect",

@@ -200,6 +200,11 @@ Configure the dependency injection container with the following parameters:
 - `POST /user/forgot-password/verify` - Verify password reset code
 - `POST /user/forgot-password/change` - Change password using verified reset code
 
+#### Admin User Management
+- `GET /user/all` - Get all users (admin only)
+- `DELETE /user/{user_id}` - Delete user by ID (admin only)
+- `POST /user/id-to-name-map` - Get username mapping for user IDs
+
 ### Customer Forms Router (Admin Only)
 
 #### Cancellation Management
@@ -322,14 +327,14 @@ The package provides a secure password reset system using verification codes sen
 response = requests.post("http://localhost:8000/user/forgot-password/request", json={
     "email": "user@example.com"
 })
-# Returns: {"msg": "Password reset verification code has been sent to your email address"}
+# Returns: {"detail": "Password reset verification code has been sent to your email address"}
 
 # 2. Verify reset code (user receives code via email)
 response = requests.post("http://localhost:8000/user/forgot-password/verify", json={
     "email": "user@example.com",
     "code": "123456"
 })
-# Returns: {"msg": "Verification code verified successfully"}
+# Returns: {"detail": "Verification code verified successfully"}
 
 # 3. Change password with verified code
 response = requests.post("http://localhost:8000/user/forgot-password/change", json={
@@ -337,7 +342,7 @@ response = requests.post("http://localhost:8000/user/forgot-password/change", js
     "verification_code": "123456", 
     "new_password": "new_secure_password"
 })
-# Returns: {"msg": "Password updated successfully"}
+# Returns: {"detail": "Password updated successfully"}
 ```
 
 ## Email Change Workflow
@@ -373,7 +378,7 @@ response = requests.post("http://localhost:8000/user/me/email/change",
     headers=headers,
     json={"email": "newemail@example.com"}
 )
-# Returns: {"msg": "Verification code sent to your new email address. Please check your email."}
+# Returns: {"detail": "Verification code sent to your new email address. Please check your email."}
 
 # 2. Verify new email with code (received via email)
 response = requests.post("http://localhost:8000/user/me/email/verify",
@@ -383,7 +388,7 @@ response = requests.post("http://localhost:8000/user/me/email/verify",
         "code": "123456"
     }
 )
-# Returns: {"msg": "Email address updated successfully"}
+# Returns: {"detail": "Email address updated successfully"}
 ```
 
 ### Email Verification Translation
