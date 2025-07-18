@@ -646,7 +646,7 @@ The library is organized into specialized modules for better maintainability:
 
 - **`email_verification.py`** - Email verification workflow functions
 - **`routers/`** - FastAPI router modules
-  - `auth.py` - Authentication endpoints
+  - `token.py` - Token endpoints
   - `user.py` - User management endpoints
   - `customer.py` - Customer forms management endpoints (admin-only access)
 

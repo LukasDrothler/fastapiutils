@@ -2,7 +2,7 @@
 Example usage of the fastapiutils package with dependency injection
 """
 from fastapi import FastAPI
-from fastapiutils.routers import auth, user, customer
+from fastapiutils.routers import token, user, customer
 import os
 from dotenv import load_dotenv
 from fastapiutils import setup_dependencies
@@ -22,7 +22,7 @@ setup_dependencies(
 )
 
 # Include routers (no need to pass auth_service anymore!)
-app.include_router(auth.router)
+app.include_router(token.router)
 app.include_router(user.router)
 app.include_router(customer.router)
 

@@ -14,7 +14,7 @@ from ..dependencies import get_auth_service, get_database_service, get_i18n_serv
 """Create authentication router with dependency injection"""
 router = APIRouter()
 
-@router.post("/token")
+@router.post("/token", response_model=Token, tags=["tokens"])
 async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     request: Request,
@@ -40,7 +40,7 @@ async def login_for_access_token(
     
     return Token(access_token=access_token)
 
-@router.post("/token/refresh")
+@router.post("/token/refresh", response_model=Token, tags=["tokens"])
 async def refresh_access_token(
     refresh_request: RefreshTokenRequest,
     request: Request,

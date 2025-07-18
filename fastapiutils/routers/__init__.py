@@ -1,4 +1,4 @@
 # Router module for fastapiutils
-from . import auth, user
+from . import token, user, customer
 
-__all__ = ["auth", "user"]
+__all__ = ["token", "user", "customer"]

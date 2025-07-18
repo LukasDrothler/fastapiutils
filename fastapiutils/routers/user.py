@@ -17,12 +17,12 @@ logger = logging.getLogger('uvicorn.error')
 router = APIRouter()
 
 
-@router.get("/user/me", response_model=User, tags=["users"])
+@router.get("/user/me", response_model=User, tags=["user-information"])
 async def read_users_me(current_user: CurrentActiveUser):
     return current_user
 
 
-@router.post("/user/register", status_code=201, tags=["users"])
+@router.post("/user/register", status_code=201, tags=["user-registration"])
 async def create_new_user(
     user: CreateUser,
     request: Request,
@@ -41,7 +41,7 @@ async def create_new_user(
         )
 
 
-@router.post("/user/verify-email", status_code=200, tags=["users"])
+@router.post("/user/verify-email", status_code=200, tags=["user-registration"])
 async def verify_user_email(
     verify_request: VerifyEmailRequest,
     request: Request,
@@ -59,7 +59,7 @@ async def verify_user_email(
         )
     
 
-@router.post("/user/resend-verification", status_code=200, tags=["users"])
+@router.post("/user/resend-verification", status_code=200, tags=["user-registration"])
 async def send_new_verification_code(
     send_verification_request: SendVerificationRequest,
     request: Request,
@@ -77,7 +77,7 @@ async def send_new_verification_code(
         )
 
 
-@router.put("/user/me", status_code=200, tags=["users"])
+@router.put("/user/me", status_code=200, tags=["user-information"])
 async def update_user_info(
     user_update: UpdateUser,
     request: Request,
@@ -97,7 +97,7 @@ async def update_user_info(
         )
 
 
-@router.put("/user/me/password", status_code=200, tags=["users"])
+@router.put("/user/me/password", status_code=200, tags=["user-information"])
 async def change_user_password(
     password_update: UpdatePassword,
     request: Request,
@@ -117,7 +117,7 @@ async def change_user_password(
         )
 
 
-@router.post("/user/me/email/change", status_code=200, tags=["users"])
+@router.post("/user/me/email/change", status_code=200, tags=["user-information"])
 async def request_user_email_change(
     send_verification_request: SendVerificationRequest,
     request: Request,
@@ -139,7 +139,7 @@ async def request_user_email_change(
         )
 
 
-@router.post("/user/me/email/verify", status_code=200, tags=["users"])
+@router.post("/user/me/email/verify", status_code=200, tags=["user-information"])
 async def user_email_change_verification(
     verify_request: VerifyEmailRequest,
     request: Request,
@@ -158,7 +158,7 @@ async def user_email_change_verification(
         )
 
 
-@router.post("/user/forgot-password/request", status_code=200, tags=["users"])
+@router.post("/user/forgot-password/request", status_code=200, tags=["user-password-recovery"])
 async def request_forgot_password(
     send_verification_request: SendVerificationRequest,
     request: Request,
@@ -176,7 +176,7 @@ async def request_forgot_password(
         )
 
 
-@router.post("/user/forgot-password/verify", status_code=200, tags=["users"])
+@router.post("/user/forgot-password/verify", status_code=200, tags=["user-password-recovery"])
 async def forgot_password_verification(
     verify_request: VerifyEmailRequest,
     request: Request,
@@ -193,7 +193,7 @@ async def forgot_password_verification(
         )
 
 
-@router.post("/user/forgot-password/change", status_code=200, tags=["users"])
+@router.post("/user/forgot-password/change", status_code=200, tags=["user-password-recovery"])
 async def change_forgotten_password(
     update_forgotten_password: UpdateForgottenPassword,
     request: Request,
@@ -212,7 +212,7 @@ async def change_forgotten_password(
         )
 
 
-@router.post("/user/id-to-name-map", response_model=dict, tags=["users"])
+@router.post("/user/id-to-name-map", response_model=dict, tags=["user-information"])
 async def get_user_ids_to_names(
     user_ids: list[str],
     request: Request,
@@ -229,7 +229,7 @@ async def get_user_ids_to_names(
     )
 
 
-@router.get("/user/all", response_model=list[UserInDBNoPassword], tags=["users"])
+@router.get("/user/all", response_model=list[UserInDBNoPassword], tags=["user-management"])
 async def get_all_users(
     current_admin: CurrentAdminUser,
     request: Request,
@@ -247,7 +247,7 @@ async def get_all_users(
     )
 
 
-@router.delete("/user/{user_id}", status_code=200, tags=["users"])
+@router.delete("/user/{user_id}", status_code=200, tags=["user-management"])
 async def delete_user(
     user_id: str,
     current_admin: CurrentAdminUser,
