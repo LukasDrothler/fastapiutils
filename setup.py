@@ -27,17 +27,17 @@ setup(
     ],
     python_requires=">=3.8",
     install_requires=[
-        "fastapi>=0.115.14",
-        "python-jose[cryptography]>=3.3.0",
-        "passlib[bcrypt]>=1.7.4",
-        "bcrypt>=4.0.0,<5.0.0",
-        "python-multipart>=0.0.20",
-        "mysql-connector-python>=9.3.0",
-        "pydantic>=2.11.7",
-        "PyJWT>=2.10.1",
-        "python-dotenv>=0.19.0",
-        "stripe>=12.3.0",
-        "uvicorn>=0.35.0",
+        "fastapi==0.115.14",
+        "python-jose[cryptography]==3.3.0",
+        "passlib==1.7.4",
+        "bcrypt==4.0.1",
+        "python-multipart==0.0.20",
+        "mysql-connector-python==9.3.0",
+        "pydantic==2.11.7",
+        "PyJWT==2.10.1",
+        "python-dotenv==0.19.0",
+        "stripe==12.3.0",
+        "uvicorn==0.35.0"
     ],
     extras_require={
         "dev": [
