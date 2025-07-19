@@ -14,6 +14,7 @@ from .database_service import DatabaseService
 from .mail_service import MailService
 from .i18n_service import I18nService
 from .customer_form_service import CustomerFormService
+from .stripe_service import StripeService
 
 
 class DependencyContainer:
@@ -66,6 +67,11 @@ def create_customer_form_service() -> CustomerFormService:
     return CustomerFormService()
 
 
+def create_stripe_service() -> 'StripeService':
+    """Factory function to create StripeService instance"""
+    return StripeService()
+
+
 def create_mail_service() -> MailService:
     """Factory function to create MailService instance"""
     return MailService()
@@ -84,7 +90,6 @@ def create_auth_service(
     public_key_filename: str = "public_key.pem"
 ):
     """Factory function to create AuthService instance without dependencies"""
-    from .auth_service import AuthService
     return AuthService(
         access_token_expire_minutes=access_token_expire_minutes,
         refresh_token_expire_days=refresh_token_expire_days,
@@ -109,6 +114,7 @@ def setup_dependencies(
     container.register_factory("mail_service", create_mail_service)
     container.register_factory("i18n_service", create_i18n_service)
     container.register_factory("customer_form_service", create_customer_form_service)
+    container.register_factory("stripe_service", create_stripe_service)
     
     # Register auth service factory that depends on other services
     def auth_service_factory():
@@ -151,6 +157,13 @@ def get_i18n_service() -> I18nService:
 def get_customer_form_service() -> CustomerFormService:
     """FastAPI dependency function to get CustomerFormService instance"""
     return container.get("customer_form_service")
+
+
+@lru_cache()
+def get_stripe_service() -> 'StripeService':
+    """FastAPI dependency function to get StripeService instance"""
+    return container.get("stripe_service")
+
 
 # Create OAuth2 scheme with correct token URL
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")

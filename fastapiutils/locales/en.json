@@ -6,6 +6,18 @@
     "logo_url": "https://finyed.com/logo-no-background.png"
   },
   "api": {
+    "stripe": {
+      "webhook": {
+        "invalid_event": "Invalid event from Stripe: {error}",
+        "event_handled_successfully": "Event handled successfully",
+        "event_not_handled": "Event could not be processed: {error}",
+        "service_not_active": "Stripe service is not active. Please contact support.",
+        "user_already_has_premium": "User with id '{user_id}' already has premium access with level {new_premium_level}.",
+        "premium_level_updated": "User with id '{user_id}' has been updated to premium level {new_premium_level}.",
+        "premium_level_update_failed": "Failed to update premium level for user with id '{user_id}': {error}",
+        "invalid_product_id": "Invalid product ID: {product_id}"
+      }
+    },
     "auth": {
       "credentials": {
         "incorrect_credentials": "Incorrect username or password",

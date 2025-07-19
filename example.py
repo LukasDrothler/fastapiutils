@@ -2,7 +2,7 @@
 Example usage of the fastapiutils package with dependency injection
 """
 from fastapi import FastAPI
-from fastapiutils.routers import token, user, customer
+from fastapiutils.routers import token, user, customer, stripe
 import os
 from dotenv import load_dotenv
 from fastapiutils import setup_dependencies
@@ -25,6 +25,7 @@ setup_dependencies(
 app.include_router(token.router)
 app.include_router(user.router)
 app.include_router(customer.router)
+app.include_router(stripe.router)
 
 if __name__ == "__main__":
     import uvicorn

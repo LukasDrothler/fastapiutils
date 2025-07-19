@@ -201,3 +201,36 @@ class UserQueries:
                     error=str(e)
                 ),
             )
+
+
+    @staticmethod
+    def update_user_premium_level(
+        user_id: str,
+        new_premium_level: int,
+        stripe_customer_id: str,
+        db_service: DatabaseService,
+        i18n_service: I18nService,
+        locale: str = "en"
+        ) -> dict:
+        """Update user's premium level"""
+        try:
+            db_service.execute_modification_query(
+                sql="UPDATE user SET premium_level = %s, stripe_customer_id = %s WHERE id = %s",
+                params=(new_premium_level, stripe_customer_id, user_id)
+            )
+            return {"detail": i18n_service.t(
+                key="api.auth.user_management.premium_level_updated", 
+                locale=locale,
+                user_id=user_id, 
+                new_premium_level=new_premium_level
+            )}
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=i18n_service.t(
+                    key="api.auth.user_management.premium_level_update_failed",
+                    locale=locale,
+                    user_id=user_id,
+                    error=str(e)
+                ),
+            )
