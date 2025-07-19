@@ -131,10 +131,14 @@ class StripeService:
                 db_service=db_service,
                 i18n_service=i18n_service,
                 locale=locale
-            )
+                )
         elif event['type'] == 'customer.subscription.deleted':
-            logger.info("Customer subscription deleted")
-            return {"detail": i18n_service.t("api.stripe.webhook.event_handled_successfully", locale)}
+            return self._handle_subscription_deleted(
+                data_id=_data_id,
+                db_service=db_service,
+                i18n_service=i18n_service,
+                locale=locale
+                )
         else:
             return {"detail": i18n_service.t("api.stripe.webhook.event_not_handled", locale, error=event['type'])}
         
@@ -146,7 +150,7 @@ class StripeService:
             i18n_service: I18nService,
             locale: str = "en"
             ):
-        ## Get session data and check if it is valid
+        """Handle checkout session completed event"""
         session_data = stripe.checkout.Session.retrieve(
             data_id,
             expand=["line_items"],
@@ -199,7 +203,6 @@ class StripeService:
                 )
             )
 
-
         user = UserQueries.get_user_by_id(user_id=user_id, db_service=db_service)
         if user is None:
             ## This case can only occur, if someone opens the paymentlink without being registered
@@ -235,5 +238,60 @@ class StripeService:
 
         # TODO: Send email to user about successful premium upgrade
         return msg
+    
 
+    def _handle_subscription_deleted(
+            self, 
+            data_id: str,
+            db_service: DatabaseService,
+            i18n_service: I18nService,
+            locale: str = "en"
+            ):
+        """Handle subscription deletion event"""
+        subscription_data = stripe.Subscription.retrieve(data_id, api_key=self.secret_key)
+        try:
+            product_id = subscription_data["items"]["data"][0]["price"]["product"]
+            stripe_customer_id = subscription_data["customer"]
+        except KeyError:
+            logger.error(f"Invalid subscription data for subscription '{data_id}'")
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=i18n_service.t("api.stripe.webhook.invalid_event", locale)
+            )
         
+        if product_id not in self.product_id_map:
+            logger.error(f"Invalid product ID: {product_id}")
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=i18n_service.t("api.stripe.webhook.invalid_product_id", locale)
+            )
+
+        if stripe_customer_id is None:
+            logger.error(f"Stripe customer ID not found in subscription data for subscription '{data_id}'")
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=i18n_service.t("api.stripe.webhook.invalid_event", locale)
+            )
+
+        user = UserQueries.get_user_by_stripe_customer_id(
+            stripe_customer_id=stripe_customer_id,
+            db_service=db_service
+            )
+        if user is None:
+            logger.error(f"No user found with stripe_customer_id '{stripe_customer_id}'")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=i18n_service.t("api.auth.user_management.user_not_found", locale)
+            )
+ 
+        msg = UserQueries.update_user_premium_level(
+            user_id=user.id,
+            new_premium_level=0,
+            stripe_customer_id=user.stripe_customer_id,
+            db_service=db_service,
+            i18n_service=i18n_service,
+            locale=locale
+        )
+
+        # TODO: Send email to user about successful premium downgrade
+        return msg

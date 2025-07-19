@@ -58,6 +58,20 @@ class UserQueries:
         return None
     
     @staticmethod
+    def get_user_by_stripe_customer_id(
+        stripe_customer_id: str, 
+        db_service: DatabaseService
+        ) -> Optional[UserInDB]:
+        """Get user by Stripe customer ID"""
+        result = db_service.execute_single_query(
+            "SELECT * FROM user WHERE stripe_customer_id = %s", 
+            (stripe_customer_id,)
+        )
+        if result:
+            return UserInDB(**result)
+        return None
+    
+    @staticmethod
     def create_user(username: str,
                     email: str,
                     hashed_password: str,
@@ -207,17 +221,23 @@ class UserQueries:
     def update_user_premium_level(
         user_id: str,
         new_premium_level: int,
-        stripe_customer_id: str,
         db_service: DatabaseService,
         i18n_service: I18nService,
-        locale: str = "en"
+        locale: str = "en",
+        stripe_customer_id: Optional[str] = None
         ) -> dict:
         """Update user's premium level"""
         try:
-            db_service.execute_modification_query(
-                sql="UPDATE user SET premium_level = %s, stripe_customer_id = %s WHERE id = %s",
-                params=(new_premium_level, stripe_customer_id, user_id)
-            )
+            if stripe_customer_id is not None:
+                db_service.execute_modification_query(
+                    sql="UPDATE user SET premium_level = %s, stripe_customer_id = %s WHERE id = %s",
+                    params=(new_premium_level, stripe_customer_id, user_id)
+                )
+            else:
+                db_service.execute_modification_query(
+                    sql="UPDATE user SET premium_level = %s WHERE id = %s",
+                    params=(new_premium_level, user_id)
+                )
             return {"detail": i18n_service.t(
                 key="api.auth.user_management.premium_level_updated", 
                 locale=locale,
