@@ -3,6 +3,8 @@ import logging
 import os
 from typing import Dict, Any, Optional
 
+from fastapi import Request
+
 logger = logging.getLogger('uvicorn.error')
 
 def _deep_merge_dicts(base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, Any]:
@@ -134,8 +136,9 @@ class I18nService:
         return self.get_translation(key, locale, **kwargs)
 
 
-    def extract_locale_from_header(self, accept_language: Optional[str]) -> str:
-        """Extract locale from Accept-Language header"""
+    def extract_locale_from_request(self, request: Request) -> str:
+        """Extract locale from accept-language header"""
+        accept_language = request.headers.get("accept-language")
         if not accept_language:
             return "en"
         

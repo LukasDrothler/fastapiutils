@@ -31,7 +31,7 @@ async def create_new_user(
     mail_service: MailService = Depends(get_mail_service),
     i18n_service: I18nService = Depends(get_i18n_service),
 ):
-    locale = i18n_service.extract_locale_from_header(request.headers.get("accept-language"))
+    locale = i18n_service.extract_locale_from_request(request)
     return auth_service.register_new_user(
         user=user,
         locale=locale,
@@ -49,7 +49,7 @@ async def verify_user_email(
     i18n_service: I18nService = Depends(get_i18n_service),
     mail_service: MailService = Depends(get_mail_service),
 ):
-    locale = i18n_service.extract_locale_from_header(request.headers.get("accept-language"))
+    locale = i18n_service.extract_locale_from_request(request)
     return verify_user_email_with_code(
         verify_request=verify_request,
         locale=locale,
@@ -67,7 +67,7 @@ async def send_new_verification_code(
     i18n_service: I18nService = Depends(get_i18n_service),
     mail_service: MailService = Depends(get_mail_service),
 ):
-    locale = i18n_service.extract_locale_from_header(request.headers.get("accept-language"))
+    locale = i18n_service.extract_locale_from_request(request)
     return resend_verification_code(
         email=send_verification_request.email,
         locale=locale,
@@ -87,7 +87,7 @@ async def update_user_info(
     i18n_service: I18nService = Depends(get_i18n_service),
 ):
     """Update current user's information"""
-    locale = i18n_service.extract_locale_from_header(request.headers.get("accept-language"))
+    locale = i18n_service.extract_locale_from_request(request)
     return auth_service.update_user(
         user_id=current_user.id, 
         user_update=user_update,
@@ -107,7 +107,7 @@ async def change_user_password(
     i18n_service: I18nService = Depends(get_i18n_service),
 ):
     """Update current user's password"""
-    locale = i18n_service.extract_locale_from_header(request.headers.get("accept-language"))
+    locale = i18n_service.extract_locale_from_request(request)
     return auth_service.update_password(
         user_id=current_user.id,
         password_update=password_update,
@@ -127,7 +127,7 @@ async def request_user_email_change(
     i18n_service: I18nService = Depends(get_i18n_service),
 ):
     """Initiate email change process - sends verification code to new email"""
-    locale = i18n_service.extract_locale_from_header(request.headers.get("accept-language"))
+    locale = i18n_service.extract_locale_from_request(request)
 
     return send_email_change_verification(
         user=current_user,
@@ -148,7 +148,7 @@ async def user_email_change_verification(
     i18n_service: I18nService = Depends(get_i18n_service),
 ):
     """Verify email change with 6-digit code and update user's email"""
-    locale = i18n_service.extract_locale_from_header(request.headers.get("accept-language"))
+    locale = i18n_service.extract_locale_from_request(request)
     return verify_user_email_change(
         user=current_user,
         verify_request=verify_request,
@@ -166,7 +166,7 @@ async def request_forgot_password(
     i18n_service: I18nService = Depends(get_i18n_service),
     mail_service: MailService = Depends(get_mail_service),
 ):
-    locale = i18n_service.extract_locale_from_header(request.headers.get("accept-language"))
+    locale = i18n_service.extract_locale_from_request(request)
     return send_forgot_password_verification(
         email=send_verification_request.email,
         locale=locale,
@@ -184,7 +184,7 @@ async def forgot_password_verification(
     i18n_service: I18nService = Depends(get_i18n_service),
 ):
     """Verify email change with 6-digit code and update user's email"""
-    locale = i18n_service.extract_locale_from_header(request.headers.get("accept-language"))
+    locale = i18n_service.extract_locale_from_request(request)
     return verify_forgot_password_with_code(
         verify_request=verify_request,
         locale=locale,
@@ -202,7 +202,7 @@ async def change_forgotten_password(
     i18n_service: I18nService = Depends(get_i18n_service),
 ):
     """Verify email change with 6-digit code and update user's email"""
-    locale = i18n_service.extract_locale_from_header(request.headers.get("accept-language"))
+    locale = i18n_service.extract_locale_from_request(request)
     return update_forgotten_password_with_code(
         update_forgotten_password=update_forgotten_password,
         locale=locale,
@@ -220,7 +220,7 @@ async def get_user_ids_to_names(
     i18n_service: I18nService = Depends(get_i18n_service),
 ):
     """Get user names by their IDs"""
-    locale = i18n_service.extract_locale_from_header(request.headers.get("accept-language"))
+    locale = i18n_service.extract_locale_from_request(request)
     return UserQueries.get_user_ids_to_names(
         user_ids=user_ids,
         db_service=db_service,
@@ -237,7 +237,7 @@ async def get_all_users(
     i18n_service: I18nService = Depends(get_i18n_service),
 ):
     """Get all users from the database"""
-    locale = i18n_service.extract_locale_from_header(request.headers.get("accept-language"))
+    locale = i18n_service.extract_locale_from_request(request)
     if not current_admin.is_admin:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
     return UserQueries.get_all_users(
@@ -256,7 +256,7 @@ async def delete_user(
     i18n_service: I18nService = Depends(get_i18n_service),
 ):
     """Delete a user by ID"""
-    locale = i18n_service.extract_locale_from_header(request.headers.get("accept-language"))
+    locale = i18n_service.extract_locale_from_request(request)
     if not current_admin.is_admin:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
     

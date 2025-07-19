@@ -23,7 +23,7 @@ async def login_for_access_token(
     i18n_service: I18nService = Depends(get_i18n_service),
     stay_logged_in: bool = Query(False, description="Whether to issue a refresh token")
 ) -> Token:
-    locale = i18n_service.extract_locale_from_header(request.headers.get("accept-language"))
+    locale = i18n_service.extract_locale_from_request(request)
     
     user = auth_service.authenticate_user(form_data.username, form_data.password, db_service=db_service)
     if not user:
@@ -48,7 +48,7 @@ async def refresh_access_token(
     db_service: DatabaseService = Depends(get_database_service),
     i18n_service: I18nService = Depends(get_i18n_service),
 ) -> Token:
-    locale = i18n_service.extract_locale_from_header(request.headers.get("accept-language"))
+    locale = i18n_service.extract_locale_from_request(request)
     
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,

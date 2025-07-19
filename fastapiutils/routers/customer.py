@@ -22,7 +22,7 @@ def get_cancellation(
     i18n_service: I18nService = Depends(get_i18n_service),
     ):
     """Get all cancellations"""
-    locale = i18n_service.extract_locale_from_header(request.headers.get("accept-language"))
+    locale = i18n_service.extract_locale_from_request(request)
     if not current_admin.is_admin:
         raise HTTPException(status_code=403)
     return customer_service.get_cancellations(
@@ -41,7 +41,7 @@ def insert_cancellation(
     i18n_service: I18nService = Depends(get_i18n_service)
     ):
     """Insert a new cancellation"""
-    locale = i18n_service.extract_locale_from_header(request.headers.get("accept-language"))
+    locale = i18n_service.extract_locale_from_request(request)
     return customer_service.create_cancellation(
         cancellation_data=cancellation_data,
         db_service=db_service,
@@ -60,7 +60,7 @@ def archive_cancellation(
     cancellation_id: int = Path(description="The ID of the cancellation to archive")
     ):
     """Archive a cancellation by its ID"""
-    locale = i18n_service.extract_locale_from_header(request.headers.get("accept-language"))
+    locale = i18n_service.extract_locale_from_request(request)
     if not current_admin.is_admin:
         raise HTTPException(status_code=403)
     return customer_service.archive_cancellation(
@@ -80,7 +80,7 @@ def get_feedback(
     i18n_service: I18nService = Depends(get_i18n_service)
     ):
     """Get all feedback"""
-    locale = i18n_service.extract_locale_from_header(request.headers.get("accept-language"))
+    locale = i18n_service.extract_locale_from_request(request)
     if not current_admin.is_admin:
         raise HTTPException(status_code=403)
     return customer_service.get_feedbacks(
@@ -99,7 +99,7 @@ def insert_feedback(
     i18n_service: I18nService = Depends(get_i18n_service)
     ):
     """Insert a new feedback"""
-    locale = i18n_service.extract_locale_from_header(request.headers.get("accept-language"))
+    locale = i18n_service.extract_locale_from_request(request)
     return customer_service.create_feedback(
         feedback_data=feedback_data,
         db_service=db_service,
@@ -117,7 +117,7 @@ def archive_feedback(
     feedback_id: int = Path(description="The ID of the feedback to archive")
     ):
     """Archive a feedback by its ID"""
-    locale = i18n_service.extract_locale_from_header(request.headers.get("accept-language"))
+    locale = i18n_service.extract_locale_from_request(request)
     if not current_admin.is_admin:
         raise HTTPException(status_code=403)
     return customer_service.archive_feedback(

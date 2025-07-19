@@ -444,7 +444,7 @@ async def get_pet(
     i18n_service: I18nService = Depends(get_i18n_service),
 ):
     """Usage of the dependency injection pattern"""
-    locale = i18n_service.extract_locale_from_header(request.headers.get("accept-language"))
+    locale = i18n_service.extract_locale_from_request(request)
     
     # Validate pet_id length (example with parameter interpolation)
     if len(pet_id) > 36:
@@ -487,7 +487,7 @@ async def my_route(
     i18n_service: I18nService = Depends(get_i18n_service)
 ):
     # Extract locale from request headers
-    locale = i18n_service.extract_locale_from_header(request.headers.get("accept-language"))
+    locale = i18n_service.extract_locale_from_request(request)
     
     # Use parameter interpolation in translations
     message = i18n_service.t("pet.name_too_long", locale, max_length=50, current_length=75)
