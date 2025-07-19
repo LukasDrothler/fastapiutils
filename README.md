@@ -9,6 +9,7 @@ A reusable FastAPI utilities package for authentication, user management, and da
 - Database utilities for MySQL with **automatic schema initialization**
 - Email verification system with resend functionality
 - **Customer forms management** (cancellations and feedback)
+- **Stripe payment integration** with webhook handling and customer portal
 - Internationalization support (English and German built-in)
 - Environment variable-based configuration
 - Dependency injection architecture
@@ -111,6 +112,11 @@ SMTP_SERVER=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USER=your_email@gmail.com
 SMTP_PASSWORD=your_app_password
+
+# Stripe configuration (OPTIONAL - for payment integration)
+STRIPE_SECRET_API_KEY=sk_test_your_stripe_secret_key
+STRIPE_SIGNING_SECRET=whsec_your_webhook_signing_secret
+STRIPE_CONFIG_FILE=./config/custom_stripe.json
 ```
 
 ## Quick Start
@@ -118,7 +124,7 @@ SMTP_PASSWORD=your_app_password
 ```python
 from fastapi import FastAPI
 from fastapiutils import setup_dependencies
-from fastapiutils.routers import auth, user, customer
+from fastapiutils.routers import auth, user, customer, stripe
 
 app = FastAPI()
 
@@ -135,6 +141,7 @@ setup_dependencies(
 app.include_router(auth.router)
 app.include_router(user.router)
 app.include_router(customer.router)  # Customer forms management
+app.include_router(stripe.router)    # Stripe payment integration
 ```
 
 ## Configuration
@@ -169,6 +176,9 @@ Configure the dependency injection container with the following parameters:
 - `LOCALES_DIR`: Path to custom translation files directory
 - `COLOR_CONFIG_FILE`: Path to custom color configuration for email templates
 - `ENVIRONMENT`: Set to "development" to disable some security features
+- `STRIPE_SECRET_API_KEY`: Stripe secret API key for payment processing
+- `STRIPE_SIGNING_SECRET`: Stripe webhook signing secret for webhook verification
+- `STRIPE_CONFIG_FILE`: Path to Stripe product configuration JSON file
 
 **Note**: Email configuration is now **required** as the system uses mandatory email verification with 6-digit codes sent to users upon registration.
 
@@ -216,6 +226,14 @@ Configure the dependency injection container with the following parameters:
 - `GET /forms/feedback` - Get all feedback entries (admin only)
 - `POST /forms/feedback` - Submit new feedback
 - `PATCH /forms/feedback/{feedback_id}/archive` - Archive feedback (admin only)
+
+### Stripe Router
+
+#### Webhook Handling
+- `POST /stripe-webhook` - Handle Stripe webhook events (checkout.session.completed, customer.subscription.deleted)
+
+#### Customer Portal
+- `POST /create-customer-portal-session` - Create Stripe customer portal session for subscription management (authenticated users only)
 
 ## Advanced Configuration
 
@@ -298,6 +316,186 @@ All templates support these variables:
 - `{contact_email}` - Support email address
 - `{logo_url}` - Logo URL for branding
 - Plus all localized content from translation files
+
+## Stripe Payment Integration
+
+The library includes a comprehensive Stripe integration for handling payments, subscriptions, and premium user management.
+
+### Stripe Service Features
+
+- **Webhook Event Handling**: Automatically processes Stripe webhook events
+- **Premium Level Management**: Maps Stripe products to user premium levels
+- **Customer Portal Integration**: Provides access to Stripe's customer portal
+- **Subscription Management**: Handles subscription creation and cancellation
+- **Secure Configuration**: Environment-based configuration with validation
+- **Internationalization**: Localized error messages and responses
+
+### Stripe Configuration
+
+Set up the following environment variables for Stripe integration:
+
+```bash
+# Stripe API Configuration
+STRIPE_SECRET_API_KEY=sk_test_your_stripe_secret_key
+STRIPE_SIGNING_SECRET=whsec_your_webhook_signing_secret  
+STRIPE_CONFIG_FILE=./config/custom_stripe.json
+```
+
+Create a Stripe configuration file (`custom_stripe.json`) to map your Stripe product IDs to premium levels:
+
+```json
+{
+  "product_id_to_premium_level": {
+    "prod_ABC123": 1,
+    "prod_DEF456": 2,
+    "prod_GHI789": 3
+  }
+}
+```
+
+### Supported Webhook Events
+
+The Stripe service automatically handles these webhook events:
+
+#### checkout.session.completed
+- Triggered when a customer starts a subscription
+- Updates user's premium level based on purchased product
+- Associates Stripe customer ID with user account
+- Validates session data and product mapping
+
+#### customer.subscription.deleted
+- Triggered when a subscription is cancelled
+- Resets user's premium level to 0 (free tier)
+- Maintains Stripe customer ID for future purchases
+
+### Stripe API Endpoints
+
+#### Webhook Endpoint
+```python
+POST /stripe-webhook
+```
+- Handles incoming Stripe webhook events
+- Validates webhook signature for security
+- Processes payment and subscription events
+- Returns localized success/error messages
+
+**Headers:**
+- `Stripe-Signature`: Webhook signature (automatically provided by Stripe)
+
+**Response Examples:**
+```json
+// Success
+{
+  "detail": "User with id 'user-123' has been updated to premium level 1."
+}
+
+// Error
+{
+  "detail": "Invalid product ID: prod_unknown"
+}
+```
+
+#### Customer Portal Session
+```python
+POST /create-customer-portal-session
+```
+- Creates a Stripe customer portal session
+- Allows users to manage their subscriptions
+- Requires user authentication
+- Returns portal URL for redirection
+
+**Authentication:** Bearer token required
+
+**Response:**
+```json
+{
+  "id": "bps_1234567890",
+  "object": "billing_portal.session",
+  "url": "https://billing.stripe.com/session/bps_1234567890"
+}
+```
+
+### Stripe Service Usage
+
+The Stripe service is automatically available through dependency injection:
+
+```python
+from fastapi import APIRouter, Depends, Request
+from fastapiutils.dependencies import get_stripe_service, get_i18n_service, get_database_service
+from fastapiutils.stripe_service import StripeService
+from fastapiutils.i18n_service import I18nService
+from fastapiutils.database_service import DatabaseService
+from fastapiutils import CurrentActiveUser
+
+router = APIRouter()
+
+@router.post("/custom-payment-endpoint")
+async def handle_payment(
+    request: Request,
+    current_user: CurrentActiveUser,
+    stripe_service: StripeService = Depends(get_stripe_service),
+    i18n_service: I18nService = Depends(get_i18n_service),
+    db_service: DatabaseService = Depends(get_database_service)
+):
+    locale = i18n_service.extract_locale_from_request(request)
+    
+    # Check if Stripe service is active
+    if not stripe_service.is_active:
+        raise HTTPException(
+            status_code=503,
+            detail=i18n_service.t("api.stripe.webhook.service_not_active", locale)
+        )
+    
+    # Create customer portal session
+    portal_session = await stripe_service.create_customer_portal_session(
+        customer_id=current_user.stripe_customer_id,
+        i18n_service=i18n_service,
+        locale=locale
+    )
+    
+    return {"portal_url": portal_session.url}
+```
+
+### Premium Level Management
+
+The Stripe integration automatically manages user premium levels:
+
+```python
+# Premium levels are mapped in your Stripe configuration
+{
+  "product_id_to_premium_level": {
+    "prod_basic": 1,      # Basic subscription
+    "prod_pro": 2,        # Pro subscription  
+    "prod_enterprise": 3  # Enterprise subscription
+  }
+}
+```
+
+When a user purchases a subscription:
+1. Webhook receives `checkout.session.completed` event
+2. System extracts product ID from session data
+3. Maps product ID to premium level using configuration
+4. Updates user's `premium_level` and `stripe_customer_id` in database
+5. User gains access to premium features
+
+### Error Handling and Validation
+
+The Stripe service includes comprehensive error handling:
+
+- **Configuration Validation**: Checks for required environment variables
+- **Webhook Signature Verification**: Validates webhook authenticity
+- **Product ID Validation**: Ensures products exist in configuration
+- **User Validation**: Verifies user exists and is valid
+- **Database Transaction Safety**: Handles database errors gracefully
+- **Localized Error Messages**: Returns translated error messages
+
+### Security Features
+
+- **Webhook Signature Verification**: All webhooks are cryptographically verified
+- **Environment Variable Configuration**: Sensitive keys stored securely
+- **User Authentication**: Customer portal requires valid authentication
+- **Database Integrity**: Foreign key constraints prevent orphaned records
+- **Input Validation**: All Stripe data is validated before processing
 
 ## Password Reset Workflow
 
@@ -614,6 +812,11 @@ DEFAULT_LOCALE=en
 LOCALES_DIR=./custom_locales
 COLOR_CONFIG_FILE=./config/colors.json
 ENVIRONMENT=development
+
+# Stripe configuration (optional)
+STRIPE_SECRET_API_KEY=sk_test_your_stripe_secret_key
+STRIPE_SIGNING_SECRET=whsec_your_webhook_signing_secret
+STRIPE_CONFIG_FILE=./config/custom_stripe.json
 ```
 
 ```python
@@ -634,6 +837,7 @@ The library is organized into specialized modules for better maintainability:
 - **`i18n_service.py`** - Internationalization and translation management
 - **`dependencies.py`** - Dependency injection container and service factories
 - **`customer_form_service.py`** - Customer forms management (cancellations and feedback)
+- **`stripe_service.py`** - Stripe payment integration and webhook handling
 
 ### Data and Validation Modules
 
@@ -649,6 +853,7 @@ The library is organized into specialized modules for better maintainability:
   - `token.py` - Token endpoints
   - `user.py` - User management endpoints
   - `customer.py` - Customer forms management endpoints (admin-only access)
+  - `stripe.py` - Stripe payment and webhook endpoints
 
 ### Resources
 
@@ -667,6 +872,7 @@ The following dependency functions are available for injection into your route h
 - `get_mail_service()` - Returns the MailService instance
 - `get_i18n_service()` - Returns the I18nService instance
 - `get_customer_form_service()` - Returns the CustomerFormService instance
+- `get_stripe_service()` - Returns the StripeService instance
 
 ### User Authentication Dependencies
 - `CurrentUser` - Type annotation for getting the current authenticated user

@@ -105,6 +105,11 @@ SMTP_PORT=587
 SMTP_USER=your_email@gmail.com
 SMTP_PASSWORD=your_app_password
 
+# Stripe configuration (OPTIONAL for payment integration)
+STRIPE_SECRET_API_KEY=sk_test_your_stripe_secret_key
+STRIPE_SIGNING_SECRET=whsec_your_webhook_signing_secret
+STRIPE_CONFIG_FILE=./config/custom_stripe.json
+
 # Optional customization
 DEFAULT_LOCALE=en
 LOCALES_DIR=./custom_locales
@@ -118,7 +123,7 @@ COLOR_CONFIG_FILE=./config/colors.json
 ```python
 from fastapi import FastAPI
 from fastapiutils import setup_dependencies
-from fastapiutils.routers import auth, user, customer
+from fastapiutils.routers import auth, user, customer, stripe
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -137,6 +142,7 @@ setup_dependencies(
 app.include_router(auth.router)
 app.include_router(user.router)
 app.include_router(customer.router)  # Customer forms management
+app.include_router(stripe.router)    # Stripe payment integration
 ```
 
 ### Advanced Configuration
@@ -320,6 +326,14 @@ Customer forms allow you to collect cancellation requests and feedback from user
 - `PATCH /customer/cancellation/{id}/archive` - Archive cancellation request (admin only)
 - `PATCH /customer/feedback/{id}/archive` - Archive feedback submission (admin only)
 
+### Stripe Endpoints
+
+#### Webhook Handling
+- `POST /stripe-webhook` - Handle Stripe webhook events (checkout.session.completed, customer.subscription.deleted)
+
+#### Customer Portal
+- `POST /create-customer-portal-session` - Create Stripe customer portal session for subscription management (authenticated users only)
+
 ## Customer Forms Management
 
 ### Setting Up Admin Access
@@ -465,6 +479,273 @@ app.include_router(customer.router)  # Add customer forms
 ```
 
 The customer forms are automatically integrated with your database and follow the same patterns as the user management system.
+
+## Stripe Payment Integration
+
+The FastAPI Utils package includes comprehensive Stripe integration for handling payments, subscriptions, and premium user management. The Stripe service automatically handles webhook events and manages user premium levels based on purchases.
+
+### Stripe Setup
+
+#### 1. Environment Configuration
+
+Set up your Stripe environment variables:
+
+```bash
+# Required Stripe environment variables
+STRIPE_SECRET_API_KEY=sk_test_your_stripe_secret_key
+STRIPE_SIGNING_SECRET=whsec_your_webhook_signing_secret
+STRIPE_CONFIG_FILE=./config/custom_stripe.json
+```
+
+#### 2. Product Configuration
+
+Create a Stripe configuration file to map your Stripe product IDs to premium levels:
+
+```json
+{
+  "product_id_to_premium_level": {
+    "prod_ABC123": 1,  // Basic plan - premium level 1
+    "prod_DEF456": 2,  // Pro plan - premium level 2  
+    "prod_GHI789": 3   // Enterprise plan - premium level 3
+  }
+}
+```
+
+Save this as `./config/custom_stripe.json` or wherever you specify in `STRIPE_CONFIG_FILE`.
+
+#### 3. Include Stripe Router
+
+Add the Stripe router to your FastAPI application:
+
+```python
+from fastapi import FastAPI
+from fastapiutils.routers import auth, user, customer, stripe
+
+app = FastAPI()
+
+# Include all routers
+app.include_router(auth.router)
+app.include_router(user.router)
+app.include_router(customer.router)
+app.include_router(stripe.router)  # Add Stripe integration
+```
+
+### Stripe Endpoints
+
+#### Webhook Endpoint
+
+The webhook endpoint handles Stripe events automatically:
+
+```
+POST /stripe-webhook
+```
+
+**Supported Events:**
+- `checkout.session.completed` - Updates user premium level after successful payment
+- `customer.subscription.deleted` - Resets user premium level when subscription is cancelled
+
+**Headers:**
+- `Stripe-Signature` - Automatically provided by Stripe for webhook verification
+
+**Example Webhook Event Processing:**
+
+When a user completes a checkout:
+1. Stripe sends `checkout.session.completed` event
+2. System extracts user ID, product ID, and customer ID from session
+3. Maps product ID to premium level using your configuration
+4. Updates user's `premium_level` and `stripe_customer_id` in database
+5. Returns success confirmation
+
+#### Customer Portal Session
+
+Create a customer portal session for subscription management:
+
+```
+POST /create-customer-portal-session
+```
+
+**Authentication:** Bearer token required
+**Requires:** User must have a `stripe_customer_id` (set after first purchase)
+
+**Response:**
+```json
+{
+  "id": "bps_1234567890",
+  "object": "billing_portal.session", 
+  "url": "https://billing.stripe.com/session/bps_1234567890"
+}
+```
+
+### Using Stripe in Your Application
+
+#### Basic Stripe Service Usage
+
+```python
+from fastapi import APIRouter, Depends, Request, HTTPException
+from fastapiutils.dependencies import get_stripe_service, get_i18n_service
+from fastapiutils.stripe_service import StripeService
+from fastapiutils.i18n_service import I18nService
+from fastapiutils import CurrentActiveUser
+
+router = APIRouter()
+
+@router.post("/check-stripe-status")
+async def check_stripe_status(
+    request: Request,
+    current_user: CurrentActiveUser,
+    stripe_service: StripeService = Depends(get_stripe_service),
+    i18n_service: I18nService = Depends(get_i18n_service)
+):
+    locale = i18n_service.extract_locale_from_request(request)
+    
+    # Check if Stripe is configured and active
+    if not stripe_service.is_active:
+        raise HTTPException(
+            status_code=503,
+            detail=i18n_service.t("api.stripe.webhook.service_not_active", locale)
+        )
+    
+    return {
+        "stripe_active": True,
+        "user_has_stripe_id": current_user.stripe_customer_id is not None,
+        "premium_level": current_user.premium_level
+    }
+
+@router.post("/create-portal-session")
+async def create_portal_session(
+    request: Request,
+    current_user: CurrentActiveUser,
+    stripe_service: StripeService = Depends(get_stripe_service),
+    i18n_service: I18nService = Depends(get_i18n_service)
+):
+    locale = i18n_service.extract_locale_from_request(request)
+    
+    # User must have made a purchase before accessing customer portal
+    if not current_user.stripe_customer_id:
+        raise HTTPException(
+            status_code=400,
+            detail="No Stripe customer ID found. User must make a purchase first."
+        )
+    
+    # Create customer portal session
+    portal_session = await stripe_service.create_customer_portal_session(
+        customer_id=current_user.stripe_customer_id,
+        i18n_service=i18n_service,
+        locale=locale
+    )
+    
+    return {"portal_url": portal_session.url}
+```
+
+### Premium Level Management
+
+The Stripe integration automatically manages user premium levels:
+
+#### Premium Level Flow
+
+1. **User makes purchase** - Completes Stripe checkout session
+2. **Webhook received** - `checkout.session.completed` event received
+3. **Data extraction** - System extracts user ID, product ID, and customer ID
+4. **Level mapping** - Product ID mapped to premium level using configuration
+5. **Database update** - User's `premium_level` and `stripe_customer_id` updated
+6. **Access granted** - User gains access to premium features
+
+#### Checking Premium Access
+
+```python
+from fastapiutils import CurrentActiveUser
+
+@router.get("/premium-feature")
+async def premium_feature(current_user: CurrentActiveUser):
+    # Check if user has premium access
+    if current_user.premium_level < 1:
+        raise HTTPException(
+            status_code=403,
+            detail="Premium subscription required"
+        )
+    
+    # Different premium levels
+    if current_user.premium_level >= 3:
+        return {"data": "enterprise_feature_data"}
+    elif current_user.premium_level >= 2:
+        return {"data": "pro_feature_data"}
+    else:  # premium_level >= 1
+        return {"data": "basic_premium_data"}
+```
+
+### Stripe Webhook Setup
+
+#### Configure Webhook in Stripe Dashboard
+
+1. Go to Stripe Dashboard → Developers → Webhooks
+2. Click "Add endpoint"
+3. Set endpoint URL: `https://yourdomain.com/stripe-webhook`
+4. Select events to send:
+   - `checkout.session.completed`
+   - `customer.subscription.deleted`
+5. Copy the webhook signing secret to `STRIPE_SIGNING_SECRET`
+
+#### Testing Webhooks Locally
+
+Use Stripe CLI for local testing:
+
+```bash
+# Install Stripe CLI
+# Forward webhooks to local server
+stripe listen --forward-to localhost:8000/stripe-webhook
+
+# Test with sample events
+stripe trigger checkout.session.completed
+stripe trigger customer.subscription.deleted
+```
+
+### Error Handling
+
+The Stripe service includes comprehensive error handling:
+
+#### Common Error Responses
+
+```json
+// Stripe service not configured
+{
+  "detail": "Stripe service is not active. Please contact support."
+}
+
+// Invalid product ID
+{
+  "detail": "Invalid product ID: prod_unknown"
+}
+
+// User already has premium level
+{
+  "detail": "User with id 'user-123' already has premium access with level 1."
+}
+
+// Invalid webhook signature
+{
+  "detail": "Invalid event from Stripe"
+}
+```
+
+#### Service Status Check
+
+```python
+# Check if Stripe service is properly configured
+@router.get("/stripe-status")
+async def stripe_status(stripe_service: StripeService = Depends(get_stripe_service)):
+    return {
+        "active": stripe_service.is_active,
+        "configured": stripe_service.is_active,  # Only true if all env vars are set
+    }
+```
+
+### Security Features
+
+- **Webhook Signature Verification**: All webhooks are cryptographically verified using your signing secret
+- **Environment Configuration**: Sensitive API keys stored in environment variables
+- **User Authentication**: Customer portal requires valid JWT authentication
+- **Database Integrity**: Foreign key constraints prevent data corruption
+- **Input Validation**: All Stripe data validated before database updates
 
 ## Admin User Management
 
