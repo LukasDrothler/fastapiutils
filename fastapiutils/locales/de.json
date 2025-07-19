@@ -16,6 +16,9 @@
         "premium_level_updated": "Benutzer mit ID '{user_id}' wurde auf Premium-Stufe {new_premium_level} aktualisiert.",
         "premium_level_update_failed": "Aktualisierung der Premium-Stufe für Benutzer mit ID '{user_id}' fehlgeschlagen: {error}",
         "invalid_product_id": "Ungültige Produkt-ID: {product_id}"
+      },
+      "portal": {
+        "session_creation_failed": "Fehler beim Erstellen der Kundenportal-Sitzung: {error}"
       }
     },
     "auth": {

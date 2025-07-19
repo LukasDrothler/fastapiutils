@@ -295,3 +295,31 @@ class StripeService:
 
         # TODO: Send email to user about successful premium downgrade
         return msg
+
+
+    def create_customer_portal_session(
+            self,
+            customer_id: str,
+            i18n_service: I18nService,
+            locale: str = "en"
+    ):
+        """Create a customer portal session for managing subscriptions"""
+        if not self.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail=i18n_service.t("api.stripe.webhook.service_not_active", locale)
+            )
+        
+        try:
+        ## https://docs.stripe.com/api/customer_portal/sessions/create
+            return stripe.billing_portal.Session.create(
+                customer=customer_id,
+                locale=locale,
+                api_key=self.secret_key
+            )
+        except stripe.error.StripeError as e:
+            logger.error(f"Failed to create customer portal session: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=i18n_service.t("api.stripe.portal.session_creation_failed", locale, error=str(e))
+            )

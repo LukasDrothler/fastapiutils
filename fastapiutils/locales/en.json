@@ -16,6 +16,9 @@
         "premium_level_updated": "User with id '{user_id}' has been updated to premium level {new_premium_level}.",
         "premium_level_update_failed": "Failed to update premium level for user with id '{user_id}': {error}",
         "invalid_product_id": "Invalid product ID: {product_id}"
+      },
+      "portal": {
+        "session_creation_failed": "Failed to create customer portal session: {error}"
       }
     },
     "auth": {
