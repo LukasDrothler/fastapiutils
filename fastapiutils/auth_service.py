@@ -38,7 +38,7 @@ class AuthService:
             logger.info(f"Using  '{_rsa_keys_path}' from environment variable 'RSA_KEYS_DIR'")
         else:
             _rsa_keys_path = os.path.join(os.path.dirname(__file__), "keys")
-            logger.info(f"Using default RSA keys directory '{_rsa_keys_path}' since 'RSA_KEYS_DIR' not set")
+            logger.info(f"Using default RSA keys directory since 'RSA_KEYS_DIR' not set")
         
         ## create dir if not exists
         if not os.path.exists(_rsa_keys_path):
