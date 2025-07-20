@@ -146,7 +146,7 @@ class MailService:
             logger.info(f"Using email templates directory '{_templates_dir}' from environment variable 'EMAIL_TEMPLATES_DIR'")
         else:
             _templates_dir = os.path.join(os.path.dirname(__file__), "templates")
-            logger.info(f"Using default email templates directory '{_templates_dir}' since 'EMAIL_TEMPLATES_DIR' not set")
+            logger.info(f"Using default email templates directory since 'EMAIL_TEMPLATES_DIR' not set")
         
         # Try localized template first, then fall back to default
         template_path = os.path.join(_templates_dir, f"{template_name}.html")

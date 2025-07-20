@@ -40,6 +40,10 @@ class AuthService:
             _rsa_keys_path = os.path.join(os.path.dirname(__file__), "keys")
             logger.info(f"Using default RSA keys directory '{_rsa_keys_path}' since 'RSA_KEYS_DIR' not set")
         
+        ## create dir if not exists
+        if not os.path.exists(_rsa_keys_path):
+            os.makedirs(_rsa_keys_path)
+            logger.info(f"Created RSA keys directory at '{_rsa_keys_path}'")
         
         self.algorithm = "RS256"
         private_key_path = os.path.join(_rsa_keys_path, private_key_filename)

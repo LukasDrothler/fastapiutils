@@ -1,8 +1,8 @@
 {
   "app_config": {
-    "app_name": "Deine App",
-    "app_owner": "Dein Name",
-    "contact_email": "name@app.com",
+    "app_name": "Your App",
+    "app_owner": "Your Name",
+    "contact_email": "yourname@yourapp.com",
     "logo_url": "https://finyed.com/logo-no-background.png"
   },
   "api": {
