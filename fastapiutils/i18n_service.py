@@ -140,7 +140,7 @@ class I18nService:
         """Extract locale from accept-language header"""
         accept_language = request.headers.get("accept-language")
         if not accept_language:
-            return "en"
+            return self.default_locale
         
         # Parse Accept-Language header (e.g., "en-US,en;q=0.9,de;q=0.8")
         # For simplicity, we'll just take the first language code
@@ -152,4 +152,4 @@ class I18nService:
             locale = first_lang.split('-')[0].lower()
             return locale
         
-        return "en"
+        return self.default_locale
