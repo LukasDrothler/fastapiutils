@@ -70,6 +70,24 @@ class UserQueries:
         if result:
             return UserInDB(**result)
         return None
+
+
+    @staticmethod
+    def get_username_by_id(
+        user_id: str,
+        db_service: DatabaseService,
+        i18n_service: I18nService,
+        locale: str = "en"
+        ) -> str:
+        """Get username by user ID"""
+        user = UserQueries.get_user_by_id(user_id, db_service)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=i18n_service.t("api.auth.user_management.user_not_found", locale),
+            )
+        return user.username
+    
     
     @staticmethod
     def create_user(username: str,

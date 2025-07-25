@@ -212,6 +212,23 @@ async def change_forgotten_password(
         )
 
 
+@router.get("/user/{user_id}/username", response_model=str, tags=["user-information"])
+async def get_username_by_id(
+    user_id: str,
+    request: Request,
+    db_service: DatabaseService = Depends(get_database_service),
+    i18n_service: I18nService = Depends(get_i18n_service),
+):
+    """Get username by user ID"""
+    locale = i18n_service.extract_locale_from_request(request)
+    return UserQueries.get_username_by_id(
+        user_id=user_id,
+        db_service=db_service,
+        i18n_service=i18n_service,
+        locale=locale
+    )
+
+
 @router.post("/user/id-to-name-map", response_model=dict, tags=["user-information"])
 async def get_user_ids_to_names(
     user_ids: list[str],
