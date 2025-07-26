@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Path, Request
 
-from ..models import CreateCancellation, CreateFeedback
+from ..models import Cancellation, CreateCancellation, CreateFeedback, Feedback
 from ..database_service import DatabaseService
 from ..i18n_service import I18nService
 from ..customer_form_service import CustomerFormService
@@ -13,7 +13,7 @@ logger = logging.getLogger('uvicorn.error')
 """Create customer form management router"""
 router = APIRouter()
 
-@router.get("/forms/cancellation", tags=["forms"])
+@router.get("/forms/cancellation", response_model=list[Cancellation], tags=["forms"])
 def get_cancellation(
     request: Request,
     current_admin: CurrentAdminUser,
@@ -61,8 +61,6 @@ def archive_cancellation(
     ):
     """Archive a cancellation by its ID"""
     locale = i18n_service.extract_locale_from_request(request)
-    if not current_admin.is_admin:
-        raise HTTPException(status_code=403)
     return customer_service.archive_cancellation(
         cancellation_id=cancellation_id,
         db_service=db_service,
@@ -71,7 +69,7 @@ def archive_cancellation(
     )
 
 
-@router.get("/forms/feedback", tags=["forms"])
+@router.get("/forms/feedback", response_model=list[Feedback], tags=["forms"])
 def get_feedback(
     request: Request,
     current_admin: CurrentAdminUser,
@@ -81,8 +79,6 @@ def get_feedback(
     ):
     """Get all feedback"""
     locale = i18n_service.extract_locale_from_request(request)
-    if not current_admin.is_admin:
-        raise HTTPException(status_code=403)
     return customer_service.get_feedbacks(
         db_service=db_service,
         i18n_service=i18n_service,

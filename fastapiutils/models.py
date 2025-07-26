@@ -102,6 +102,7 @@ class CreateCancellation(BaseModel):
 class Cancellation(CreateCancellation):
     id: int
     is_archived: int=0
+    created_at: datetime
 
 
 class CreateFeedback(BaseModel):
@@ -109,4 +110,6 @@ class CreateFeedback(BaseModel):
     text: str
 
 class Feedback(CreateFeedback):
-    id: Optional[int]=None
+    id: int
+    is_archived: int=0
+    created_at: datetime

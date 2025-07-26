@@ -4,7 +4,7 @@ from fastapi import HTTPException, status
 
 from .i18n_service import I18nService
 from .database_service import DatabaseService
-from .models import CreateCancellation, CreateFeedback
+from .models import Cancellation, CreateCancellation, CreateFeedback, Feedback
 
 logger = logging.getLogger('uvicorn.error')
 
@@ -116,12 +116,13 @@ class CustomerFormService:
             db_service: DatabaseService,
             i18n_service: I18nService,
             locale: str = "en"
-            ):
+            ) -> list[Feedback]:
         """Retrieve all feedback entries from the database"""
         try:
-            return db_service.execute_query(
-                "SELECT id, email, text FROM feedback WHERE is_archived = 0"
+            feedbacks = db_service.execute_query(
+                "SELECT * FROM feedback"
             )
+            return [Feedback(**feedback) for feedback in feedbacks]
         except Exception as e:
             logger.error(f"Error retrieving feedback: {e}")
             raise HTTPException(
@@ -135,12 +136,13 @@ class CustomerFormService:
             db_service: DatabaseService,
             i18n_service: I18nService,
             locale: str = "en"
-            ):
+            ) -> list[Cancellation]:
         """Retrieve all cancellation entries from the database"""
         try:
-            return db_service.execute_query(
-                "SELECT id, email, name, last_name, address, town, town_number, is_unordinary, reason, last_invoice_number, termination_date FROM cancellation WHERE is_archived = 0"
+            cancellations = db_service.execute_query(
+                "SELECT * FROM cancellation"
             )
+            return [Cancellation(**cancellation) for cancellation in cancellations]
         except Exception as e:
             logger.error(f"Error retrieving cancellations: {e}")
             raise HTTPException(
