@@ -21,8 +21,7 @@ def _check_verification_code(
         code: str,
         db_service: DatabaseService,
         i18n_service: I18nService,
-        locale: str,
-        allow_verified: bool = False
+        locale: str
         ) -> UserInDB:
     """Check if verification code is valid, not used and not expired"""
     if not user:
@@ -46,13 +45,6 @@ def _check_verification_code(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=i18n_service.t("api.auth.verification.invalid_verification_code", locale),
-        )
-    
-    # Check if user email is already verified
-    if not allow_verified and user.email_verified:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=i18n_service.t("api.auth.verification.email_already_verified", locale),
         )
     
     # Check if code is expired (24 hours)
@@ -242,8 +234,7 @@ def verify_user_email_change(
         code=verify_request.code,
         locale=locale,
         db_service=db_service,
-        i18n_service=i18n_service,
-        allow_verified=False
+        i18n_service=i18n_service
     )
     
     UserValidators.validate_email_format(email=verify_request.email, locale=locale, i18n_service=i18n_service)
@@ -278,8 +269,7 @@ def verify_forgot_password_with_code(
         code=verify_request.code,
         locale=locale,
         db_service=db_service,
-        i18n_service=i18n_service,
-        allow_verified=True
+        i18n_service=i18n_service
     )
 
     _use_verification_code (
@@ -306,7 +296,6 @@ def update_forgotten_password_with_code(
         locale=locale,
         db_service=db_service,
         i18n_service=i18n_service,
-        allow_verified=True
     )
 
     _use_verification_code (
