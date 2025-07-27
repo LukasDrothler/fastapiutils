@@ -66,6 +66,16 @@ def _check_verification_code(
     return None
 
 
+def _use_verification_code(
+        user_id: str,
+        db_service: DatabaseService,
+):
+    VerificationQueries.mark_verification_code_as_used(user_id=user_id, db_service=db_service)
+    VerificationQueries.update_user_email_verified_status(user_id=user_id, verified=True, db_service=db_service)
+    return None
+
+
+
 def verify_user_email_with_code(
         verify_request: VerifyEmailRequest, 
         db_service: DatabaseService, 
@@ -83,8 +93,10 @@ def verify_user_email_with_code(
         i18n_service=i18n_service
     )
 
-    VerificationQueries.mark_verification_code_as_used(user_id=user.id, db_service=db_service)
-    VerificationQueries.update_user_email_verified_status(user_id=user.id, verified=True, db_service=db_service)
+    _use_verification_code(
+        user_id=user.id,
+        db_service=db_service
+    )
     
     return {"detail": i18n_service.t("api.email.email_verified_success", locale)}
 
@@ -241,8 +253,13 @@ def verify_user_email_change(
             db_service=db_service, 
             i18n_service=i18n_service
         )
+    
     VerificationQueries.update_user_email(user_id=user.id, new_email=verify_request.email, db_service=db_service)
-    VerificationQueries.mark_verification_code_as_used(user_id=user.id, db_service=db_service)
+    
+    _use_verification_code (
+        user_id=user.id,
+        db_service=db_service
+    )
     
     return {"detail": i18n_service.t("api.auth.email_change.email_change_verified_successfully", locale)}
 
@@ -265,7 +282,10 @@ def verify_forgot_password_with_code(
         allow_verified=True
     )
 
-    VerificationQueries.mark_verification_code_as_used(user_id=user.id, db_service=db_service)
+    _use_verification_code (
+        user_id=user.id,
+        db_service=db_service
+    )
     
     return {"detail": i18n_service.t("api.auth.password_management.forgot_password_verified_successfully", locale)}
 
@@ -287,6 +307,11 @@ def update_forgotten_password_with_code(
         db_service=db_service,
         i18n_service=i18n_service,
         allow_verified=True
+    )
+
+    _use_verification_code (
+        user_id=user.id,
+        db_service=db_service
     )
 
     auth_service.update_password(
