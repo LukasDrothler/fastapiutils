@@ -121,11 +121,22 @@ class AuthService:
         return encoded_jwt
 
 
-    def authenticate_user(self, username: str, password: str, db_service: DatabaseService) -> Optional[UserInDB]:
+    def authenticate_user(
+            self,
+            username: str,
+            password: str,
+            db_service: DatabaseService,
+        ) -> Optional[UserInDB]:
         """Authenticate a user"""
         user = UserQueries.get_user_by_username(username, db_service=db_service)
         if not user:
             return None
+        if not user.hashed_password:
+            raise HTTPException(
+                status_code=status.HTTP_417_EXPECTATION_FAILED,
+                detail="User does not have a password set"
+            )
+
         if not self.verify_password(password, user.hashed_password):
             return None
         
