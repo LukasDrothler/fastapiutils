@@ -230,7 +230,8 @@ def verify_user_email_change(
         code=verify_request.code,
         locale=locale,
         db_service=db_service,
-        i18n_service=i18n_service
+        i18n_service=i18n_service,
+        allow_verified=False
     )
     
     UserValidators.validate_email_format(email=verify_request.email, locale=locale, i18n_service=i18n_service)
@@ -260,7 +261,8 @@ def verify_forgot_password_with_code(
         code=verify_request.code,
         locale=locale,
         db_service=db_service,
-        i18n_service=i18n_service
+        i18n_service=i18n_service,
+        allow_verified=True
     )
 
     VerificationQueries.mark_verification_code_as_used(user_id=user.id, db_service=db_service)
