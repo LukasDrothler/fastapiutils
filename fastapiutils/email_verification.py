@@ -48,11 +48,11 @@ def _check_verification_code(
             detail=i18n_service.t("api.auth.verification.invalid_verification_code", locale),
         )
     
-    # Check if code has already been used
-    if not allow_verified and verification_record.verified_at is not None:
+    # Check if user email is already verified
+    if not allow_verified and user.email_verified:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=i18n_service.t("api.auth.verification.verification_code_already_used", locale),
+            detail=i18n_service.t("api.auth.verification.email_already_verified", locale),
         )
     
     # Check if code is expired (24 hours)
@@ -70,7 +70,6 @@ def verify_user_email_with_code(
         verify_request: VerifyEmailRequest, 
         db_service: DatabaseService, 
         i18n_service: I18nService,
-        mail_service: MailService,
         locale: str, 
         ) -> bool:
     """Verify user email using 6-digit code"""

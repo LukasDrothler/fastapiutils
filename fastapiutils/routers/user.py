@@ -47,7 +47,6 @@ async def verify_user_email(
     request: Request,
     db_service: DatabaseService = Depends(get_database_service),
     i18n_service: I18nService = Depends(get_i18n_service),
-    mail_service: MailService = Depends(get_mail_service),
 ):
     locale = i18n_service.extract_locale_from_request(request)
     return verify_user_email_with_code(
@@ -55,7 +54,6 @@ async def verify_user_email(
         locale=locale,
         db_service=db_service, 
         i18n_service=i18n_service,
-        mail_service=mail_service
         )
     
 
