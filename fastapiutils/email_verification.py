@@ -152,7 +152,11 @@ def send_forgot_password_verification(
                 "username": user.username,
                 "verification_code": verification_code,
             },
-            subject=i18n_service.t("email.forgot_password_verification.subject", locale),
+            subject=i18n_service.t(
+                key="email.shared_content.verification_code_subject", 
+                locale=locale,
+                verification_code=verification_code
+                ),
             recipient=email,
             locale=locale,
             i18n_service=i18n_service
@@ -206,7 +210,11 @@ def send_email_change_verification(
                 "username": user.username,
                 "verification_code": verification_code,
             },
-            subject=i18n_service.t("email.email_change_verification.subject", locale),
+            subject=i18n_service.t(
+                key="email.shared_content.verification_code_subject", 
+                locale=locale,
+                verification_code=verification_code
+                ),
             recipient=new_email,
             locale=locale,
             i18n_service=i18n_service

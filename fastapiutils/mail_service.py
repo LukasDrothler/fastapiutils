@@ -336,7 +336,7 @@ class MailService:
                 "verification_code": verification_code
             },
             subject=i18n_service.t(
-                key="email.email_verification.subject", 
+                key="email.shared_content.verification_code_subject", 
                 locale=locale,
                 verification_code=verification_code
                 ),

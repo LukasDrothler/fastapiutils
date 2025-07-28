@@ -97,22 +97,19 @@
   "email": {
     "shared_content": {
       "support_message": "Fragen? Ich helfe gerne! Schreib mir an {contact_email} - ich lese und beantworte persönlich jede Nachricht.",
-      "personal_note": "Mit ❤️ von einem Solo-Entwickler erstellt, der sich wirklich um deine Erfahrung kümmert.",
-      "app_benefits": "Nach der Verifizierung schaltest du alle leistungsstarken Funktionen frei, die dein Leben einfacher machen.",
+      "personal_note": "Mit ❤️ von einem Entwickler erstellt, der ein gutes Produkt erschaffen möchte.",
       "wasnt_you_title": "Das warst nicht du?",
       "verification_code_label": "Dein Verifizierungscode:",
+      "verification_code_subject": "Dein Code lautet {verification_code}",
       "expiration_message": "Dieser Verifizierungscode läuft in 24 Stunden ab. Keine Sorge - falls er abläuft, kannst du jederzeit einen neuen anfordern.",
       "warning_title": "🔒 Sicherheitshinweis",
-      "warning_message": "Dieser Code ist nur für deine Augen bestimmt. Teile ihn niemals mit anderen und er wird nach der Verwendung ungültig."
+      "warning_message": "Dieser Code ist nur für deine Augen bestimmt, teile ihn nicht. Er wird nach der Verwendung oder nach 244 Stunden ungültig."
     },
     "email_verification": {
-      "subject": "Dein Code lautet {verification_code}",
-      "email_title": "🚀 Lass uns beginnen - E-Mail bestätigen",
       "content": {
-        "welcome_title": "Willkommen bei {app_name}, {username}! 🎉",
-        "welcome_message": "Danke für dein Interesse an meiner App! Ich freue mich, dich an Bord zu haben. Bitte bestätige deine E-Mail mit dem untenstehenden Code um all die tollen Funktionen freizuschalten.",
-        "next_steps_title": "Wie geht es weiter?",
-        "excitement_message": "Ich kann es kaum erwarten, dass du alles erkundest, was {app_name} zu bieten hat. Lass uns anfangen!",
+        "welcome_title": "Willkommen, {username}! 🎉",
+        "welcome_message": "Ich freue mich über dein Interesse an meiner App. Bitte bestätige deine E-Mail mit dem untenstehenden Code.",
+        "excitement_message": "Ich kann es kaum erwarten, dass du alles erkundest, was {app_name} zu bieten hat",
         "didnt_signup_title": "Nicht angemeldet?",
         "didnt_signup_message": "Falls du dieses Konto nicht erstellt hast, keine Sorge! Ignoriere einfach diese E-Mail und nichts wird passieren.",
         "feature_preview_title": "🎯 Was dich erwartet:",
@@ -123,23 +120,19 @@
       }
     },
     "forgot_password_verification": {
-      "subject": "Passwort-Reset Verifizierungscode",
-      "email_title": "Passwort-Reset Anfrage",
       "content": {
-        "title": "Passwort-Reset Anfrage",
+        "title": "Passwort vergessen",
         "greeting": "Hallo {username},",
-        "main_message": "Wir haben eine Anfrage zur Zurücksetzung deines Passworts erhalten. Bitte verwende den unten stehenden Verifizierungscode:",
-        "wasnt_you_message": "Falls du diese Passwort-Zurücksetzung nicht angefordert hast, solltest du dein Passwort sofort ändern."
+        "main_message": "Eine Anfrage zur Zurücksetzung deines Passworts ist erstellt worden. Bitte verwende den unten stehenden Code:",
+        "wasnt_you_message": "Falls du diese Passwort-Zurücksetzung nicht angefordert hast, bleibt dein Passwort unverändert."
       }
     },
     "email_change_verification": {
-      "subject": "Verifiziere deine neue E-Mail-Adresse",
-      "email_title": "E-Mail-Änderung Verifizierung",
       "content": {
         "title": "E-Mail-Änderung Verifizierung",
         "greeting": "Hallo {username},",
-        "main_message": "Du hast eine Änderung deiner E-Mail-Adresse angefordert. Bitte verwende den unten stehenden Verifizierungscode zur Bestätigung:",
-        "wasnt_you_message": "Falls du diese E-Mail-Änderung nicht angefordert hast, solltest du dein Passwort sofort ändern."
+        "main_message": "Du hast eine Änderung deiner E-Mail-Adresse angefordert. Bitte verwende den unten stehenden Code zur Bestätigung:",
+        "wasnt_you_message": "Falls du diese E-Mail-Änderung nicht angefordert hast, solltest du sofort dein Passwort ändern."
       }
     }
   }

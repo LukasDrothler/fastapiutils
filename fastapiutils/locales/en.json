@@ -97,22 +97,19 @@
   "email": {
     "shared_content": {
       "support_message": "Questions? I'm here to help! Drop me a line at {contact_email} - I personally read and respond to every message.",
-      "personal_note": "Built with ❤️ by a solo developer who truly cares about your experience.",
-      "app_benefits": "Once verified, you'll unlock all the powerful features designed to make your life easier.",
+      "personal_note": "Built with ❤️ by a developer who wants to build a wonderful product.",
       "wasnt_you_title": "This wasn't you?",
+      "verification_code_subject": "Your verification code is {verification_code}",
       "verification_code_label": "Your verification code:",
       "expiration_message": "This verification code will expire in 24 hours. Don't worry - if it expires, you can always request a new one.",
       "warning_title": "🔒 Security Notice",
-      "warning_message": "This code is for your eyes only. Never share it with anyone and it will be invalidated after use."
+      "warning_message": "This code is for your eyes only, never share it with anyone! It will be invalidated after use or after 24 hours."
     },
     "email_verification": {
-      "subject": "Your verification code is {verification_code}",
-      "email_title": "🚀 Let's Get You Started - Verify Your Email",
       "content": {
         "welcome_title": "Welcome {username}! 🎉",
-        "welcome_message": "Thanks for your interest in my app! I'm excited to have you on board. Please verify your email with the code below to unlock all the amazing features.",
-        "next_steps_title": "What's next?",
-        "excitement_message": "I can't wait for you to explore everything {app_name} has to offer. Let's get started!",
+        "welcome_message": "I'm excited about your interest in my app. Please verify your email with the code below.",
+        "excitement_message": "I can't wait for you to explore everything {app_name} has to offer.",
         "didnt_signup_title": "Didn't sign up?",
         "didnt_signup_message": "If you didn't create this account, no worries! Just ignore this email and nothing will happen.",
         "feature_preview_title": "🎯 What awaits you:",
@@ -123,23 +120,19 @@
       }
     },
     "forgot_password_verification": {
-      "subject": "Password Reset Verification Code",
-      "email_title": "Password Reset Request",
       "content": {
-        "title": "Password Reset Request",
+        "title": "Forgot Password",
         "greeting": "Hello {username},",
-        "main_message": "We received a request to reset your password. Please use the verification code below to proceed:",
+        "main_message": "A request to reset your password has been sent. Please use the verification code below to proceed:",
         "wasnt_you_message": "If you didn't request this password reset, just ignore this email and your password remains unchanged."
       }
     },
     "email_change_verification": {
-      "subject": "Verify your new email address",
-      "email_title": "Email Change Verification",
       "content": {
         "title": "Email Change Verification",
         "greeting": "Hello {username},",
         "main_message": "You requested to change your email address. Please use the verification code below to confirm your new email:",
-        "wasnt_you_message": "If you didn't request this email change, please consider changing your password immediately."
+        "wasnt_you_message": "If you didn't request this email change, consider changing your password immediately."
       }
     }
   }
