@@ -109,24 +109,24 @@ def setup_dependencies(
     """Setup all dependencies in the container"""
     container.clear()
     
-    # Register factory functions
-    container.register_factory("database_service", create_database_service)
-    container.register_factory("mail_service", create_mail_service)
-    container.register_factory("i18n_service", create_i18n_service)
-    container.register_factory("customer_form_service", create_customer_form_service)
-    container.register_factory("stripe_service", create_stripe_service)
-    
-    # Register auth service factory that depends on other services
-    def auth_service_factory():
-        return create_auth_service(
+    # Register singleton instances
+    container.register_singleton("database_service", create_database_service())
+    container.register_singleton("mail_service", create_mail_service())
+    container.register_singleton("i18n_service", create_i18n_service())
+    container.register_singleton("customer_form_service", create_customer_form_service())
+    container.register_singleton("stripe_service", create_stripe_service())
+
+    # Register AuthService singleton instance
+    container.register_singleton(
+        "auth_service",
+        create_auth_service(
             access_token_expire_minutes=access_token_expire_minutes,
             refresh_token_expire_days=refresh_token_expire_days,
             token_url=token_url,
             private_key_filename=private_key_filename,
             public_key_filename=public_key_filename
         )
-    
-    container.register_factory("auth_service", auth_service_factory)
+    )
 
 
 @lru_cache()
