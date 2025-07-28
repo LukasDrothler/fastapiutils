@@ -127,39 +127,29 @@ class AuthService:
 
     def authenticate_user(
             self,
+            username_or_email: str,
             password: str,
             db_service: DatabaseService,
             i18n_service: I18nService,
             locale: str = "en",
-            username: Optional[str] = None,
-            email: Optional[str] = None
         ) -> UserInDB:
         """Authenticate a user"""
-        print(f"Authenticating user with username: {username}, email: {email}")
-        if not username and not email:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Username or email must be provided for authentication"
-            )
-        
-        if username and email:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Only one of username or email should be provided for authentication"
-            )
-        
         user = None
-        if username:
-            user = UserQueries.get_user_by_username(username, db_service=db_service)
-        elif email:
-            user = UserQueries.get_user_by_email(email, db_service=db_service)
-
-        if not user:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail=i18n_service.t("api.auth.credentials.incorrect_credentials", locale),
-                headers={"WWW-Authenticate": "Bearer"},
+        user = UserQueries.get_user_by_username(
+            username=username_or_email,
+            db_service=db_service
             )
+        if not user:
+            user = UserQueries.get_user_by_email(
+                email=username_or_email,
+                db_service=db_service
+                )
+            if not user:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail=i18n_service.t("api.auth.credentials.incorrect_credentials", locale),
+                    headers={"WWW-Authenticate": "Bearer"},
+                )
 
         if not user.hashed_password:
             raise HTTPException(
@@ -173,24 +163,22 @@ class AuthService:
                 detail=i18n_service.t("api.auth.credentials.incorrect_credentials", locale),
                 headers={"WWW-Authenticate": "Bearer"},
             )
-        
+
         return user
     
 
     def get_token_for_user(
             self,
+            username_or_email: str,
             password: str,
             db_service: DatabaseService,
             i18n_service: I18nService,
             locale: str = "en",
-            username: Optional[str] = None,
-            email: Optional[str] = None,
             stay_logged_in: bool = False
             ) -> Token:
         
         user = self.authenticate_user(
-            username=username,
-            email=email,
+            username_or_email=username_or_email,
             password=password,
             i18n_service=i18n_service,
             locale=locale,

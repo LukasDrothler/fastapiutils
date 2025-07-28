@@ -25,28 +25,8 @@ async def login_for_access_token(
 ) -> Token:
     locale = i18n_service.extract_locale_from_request(request)
     return auth_service.get_token_for_user(
-        username=form_data.username,
+        username_or_email=form_data.username,
         password=form_data.password,
-        db_service=db_service,
-        i18n_service=i18n_service,
-        locale=locale,
-        stay_logged_in=stay_logged_in
-    )
-
-@router.post("/token/login", response_model=Token, tags=["tokens"])
-async def login_with_credentials(
-    credentials: LoginCredentials,
-    request: Request,
-    auth_service: AuthService = Depends(get_auth_service),
-    db_service: DatabaseService = Depends(get_database_service),
-    i18n_service: I18nService = Depends(get_i18n_service),
-    stay_logged_in: bool = Query(False, description="Whether to issue a refresh token")
-) -> Token:
-    locale = i18n_service.extract_locale_from_request(request)
-    return auth_service.get_token_for_user(
-        username=credentials.username,
-        email=credentials.email,
-        password=credentials.password,
         db_service=db_service,
         i18n_service=i18n_service,
         locale=locale,
