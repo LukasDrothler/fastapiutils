@@ -103,7 +103,7 @@
       "verification_code_subject": "Dein Code lautet {verification_code}",
       "expiration_message": "Dieser Verifizierungscode läuft in 24 Stunden ab. Keine Sorge - falls er abläuft, kannst du jederzeit einen neuen anfordern.",
       "warning_title": "🔒 Sicherheitshinweis",
-      "warning_message": "Dieser Code ist nur für deine Augen bestimmt, teile ihn nicht. Er wird nach der Verwendung oder nach 244 Stunden ungültig."
+      "warning_message": "Dieser Code ist nur für deine Augen bestimmt, teile ihn nicht. Er wird nach der Verwendung oder nach 24 Stunden ungültig."
     },
     "email_verification": {
       "content": {
