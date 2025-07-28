@@ -153,3 +153,14 @@ class I18nService:
             return locale
         
         return self.default_locale
+    
+    def get_email_sender(self, default_sender: str, locale: Optional[str] = None) -> str:
+        _locale = locale or self.default_locale
+        try:
+            return self.t(
+                key="email.shared_content.sender_name", 
+                locale=_locale,
+                )
+        except KeyError:
+            # Fallback to default sender if translation not found
+            return default_sender
