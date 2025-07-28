@@ -96,8 +96,8 @@
   },
   "email": {
     "shared_content": {
-      "support_message": "Fragen? Ich helfe gerne! Schreib mir an {contact_email} - ich lese und beantworte persönlich jede Nachricht.",
-      "personal_note": "Mit ❤️ von einem Entwickler erstellt, der ein gutes Produkt erschaffen möchte.",
+      "support_message": "Fragen? Ich helfe gerne! Schreib mir an {contact_email} - ich lese und beantworte persönlich jede Nachricht",
+      "personal_note": "Mit ❤️ von einem Entwickler erstellt, der ein gutes Produkt erschaffen möchte",
       "wasnt_you_title": "Das warst nicht du?",
       "verification_code_label": "Dein Verifizierungscode:",
       "verification_code_subject": "Dein Code lautet {verification_code}",
@@ -123,16 +123,16 @@
       "content": {
         "title": "Passwort vergessen",
         "greeting": "Hallo {username},",
-        "main_message": "Eine Anfrage zur Zurücksetzung deines Passworts ist erstellt worden. Bitte verwende den unten stehenden Code:",
-        "wasnt_you_message": "Falls du diese Passwort-Zurücksetzung nicht angefordert hast, bleibt dein Passwort unverändert."
+        "main_message": "eine Anfrage zur Zurücksetzung deines Passworts ist erstellt worden. Bitte verwende den unten stehenden Code",
+        "wasnt_you_message": "Falls du diese Passwort-Zurücksetzung nicht angefordert hast, bleibt dein Passwort unverändert"
       }
     },
     "email_change_verification": {
       "content": {
         "title": "E-Mail-Änderung Verifizierung",
         "greeting": "Hallo {username},",
-        "main_message": "Du hast eine Änderung deiner E-Mail-Adresse angefordert. Bitte verwende den unten stehenden Code zur Bestätigung:",
-        "wasnt_you_message": "Falls du diese E-Mail-Änderung nicht angefordert hast, solltest du sofort dein Passwort ändern."
+        "main_message": "du hast eine Änderung deiner E-Mail-Adresse angefordert. Bitte verwende den unten stehenden Code zur Bestätigung",
+        "wasnt_you_message": "Falls du diese E-Mail-Änderung nicht angefordert hast, solltest du sofort dein Passwort ändern"
       }
     }
   }

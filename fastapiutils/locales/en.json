@@ -96,14 +96,14 @@
   },
   "email": {
     "shared_content": {
-      "support_message": "Questions? I'm here to help! Drop me a line at {contact_email} - I personally read and respond to every message.",
-      "personal_note": "Built with ❤️ by a developer who wants to build a wonderful product.",
+      "support_message": "Questions? I'm here to help! Drop me a line at {contact_email} - I personally read and respond to every message",
+      "personal_note": "Built with ❤️ by a developer who wants to build a wonderful product",
       "wasnt_you_title": "This wasn't you?",
       "verification_code_subject": "Your verification code is {verification_code}",
-      "verification_code_label": "Your verification code:",
-      "expiration_message": "This verification code will expire in 24 hours. Don't worry - if it expires, you can always request a new one.",
+      "verification_code_label": "Your verification code",
+      "expiration_message": "This verification code will expire in 24 hours. Don't worry - if it expires, you can always request a new one",
       "warning_title": "🔒 Security Notice",
-      "warning_message": "This code is for your eyes only, never share it with anyone! It will be invalidated after use or after 24 hours."
+      "warning_message": "This code is for your eyes only, never share it with anyone! It will be invalidated after use or after 24 hours"
     },
     "email_verification": {
       "content": {
@@ -123,16 +123,16 @@
       "content": {
         "title": "Forgot Password",
         "greeting": "Hello {username},",
-        "main_message": "A request to reset your password has been sent. Please use the verification code below to proceed:",
-        "wasnt_you_message": "If you didn't request this password reset, just ignore this email and your password remains unchanged."
+        "main_message": "a request to reset your password has been sent. Please use the verification code below to proceed",
+        "wasnt_you_message": "If you didn't request this password reset, just ignore this email and your password remains unchanged"
       }
     },
     "email_change_verification": {
       "content": {
         "title": "Email Change Verification",
         "greeting": "Hello {username},",
-        "main_message": "You requested to change your email address. Please use the verification code below to confirm your new email:",
-        "wasnt_you_message": "If you didn't request this email change, consider changing your password immediately."
+        "main_message": "you requested to change your email address. Please use the verification code below to confirm your new email",
+        "wasnt_you_message": "If you didn't request this email change, consider changing your password immediately"
       }
     }
   }
