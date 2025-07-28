@@ -8,7 +8,7 @@ from ..user_queries import UserQueries
 from ..auth_service import AuthService
 from ..database_service import DatabaseService
 from ..i18n_service import I18nService
-from ..models import Token, RefreshTokenRequest, TokenData
+from ..models import LoginCredentials, Token, RefreshTokenRequest, TokenData
 from ..dependencies import get_auth_service, get_database_service, get_i18n_service
 
 """Create authentication router with dependency injection"""
@@ -24,21 +24,35 @@ async def login_for_access_token(
     stay_logged_in: bool = Query(False, description="Whether to issue a refresh token")
 ) -> Token:
     locale = i18n_service.extract_locale_from_request(request)
-    
-    user = auth_service.authenticate_user(form_data.username, form_data.password, db_service=db_service)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=i18n_service.t("api.auth.credentials.incorrect_credentials", locale),
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    
-    access_token = auth_service.create_bearer_token(user=user)
-    if stay_logged_in:
-        refresh_token = auth_service.create_bearer_token(user=user, is_refresh=True)
-        return Token(access_token=access_token, refresh_token=refresh_token)
-    
-    return Token(access_token=access_token)
+    return auth_service.get_token_for_user(
+        username=form_data.username,
+        password=form_data.password,
+        db_service=db_service,
+        i18n_service=i18n_service,
+        locale=locale,
+        stay_logged_in=stay_logged_in
+    )
+
+@router.post("/token/login", response_model=Token, tags=["tokens"])
+async def login_with_credentials(
+    credentials: LoginCredentials,
+    request: Request,
+    auth_service: AuthService = Depends(get_auth_service),
+    db_service: DatabaseService = Depends(get_database_service),
+    i18n_service: I18nService = Depends(get_i18n_service),
+    stay_logged_in: bool = Query(False, description="Whether to issue a refresh token")
+) -> Token:
+    locale = i18n_service.extract_locale_from_request(request)
+    return auth_service.get_token_for_user(
+        username=credentials.username,
+        email=credentials.email,
+        password=credentials.password,
+        db_service=db_service,
+        i18n_service=i18n_service,
+        locale=locale,
+        stay_logged_in=stay_logged_in
+    )
+
 
 @router.post("/token/refresh", response_model=Token, tags=["tokens"])
 async def refresh_access_token(
@@ -70,5 +84,8 @@ async def refresh_access_token(
     if user is None or user.disabled:
         raise credentials_exception
     
-    access_token = auth_service.create_bearer_token(user=user)
+    access_token = auth_service.create_bearer_token(
+        user=user,
+        db_service=db_service
+        )
     return Token(access_token=access_token)

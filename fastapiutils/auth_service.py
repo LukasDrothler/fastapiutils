@@ -1,5 +1,5 @@
 from .verification_queries import VerificationQueries
-from .models import UserInDB, CreateUser, UpdateUser, UpdatePassword
+from .models import UserInDB, CreateUser, UpdateUser, UpdatePassword, Token
 from .database_service import DatabaseService
 from .mail_service import MailService
 from .i18n_service import I18nService
@@ -95,7 +95,7 @@ class AuthService:
         return self.pwd_context.hash(password)
 
 
-    def create_bearer_token(self, user: UserInDB, is_refresh: bool = False) -> str:
+    def create_bearer_token(self, user: UserInDB, db_service: DatabaseService, is_refresh: bool = False) -> str:
         """Create a JWT token"""
         data = {
             "sub": user.id,
@@ -118,19 +118,49 @@ class AuthService:
         expire = datetime.now(timezone.utc) + expires_delta
         to_encode.update({"exp": expire})
         encoded_jwt = jwt.encode(to_encode, self.private_key, algorithm=self.algorithm)
+        UserQueries.update_user_last_seen(
+            user_id=user.id,
+            db_service=db_service
+            )
         return encoded_jwt
 
 
     def authenticate_user(
             self,
-            username: str,
             password: str,
             db_service: DatabaseService,
-        ) -> Optional[UserInDB]:
+            i18n_service: I18nService,
+            locale: str = "en",
+            username: Optional[str] = None,
+            email: Optional[str] = None
+        ) -> UserInDB:
         """Authenticate a user"""
-        user = UserQueries.get_user_by_username(username, db_service=db_service)
+        print(f"Authenticating user with username: {username}, email: {email}")
+        if not username and not email:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Username or email must be provided for authentication"
+            )
+        
+        if username and email:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Only one of username or email should be provided for authentication"
+            )
+        
+        user = None
+        if username:
+            user = UserQueries.get_user_by_username(username, db_service=db_service)
+        elif email:
+            user = UserQueries.get_user_by_email(email, db_service=db_service)
+
         if not user:
-            return None
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=i18n_service.t("api.auth.credentials.incorrect_credentials", locale),
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
         if not user.hashed_password:
             raise HTTPException(
                 status_code=status.HTTP_417_EXPECTATION_FAILED,
@@ -138,11 +168,47 @@ class AuthService:
             )
 
         if not self.verify_password(password, user.hashed_password):
-            return None
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=i18n_service.t("api.auth.credentials.incorrect_credentials", locale),
+                headers={"WWW-Authenticate": "Bearer"},
+            )
         
-        # Update last_seen
-        UserQueries.update_user_last_seen(user.id, db_service=db_service)
         return user
+    
+
+    def get_token_for_user(
+            self,
+            password: str,
+            db_service: DatabaseService,
+            i18n_service: I18nService,
+            locale: str = "en",
+            username: Optional[str] = None,
+            email: Optional[str] = None,
+            stay_logged_in: bool = False
+            ) -> Token:
+        
+        user = self.authenticate_user(
+            username=username,
+            email=email,
+            password=password,
+            i18n_service=i18n_service,
+            locale=locale,
+            db_service=db_service
+            )
+        
+        access_token = self.create_bearer_token(
+            user=user,
+            db_service=db_service
+            )
+        if stay_logged_in:
+            refresh_token = self.create_bearer_token(
+                user=user,
+                db_service=db_service,
+                is_refresh=True)
+            return Token(access_token=access_token, refresh_token=refresh_token)
+        
+        return Token(access_token=access_token)
 
 
     def register_new_user(

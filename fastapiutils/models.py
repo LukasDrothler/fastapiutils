@@ -33,6 +33,13 @@ class CreateUser(BaseModel):
     password: str
 
 
+class LoginCredentials(BaseModel):
+    """Model for user login credentials"""
+    username: Optional[str] = None
+    email: Optional[str] = None
+    password: str
+
+
 class Token(BaseModel):
     """Token response model"""
     access_token: str
