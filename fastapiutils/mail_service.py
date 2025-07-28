@@ -259,7 +259,7 @@ class MailService:
         # Create multipart message
         msg = MIMEMultipart('alternative')
         msg['Subject'] = subject
-        msg['From'] = i18n_service.get_email_sender(default_sender=self.user, locale=locale)
+        msg['From'] = self.user
         msg['To'] = recipient
         
         # Add HTML version
@@ -305,7 +305,7 @@ class MailService:
         try:
             msg = MIMEText(content, 'plain', 'utf-8')
             msg['Subject'] = subject
-            msg['From'] = i18n_service.get_email_sender(default_sender=self.user, locale=locale)
+            msg['From'] = self.user
             msg['To'] = recipient
             
             self._send_message(
