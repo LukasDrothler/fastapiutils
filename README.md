@@ -300,10 +300,9 @@ Create a JSON file with custom colors and set the `COLOR_CONFIG_FILE` environmen
 ```json
 {
   "primary_color": "#4f46e5",
-  "secondary_color": "#7c3aed",
+  "primary_shade_color": "#7c3aed",
   "background_color": "#ffffff",
-  "text_color": "#1f2937",
-  "button_text_color": "#ffffff",
+  "foreground_color": "#1f2937",
   "border_color": "#e5e7eb"
 }
 ```
