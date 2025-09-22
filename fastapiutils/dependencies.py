@@ -2,7 +2,6 @@
 Dependency injection container for FastAPI Utils
 """
 from typing import Annotated, Any, Dict, Callable
-from functools import lru_cache
 
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
@@ -67,7 +66,7 @@ def create_customer_form_service() -> CustomerFormService:
     return CustomerFormService()
 
 
-def create_stripe_service() -> 'StripeService':
+def create_stripe_service() -> StripeService:
     """Factory function to create StripeService instance"""
     return StripeService()
 
@@ -129,38 +128,32 @@ def setup_dependencies(
     )
 
 
-@lru_cache()
 def get_auth_service() -> AuthService:
     """FastAPI dependency function to get AuthService instance"""
     return container.get("auth_service")
 
 
-@lru_cache()
 def get_database_service() -> DatabaseService:
     """FastAPI dependency function to get DatabaseService instance"""
     return container.get("database_service")
 
 
-@lru_cache()
 def get_mail_service() -> MailService:
     """FastAPI dependency function to get MailService instance"""
     return container.get("mail_service")
 
 
-@lru_cache()
 def get_i18n_service() -> I18nService:
     """FastAPI dependency function to get I18nService instance"""
     return container.get("i18n_service")
 
 
-@lru_cache()
 def get_customer_form_service() -> CustomerFormService:
     """FastAPI dependency function to get CustomerFormService instance"""
     return container.get("customer_form_service")
 
 
-@lru_cache()
-def get_stripe_service() -> 'StripeService':
+def get_stripe_service() -> StripeService:
     """FastAPI dependency function to get StripeService instance"""
     return container.get("stripe_service")
 

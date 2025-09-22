@@ -147,17 +147,9 @@ def setup_dependencies(...):
 These functions integrate with FastAPI's dependency injection system:
 
 ```python
-@lru_cache()
 def get_auth_service():
     return container.get("auth_service")
 ```
-
-**What @lru_cache() does:**
-- Caches the result of the function call
-- On first call: `container.get("auth_service")` is executed
-- On subsequent calls: Returns cached result without calling container.get()
-
-**Why this matters:** FastAPI calls dependency functions on every request. Without caching, you'd create new service instances for every request, which is inefficient.
 
 ### Step 7: OAuth2 and User Dependencies
 
@@ -231,8 +223,6 @@ def get_profile(user: CurrentUser):
 **Step 2e:** `get_current_user()` is called with all dependencies and returns a UserInDB object
 
 ### 3. Subsequent Requests
-
-**What's different:** All the `@lru_cache()` decorated functions return cached service instances, so no new services are created.
 
 ## Benefits of This Approach
 
